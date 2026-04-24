@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+db.sqlite3
 
 .venv
 venv/
@@ -9,6 +11,7 @@ env/
 .venv/
 /bin
 
+.angular/
 dist/
 build/
 *.egg-info/
