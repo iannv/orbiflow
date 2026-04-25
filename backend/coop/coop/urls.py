@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from orbiflow.views import healthcheck
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', healthcheck, name='healthcheck'),
 ]

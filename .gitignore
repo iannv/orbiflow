@@ -10,6 +10,7 @@ env/
 .env/
 .venv/
 /bin
+myenv/
 
 .angular/
 dist/

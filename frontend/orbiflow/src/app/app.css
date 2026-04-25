@@ -1,0 +1,15 @@
+.shell {
+  max-width: 40rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.shell h1 {
+  margin-bottom: 0.75rem;
+}
+
+.shell p {
+  color: #4b5563;
+}
