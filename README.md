@@ -18,9 +18,14 @@ DB_PASS=************
 POSTGRES_DB=${DB_NAME}
 POSTGRES_USER=${DB_USER}
 POSTGRES_PASSWORD=${DB_PASS}
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+DJANGO_SECRET_KEY=tu_clave_secreta_aqui
+DJANGO_DEBUG=true
 ```
 
-## Build And Run
+## Levantar el Proyecto
 
 Desde la raíz del proyecto:
 
@@ -36,24 +41,14 @@ Esto iniciará los contenedores para la base de datos, el backend y el frontend.
 
 El backend migrará automáticamente la base de datos al iniciarse, y el frontend se construirá con la configuración de desarrollo.
 
-Si solo querés iniciar los servicios sin reconstruir las imágenes, podés usar:
->
->```bash
->docker compose up
->```
+## Configuración del Administrador (Solo la primera vez)
 
-Si realizaste cambios en el código y querés reconstruir solo el backend o el frontend, podés usar:
->
-> ```bash
-> docker compose build backend   # or frontend
-> docker compose up
-> ```
+Una vez que los contenedores estén corriendo, debes crear el superusuario para acceder al panel de Django:
 
-Para reiniciar los servicios después de detenerlos:
->```bash
->docker compose start
->```
-
+ ```bash
+   docker compose exec backend python manage.py createsuperuser
+```
+Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico y contraseña. Después de crear el superusuario, podrás acceder al panel de administración en `http://localhost:8000/admin` con las credenciales que acabas de crear.
 
 
 ## Confirmar Funcionamiento
@@ -112,3 +107,23 @@ Para eliminar también los volúmenes de datos (esto eliminará la base de datos
 ```bash
 docker compose down -v
 ```
+
+## Algunos comandos útiles
+
+Si solo querés iniciar los servicios sin reconstruir las imágenes, podés usar:
+>
+>```bash
+>docker compose up
+>```
+
+Si realizaste cambios en el código y querés reconstruir solo el backend o el frontend, podés usar:
+>
+> ```bash
+> docker compose build backend   # or frontend
+> docker compose up
+> ```
+
+Para reiniciar los servicios después de detenerlos:
+>```bash
+>docker compose start
+>```
