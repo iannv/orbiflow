@@ -1,1 +1,35 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
+
+:root {
+    /* Paleta de colores */
+    --blanco: #ffffff;
+    --negro: #000000;
+
+    --gris-blanco: #F4F6F5;
+    --gris-claro: #BEC4CB;
+    --gris-oscuro: #575F66;
+    --verde-mate: #4E7C74;
+    --verde-bosque: #34554F;
+    --verde-petroleo: #2B4540;
+    --verde-azulado: #1F2933;
+
+    --verde-bg: #DBFCE7;
+    --verde-selva: #2E7D32;
+
+    --azul-bg: #DBEAFE;
+    --azul: #1565C0;
+
+    --rojo-bg: #FFE2E2;
+    --rojo: #C62828;
+
+    --ambar: #E6A700;
+}
+
+* {
+    font-family: "Google Sans Flex", sans-serif;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
