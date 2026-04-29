@@ -1,0 +1,9 @@
+.btn-green {
+  background-color: var(--verde-mate);
+  color: var(--gris-blanco);
+}
+
+.btn-green:hover {
+  background-color: var(--verde-bosque);
+  color: var(--gris-blanco);
+}
