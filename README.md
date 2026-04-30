@@ -5,6 +5,7 @@ OrbiFlow es un sistema integral de gestión diseñado específicamente para las 
 
 - Docker
 - Docker Compose
+- Make
 
 ## Configuración Inicial (Paso a Paso)
 1. Clonar el repositorio
@@ -35,19 +36,17 @@ DJANGO_DEBUG=true
 Desde la raíz del proyecto:
 
 ```bash
-docker compose up --build
+make build
 ```
 
-Esto iniciará los contenedores para la base de datos, el backend y el frontend. 
-
-El backend migrará automáticamente la base de datos al iniciarse, y el frontend se construirá con la configuración de desarrollo.
+Esto iniciará los contenedores para la base de datos, el backend y el frontend. El backend migrará automáticamente la base de datos al iniciarse.
 
 ## Gestión de la Aplicación
 
 Una vez que los contenedores estén corriendo, debes crear el superusuario para acceder al panel de Django:
 
  ```bash
-   docker compose exec backend python manage.py createsuperuser
+make superuser
 ```
 Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico y contraseña. Después de crear el superusuario, podrás acceder al panel de administración en `http://localhost:8000/admin` con las credenciales que acabas de crear.
 
@@ -81,69 +80,37 @@ Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico
    - `http://localhost:4200`
    - Deberías ver la página de inicio de Orbiflow sin errores.
 
-4. Correr los tests del backend:
+4. Correr los tests 
 
    ```bash
-   docker compose exec backend python manage.py test
-   ```
-
-5. Correr los tests del frontend:
-
-   ```bash
-   docker compose exec frontend npm test
+   make tests
    ```
 
 ## Desarrollo y modelos de datos
 
-Si realizás cambios en cualquier archivo `models.py`, debés seguir este flujo para que impacten en la base de datos:
-
-1. **Generar el archivo de migración** (esto crea el archivo .py con tus cambios):
-   ```bash
-   docker compose run --rm backend python manage.py makemigrations orbiflow
-   ```
-2. **Aplicar la migración a la base de datos** (esto actualiza la DB con los cambios):
-   ```bash
-   docker compose run --rm backend python manage.py migrate
-   ```
-*Nota: El comando docker compose up aplica automáticamente las migraciones pendientes, pero NO las genera. Si sos quien modifica el modelo, recordá siempre generar la migración y pushearla al repositorio.*
+Si realizás cambios en los archivos `models.py`, seguí este flujo:
+1.  **Generar migración:** `make makemigrations`
+2.  **Aplicar cambios:** `make migrate`
+3.  **Pushear cambios:** Asegurate de incluir el archivo de migración generado en tu commit.
 
 
+## 💡 Comandos Rápidos (Makefile)
 
-## Comandos Útiles de Desarrollo
+Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comandos desde la raíz:
 
-Ver logs en tiempo real
+| Tarea | Comando |
+| :--- | :--- |
+| **Levantar proyecto** | `make up` |
+| **Reconstruir y levantar** | `make build` |
+| **Correr todos los tests** | `make tests` |
+| **Generar migraciones** | `make makemigrations` |
+| **Aplicar migraciones** | `make migrate` |
+| **Crear administrador** | `make superuser` |
+| **Ver logs del backend** | `make logs` |
+| **Detener contenedores** | `make down` |
+| **Limpiar base de datos** | `make clean` |
+| **Entrar a la terminal de la DB** | `make db-shell` |
+| **Entrar al shell de Django** | `make shell` |
 
-   ```bash
-   docker compose logs -f
-   ```
-Actualizar modelos (Migraciones)
-```bash
-docker compose run --rm backend python manage.py makemigrations orbiflow
-   ```
-Aplicar cambios a la DB	docker 
-```bash
-docker compose run --rm backend python manage.py migrate
-```
-Limpiar todo (Reset DB)	
-```bash
-docker compose down -v
-```
-## Algunos comandos útiles
 
-Si solo querés iniciar los servicios sin reconstruir las imágenes, podés usar:
->
->```bash
->docker compose up
->```
-
-Si realizaste cambios en el código y querés reconstruir solo el backend o el frontend, podés usar:
->
-> ```bash
-> docker compose build backend   # or frontend
-> docker compose up
-> ```
-
-Para reiniciar los servicios después de detenerlos:
->```bash
->docker compose start
->```
+*Nota: Si no tenés `make` instalado, podés seguir usando los comandos de `docker compose` detallados arriba.*
