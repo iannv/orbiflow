@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'orbiflow',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,8 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
-    'orbiflow',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -149,3 +149,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Archivos de medios
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+AUTH_USER_MODEL = 'orbiflow.User'
