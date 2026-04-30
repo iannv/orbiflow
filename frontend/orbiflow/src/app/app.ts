@@ -1,14 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Primary } from "./components/button/primary/primary";
-import { Secondary } from "./components/button/secondary/secondary";
+import { Action } from "./components/button/action/action";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Secondary, Primary],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
   protected readonly title = signal('orbiflow');
+
 }
