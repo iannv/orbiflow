@@ -1,13 +1,18 @@
 # Orbiflow
+OrbiFlow es un sistema integral de gestión diseñado específicamente para las necesidades de las cooperativas de trabajo. Permite gestionar asociados, liquidaciones de retiros y aplicar reglas de negocio dinámicas con total transparencia y soberanía tecnológica.
 
-
-## Requerimientos
+## Requisitos Previos
 
 - Docker
 - Docker Compose
-- A root `.env` file
 
-Necesitamos crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+## Configuración Inicial (Paso a Paso)
+1. Clonar el repositorio
+```bash
+git clone git@github.com:iannv/orbiflow.git
+cd orbiflow
+```
+2. Crear el archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 ```env
 DB_HOST=db
@@ -25,7 +30,7 @@ DJANGO_SECRET_KEY=tu_clave_secreta_aqui
 DJANGO_DEBUG=true
 ```
 
-## Levantar el Proyecto
+3. Levantar los servvicios
 
 Desde la raíz del proyecto:
 
@@ -33,15 +38,11 @@ Desde la raíz del proyecto:
 docker compose up --build
 ```
 
-Esto iniciará los contenedores para la base de datos, el backend y el frontend. Los servicios estarán disponibles en:
-
-- PostgreSQL on `localhost:5432` (Por ahora local, es decir mirar en cada gestor de base de datos)
-- Django on `http://localhost:8000/admin`
-- Angular on `http://localhost:4200`
+Esto iniciará los contenedores para la base de datos, el backend y el frontend. 
 
 El backend migrará automáticamente la base de datos al iniciarse, y el frontend se construirá con la configuración de desarrollo.
 
-## Configuración del Administrador (Solo la primera vez)
+## Gestión de la Aplicación
 
 Una vez que los contenedores estén corriendo, debes crear el superusuario para acceder al panel de Django:
 
@@ -50,6 +51,10 @@ Una vez que los contenedores estén corriendo, debes crear el superusuario para 
 ```
 Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico y contraseña. Después de crear el superusuario, podrás acceder al panel de administración en `http://localhost:8000/admin` con las credenciales que acabas de crear.
 
+## Accesos Rápidos
+- **Backend (Django):** `http://localhost:8000/admin`
+- **Frontend (Angular):** `http://localhost:4200`
+- **Base de Datos (PostgreSQL):** `localhost:5432` (con las credenciales definidas en el archivo `.env`)
 
 ## Confirmar Funcionamiento
 
@@ -88,26 +93,41 @@ Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico
    docker compose exec frontend npm test
    ```
 
+## Desarrollo y modelos de datos
+
+Si realizás cambios en cualquier archivo `models.py`, debés seguir este flujo para que impacten en la base de datos:
+
+1. **Generar el archivo de migración** (esto crea el archivo .py con tus cambios):
+   ```bash
+   docker compose run --rm backend python manage.py makemigrations orbiflow
+   ```
+2. **Aplicar la migración a la base de datos** (esto actualiza la DB con los cambios):
+   ```bash
+   docker compose run --rm backend python manage.py migrate
+   ```
+*Nota: El comando docker compose up aplica automáticamente las migraciones pendientes, pero NO las genera. Si sos quien modifica el modelo, recordá siempre generar la migración y pushearla al repositorio.*
 
 
-## Detener y Limpiar
 
-Para detener los contenedores sin eliminarlos:
+## Comandos Útiles de Desarrollo
+
+Ver logs en tiempo real
+
+   ```bash
+   docker compose logs -f
+   ```
+Actualizar modelos (Migraciones)
 ```bash
-docker compose stop
-```
-
-Para detener los servicios:
+docker compose run --rm backend python manage.py makemigrations orbiflow
+   ```
+Aplicar cambios a la DB	docker 
 ```bash
-docker compose down
+docker compose run --rm backend python manage.py migrate
 ```
-
-Para eliminar también los volúmenes de datos (esto eliminará la base de datos y cualquier dato persistente):
-
+Limpiar todo (Reset DB)	
 ```bash
 docker compose down -v
 ```
-
 ## Algunos comandos útiles
 
 Si solo querés iniciar los servicios sin reconstruir las imágenes, podés usar:
