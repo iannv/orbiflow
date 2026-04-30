@@ -13,6 +13,7 @@
 }
 
 /* Secondary */
+/* Usar la propiedad COLOR en los componentes para cambiar color outline y texto */
 .btn-outline-green {
   border: 1px solid var(--verde-mate);
   color: var(--verde-mate);
@@ -20,4 +21,19 @@
 .btn-outline-green:hover {
   border: 1px solid var(--verde-petroleo);
   color: var(--verde-petroleo);
+}
+
+/* Botones con iconos */
+/* Usar la propiedad BtnImg en los componentes: 'assets/nombreImg' */
+.btn-img {
+  width: 25px;
+}
+
+/* Botones de acción: editar/eliminar */
+.btn-action {
+  background-color: transparent;
+  border: 1px solid var(--gris-claro);
+}
+.btn-action:hover {
+  border: 1px solid var(--gris-oscuro);
 }
