@@ -1,9 +1,23 @@
+.btn {
+  font-weight: 500;
+}
+
+/* Primary */
 .btn-green {
   background-color: var(--verde-mate);
   color: var(--gris-blanco);
 }
-
 .btn-green:hover {
   background-color: var(--verde-bosque);
   color: var(--gris-blanco);
+}
+
+/* Secondary */
+.btn-outline-green {
+  border: 1px solid var(--verde-mate);
+  color: var(--verde-mate);
+}
+.btn-outline-green:hover {
+  border: 1px solid var(--verde-petroleo);
+  color: var(--verde-petroleo);
 }

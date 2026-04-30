@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-secondary',
@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './secondary.html',
   styleUrl: './secondary.css',
 })
-export class Secondary {}
+export class Secondary {
+  @Input() name: string = '';
+}
