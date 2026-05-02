@@ -1,0 +1,18 @@
+.btn-switch{
+  cursor: pointer;
+}
+.btn-switch:focus {
+  border: var(--verde-mate) 1px solid !important;
+}
+.btn-switch:active {
+  border: var(--verde-mate) 1px solid !important;
+}
+.btn-switch:checked {
+  background-color: var(--verde-mate);
+  border: var(--verde-mate) 1px solid !important;
+  outline: none !important;
+}
+.btn-switch:focus {
+  border-color: var(--verde-mate);
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
