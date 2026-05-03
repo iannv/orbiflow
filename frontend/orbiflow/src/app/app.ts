@@ -1,15 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Action } from "./components/button/action/action";
-import { Switch } from "./components/button/switch/switch";
+import { input } from './components/input/input';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, input],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
   protected readonly title = signal('orbiflow');
-
+  type: string = 'text';
+  placeholder: string = 'g';
 }

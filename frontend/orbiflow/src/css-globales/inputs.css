@@ -1,0 +1,15 @@
+label {
+  font-size: 14px;
+  text-align: left;
+}
+
+input {
+  border: 1px solid var(--gris-claro);
+  border-radius: 4px;
+  padding: 0.2rem;
+  margin: .5rem 0 1rem 0;
+  color: var(--verde-azulado);
+  text-indent: 5px;
+  outline: none;
+  width: 100%;
+}
