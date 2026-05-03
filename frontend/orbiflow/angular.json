@@ -25,7 +25,8 @@
               ],
             "styles": [
               "src/styles.css",
-              "src/css-globales/buttons.css"
+              "src/css-globales/buttons.css",
+              "src/css-globales/inputs.css"
             ]
           },
           "configurations": {
