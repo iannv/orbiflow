@@ -1,0 +1,15 @@
+.navbar {
+    background-color: var(--gris-blanco);
+    box-shadow: 0px 0px 10px 2px var(--gris-claro);
+}
+
+.container-fluid {
+    justify-content: flex-end;
+    align-items: center;
+    /* margin-right: 6rem; */
+}
+
+.navbar-brand {
+    font-size: 14px;
+    color: var(--verde-azulado);
+}

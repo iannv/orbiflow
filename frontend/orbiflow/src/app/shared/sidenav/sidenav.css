@@ -1,0 +1,127 @@
+nav {
+  top: 0;
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--verde-azulado);
+  position: fixed;
+}
+
+#logo {
+  width: 150px;
+  align-self: center;
+  background-color: var(--verde-azulado);
+  cursor: pointer;
+}
+
+#menu {
+  width: 24px;
+  background-color: var(--verde-azulado);
+  margin: 1rem 1rem 0 1rem;
+  cursor: pointer;
+}
+
+.side-nav-content,
+#logo {
+  display: none;
+}
+
+.side-nav-content {
+  height: 0;
+}
+
+.side-nav-button {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--verde-azulado);
+}
+
+a {
+  text-decoration: none;
+  background-color: var(--verde-azulado);
+  color: var(--gris-blanco);
+}
+
+li {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+/* ####################################################### */
+@media screen and (min-width: 768px) {
+  .side-nav-content,
+  #logo {
+    display: block;
+  }
+  nav {
+    width: 28vw;
+  }
+  a {
+    text-decoration: none;
+    background-color: var(--verde-azulado);
+    color: var(--gris-blanco);
+  }
+
+  ul {
+    padding: 0;
+    flex-direction: column;
+  }
+
+  li {
+    background-color: var(--verde-azulado);
+    padding: 0.5rem 1rem;
+    list-style-type: none;
+  }
+
+  .side-nav-content img {
+    background-color: var(--verde-azulado);
+    width: 20px;
+  }
+}
+
+/* ####################################################### */
+@media screen and (min-width: 950px) {
+  /* .side-nav-content {
+    width: 24vw;
+  } */
+  nav {
+    width: 24vw;
+  }
+}
+
+/* ####################################################### */
+@media screen and (min-width: 1050px) {
+  nav {
+    width: 20vw;
+  }
+}
+
+/* ####################################################### */
+@media (min-width: 1280px) {
+  /* .side-nav-content {
+    width: 18vw;
+  } */
+  nav {
+    width: 18vw;
+  }
+  .side-nav-content img {
+    width: 24px;
+  }
+}
+
+/* ####################################################### */
+@media (min-width: 1350px) {
+  nav {
+    width: 16vw;
+  }
+}
+
+/* ####################################################### */
+@media (min-width: 1600px) {
+  nav {
+    width: 14vw;
+  }
+}

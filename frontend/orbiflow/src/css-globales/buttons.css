@@ -1,5 +1,9 @@
 .btn {
   font-weight: 500;
+  display: flex;
+  align-items: end;
+  gap: .4rem;
+  /* padding: .4rem .8rem; */
 }
 
 /* Primary */
