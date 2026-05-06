@@ -1,0 +1,16 @@
+<nav>
+  <div class="side-nav-button" (click)="SideNavToggle()">
+    <img id="menu" src="assets/menu.png" alt="">
+    <img id="logo" src="assets/logo.png" alt="Orbiflow" />
+  </div>
+  <div class="side-nav-content">
+    <ul class="nav-list">
+      @for (item of menu; track $index) {
+        <li class="nav-list-item">
+          <img [src]="item.iconName" alt="" />
+          <a href="#"> {{ item.name }} </a>
+        </li>
+      }
+    </ul>
+  </div>
+</nav>

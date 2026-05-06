@@ -31,4 +31,15 @@ body,
   margin: 0;
   padding: 0;
   font-family: 'Google Sans Flex', sans-serif;
+  background-color: var(--gris-blanco);
 }
+
+/* QUERIES PARA UTILIZAR (MOBILE FIRST) */
+
+/* @media (min-width: 480px) { } */
+
+/* @media (min-width: 768px) { } */
+
+/* @media (min-width: 1024px) { } */
+
+/* @media (min-width: 1280px) { } */
