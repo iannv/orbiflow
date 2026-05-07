@@ -1,0 +1,100 @@
+#menu {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  background-color: var(--verde-azulado);
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+}
+
+#logo {
+  display: flex;
+  justify-self: center;
+  margin-top: 3rem;
+  width: 70px;
+  background-color: var(--verde-azulado);
+  cursor: pointer;
+  /* display: none; */
+}
+
+.icon img {
+  background-color: var(--verde-azulado);
+}
+
+.div-content {
+  margin-top: 2rem;
+}
+
+.content {
+  gap: .5rem;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  transition: 0.3s;
+  width: 60px;
+  background-color: var(--verde-azulado);
+}
+
+/* SIDEBAR EXPANDIDA */
+.sidebar.expanded {
+  width: 220px;
+}
+
+.sidebar.expanded .div-content .link .content .title {
+  max-width: 100%;
+}
+
+.sidebar.expanded .div-content .link .content .icon {
+  margin-right: 3px;
+}
+
+/* HEADER */
+.sidebar .header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: var(--verde-azulado);
+}
+
+.sidebar .div-content .content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: var(--verde-azulado);
+  cursor: pointer;
+}
+
+.sidebar .div-content .content:hover,
+.sidebar .div-content .content:hover .title,
+.sidebar .div-content .content:hover .icon img {
+  background-color: var(--verde-petroleo);
+}
+
+.sidebar .div-content .content:active,
+.sidebar .div-content .content:active .title,
+.sidebar .div-content .content:active .icon img {
+  background-color: var(--verde-selva);
+}
+
+/* ICON */
+.sidebar .div-content .content .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* TITLE */
+.title {
+  flex: 1;
+  color: var(--gris-blanco);
+  background-color: var(--verde-azulado);
+  max-width: 0px;
+  overflow: hidden;
+}

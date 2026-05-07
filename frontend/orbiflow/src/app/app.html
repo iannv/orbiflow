@@ -2,12 +2,16 @@
 
 <app-header></app-header>
 
-<app-sidenav></app-sidenav>
+<!-- <app-sidenav></app-sidenav> -->
 
-<main class="shell">
+<app-sidenav2 [isExpanded]="sidebarExpanded" (toggleSidebar)="sidebarExpanded = !sidebarExpanded"></app-sidenav2>
+
+<!-- <main class="shell">
   <h1>Orbiflow</h1>
   <p>Django, Angular and Postgres are running.</p>
-</main>
+</main> -->
 
-<router-outlet />
+<div class="content" [ngClass]="{ 'sidebarExpanded': sidebarExpanded }">
+  <router-outlet></router-outlet>
+</div>
 
