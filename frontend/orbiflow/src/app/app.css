@@ -1,4 +1,4 @@
-.shell {
+/* .shell {
   max-width: 40rem;
   margin: 4rem auto;
   padding: 0 1.5rem;
@@ -11,4 +11,12 @@
 
 .shell p {
   color: #4b5563;
+} */
+
+.content {
+  margin-left: 100px;
+  transition: 0.3s;
+  &.sidebarExpanded {
+    margin-left: 160px;
+  }
 }

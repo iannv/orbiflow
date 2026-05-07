@@ -1,0 +1,22 @@
+<div class="sidebar" [ngClass]="{ expanded: isExpanded }">
+  <div class="header">
+    <img id="menu" class="" (click)="handleSidebarToggle()" src="assets/menu.png" alt="" />
+  </div>
+
+  @if (isExpanded) {
+    <img id="logo" src="assets/logo.png" alt="Orbiflow" />
+  }
+
+  <div class="div-content">
+    @for (item of menu; track $index) {
+      <div class="link">
+        <div class="content">
+          <div class="icon">
+            <img [src]="item.iconName" alt="" />
+          </div>
+          <div class="title">{{ item.name }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
