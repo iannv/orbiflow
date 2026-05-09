@@ -1,0 +1,23 @@
+.card {
+  margin-top: 4rem !important;
+  padding: 1rem;
+  border: 1px solid var(--gris-claro);
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.header h3 {
+  font-size: 20px;
+}
+
+.header p {
+  font-size: 16px;
+  font-weight: 300;
+}
+
+@media screen and (min-width: 1024px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
+

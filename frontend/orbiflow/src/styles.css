@@ -26,8 +26,7 @@
 }
 
 html,
-body,
-* {
+body{
   margin: 0;
   padding: 0;
   font-family: 'Google Sans Flex', sans-serif;
