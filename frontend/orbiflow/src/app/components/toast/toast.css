@@ -1,0 +1,20 @@
+.toast,
+.toast-header {
+  background-color: var(--verde-bosque);
+  color: var(--gris-claro);
+}
+
+.toast-header {
+  gap: 0.5rem;
+  border-bottom: none;
+  margin-bottom: -10px;
+}
+
+.toast-body {
+  font-size: 12px;
+  /* margin-left: 2.1rem; */
+}
+
+.btn-close:focus {
+  box-shadow: none !important;
+}

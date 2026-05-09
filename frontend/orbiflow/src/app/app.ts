@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { Header } from "./shared/header/header";
 import { Sidenav2 } from "./shared/sidenav2/sidenav2";
 import { NgClass } from "@angular/common";
-import { BaseCard } from "./components/base-card/base-card";
 
 @Component({
   selector: 'app-root',
