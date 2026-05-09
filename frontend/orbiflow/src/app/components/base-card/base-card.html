@@ -1,0 +1,19 @@
+<!-- Utilizar title y subtitle en demás componentes -->
+<!-- Agregar entre las etiquetas 
+ <app-base-card> 
+    OTRO CONTENIDO
+  <app-base-card> 
+  -->
+
+<div class="card">
+  @if (title || subtitle) {
+    <div class="header">
+      <h3>{{ title }}</h3>
+      <p>{{ subtitle }}</p>
+    </div>
+  }
+
+  <div class="body">
+    <ng-content></ng-content>
+  </div>
+</div>
