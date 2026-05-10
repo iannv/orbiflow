@@ -141,10 +141,13 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
    ```
 
 5. **Pull Request (PR)**
-   - Abrir PR en GitHub hacia la rama `develop`
-   - Esperar a que el check test (GitHub Action) se ponga en verde
-   - Hacer clic en "Merge pull request"
-
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git merge feat/nombre-tarea
+   git push -u origin develop
+   ```
+   Despues revisar el PR en Github y borrar la rama remota si se mergea correctamente.
 
 6. **Limpieza Local**
    ```bash
