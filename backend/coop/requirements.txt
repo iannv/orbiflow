@@ -1,9 +1,9 @@
 Django==6.0.4
-psycopg2-binary
-djangorestframework
-django-cors-headers
+asgiref==3.11.1
+django-cors-headers==4.9.0
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
 pillow==12.2.0
+psycopg2-binary==2.9.12
 sqlparse==0.5.5
 tzdata==2026.2
-asgiref==3.11.1
-djangorestframework-simplejwt==5.3.1

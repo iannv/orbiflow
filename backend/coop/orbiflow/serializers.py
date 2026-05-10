@@ -1,5 +1,7 @@
 # orbiflow/serializers.py
 from .models.identity import Associate, User
+from .models.audit import GlobalConfiguration, AuditLog
+from .models.rules import Module, Variant
 
 from rest_framework import serializers
 
@@ -38,3 +40,41 @@ class AssociateSerializer(serializers.ModelSerializer):
             'is_deleted'
         ]
         read_only_fields = ['is_deleted']
+
+
+
+# --- Configuración Global ---
+class GlobalConfigurationSerializer(serializers.ModelSerializer):
+    user_name = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = GlobalConfiguration
+        fields = ['id', 'change_date', 'hour_value', 'cap_percentage', 'user', 'user_name']
+        read_only_fields = ['user', 'change_date']
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuditLog
+        fields = '__all__'
+
+# --- Módulos Dinámicos ---
+
+class VariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variant
+        fields = ['id', 'module', 'name', 'type', 'value', 'is_default']
+        extra_kwargs = {'module': {'required': False}}
+
+class ModuleSerializer(serializers.ModelSerializer):
+    variants = VariantSerializer(many=True, required=False)
+
+    class Meta:
+        model = Module
+        fields = ['id', 'name', 'description', 'applies_to_cap', 'calculation_type', 'is_exclusive', 'is_active', 'variants']
+
+    def create(self, validated_data):
+        variants_data = validated_data.pop('variants', [])
+        module = Module.objects.create(**validated_data)
+        for variant_data in variants_data:
+            Variant.objects.create(module=module, **variant_data)
+        return module

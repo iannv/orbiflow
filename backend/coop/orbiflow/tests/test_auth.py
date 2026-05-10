@@ -30,6 +30,17 @@ class AuthenticationTests(APITestCase):
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
 
+    def test_login_updates_last_login(self):
+        """El login JWT debe actualizar last_login (SimpleJWT no llama a auth.login())."""
+        self.assertIsNone(self.user.last_login)
+        self.client.post(
+            self.login_url,
+            {"username": self.username, "password": self.password},
+            format="json",
+        )
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.last_login)
+
     def test_login_fail_invalid_credentials(self):
         """Verifica que credenciales incorrectas devuelvan 401."""
         data = {

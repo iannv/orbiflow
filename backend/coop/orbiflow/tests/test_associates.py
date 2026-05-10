@@ -35,7 +35,9 @@ class AssociateTests(APITestCase):
             dni='12345678',
             cbu='0000000000000000000001',
             entry_date='2024-01-01',
-            personal_email='gonzalo@personal.com'
+            personal_email='gonzalo@personal.com',
+            phone_number='1234567890',
+            address='Calle Falsa 123',
         )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
