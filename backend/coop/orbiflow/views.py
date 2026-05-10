@@ -6,9 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models.identity import User, Associate
 from .models.audit import GlobalConfiguration, AuditLog
-from .models.rules import Module, Variant
+from .models.rules import Module, Variant, AssociateVariant
 from .serializers import (
-    AssociateSerializer, UserSerializer, GlobalConfigurationSerializer, ModuleSerializer, VariantSerializer
+    AssociateSerializer, UserSerializer, GlobalConfigurationSerializer,
+    ModuleSerializer, VariantSerializer, AssociateVariantSerializer
 )
 
 def healthcheck(_request):
@@ -44,7 +45,31 @@ class AssociateViewSet(viewsets.ModelViewSet):
         # Filtramos para no mostrar asociados marcados como eliminados
         return Associate.objects.filter(is_deleted=False).select_related('user')
 
+class AssociateVariantViewSet(viewsets.ModelViewSet):
+    """
+    API para gestionar el legajo: asignar o quitar variantes a los asociados.
+    """
+    queryset = AssociateVariant.objects.all()
+    serializer_class = AssociateVariantSerializer
+    permission_classes = [IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        # Lógica para evitar duplicados del mismo módulo si es exclusivo
+        variant_id = request.data.get('variant')
+        associate_id = request.data.get('associate')
+        
+        try:
+            new_variant = Variant.objects.get(id=variant_id)
+            if new_variant.module.is_exclusive:
+                # Si el módulo es exclusivo, eliminamos variantes previas del mismo módulo para ese asociado
+                AssociateVariant.objects.filter(
+                    associate_id=associate_id, 
+                    variant__module=new_variant.module
+                ).delete()
+        except Variant.DoesNotExist:
+            return Response({"error": "Variante no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+        return super().create(request, *args, **kwargs)
 
 
 class GlobalConfigurationViewSet(mixins.ListModelMixin, 

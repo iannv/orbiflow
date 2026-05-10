@@ -914,6 +914,74 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Legajos (Variantes)",
+			"item": [
+				{
+					"name": "Asignar Variante a Legajo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"associate\": 1,\n    \"variant\": 2,\n    \"activation_date\": \"2026-05-10\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/associate-variants/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associate-variants",
+								""
+							]
+						}
+					}
+				},
+				{
+					"name": "Quitar Variante de Legajo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/associate-variants/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associate-variants",
+								"1",
+								""
+							]
+						}
+					}
+				}
+			]
 		}
 	]
 }
