@@ -1,7 +1,7 @@
 # orbiflow/serializers.py
 from .models.identity import Associate, User
 from .models.audit import GlobalConfiguration, AuditLog
-from .models.rules import Module, Variant
+from .models.rules import AssociateVariant, Variant, Module
 
 from rest_framework import serializers
 
@@ -23,12 +23,33 @@ class UserSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)
         return super().update(instance, validated_data)
+class AssociateVariantSerializer(serializers.ModelSerializer):
+    """
+    Serializador para asignar una variante específica a un asociado.
+    para DELETE en /api/associate-variants/{id} usar el id del AssociateVariant, no del Variant.
+    """
+    variant_name = serializers.ReadOnlyField(source='variant.name')
+    module_name = serializers.ReadOnlyField(source='variant.module.name')
+
+    class Meta:
+        model = AssociateVariant
+        fields = [
+            'id',
+            'associate',
+            'variant',
+            'variant_name',
+            'module_name',
+            'activation_date',
+        ]
+
 class AssociateSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField()
     last_name = serializers.ReadOnlyField()
     full_name = serializers.ReadOnlyField()
     work_email = serializers.ReadOnlyField()
     years_in_coop = serializers.ReadOnlyField()
+    
+    variants = AssociateVariantSerializer(source='associatevariant_set', many=True, read_only=True)
 
     class Meta:
         model = Associate
@@ -37,11 +58,9 @@ class AssociateSerializer(serializers.ModelSerializer):
             'base_hours', 'work_email', 'personal_email', 
             'phone_number', 'address', 'emergency_contact',
             'first_name', 'last_name', 'full_name', 'years_in_coop',
-            'is_deleted'
+            'is_deleted', 'variants' 
         ]
         read_only_fields = ['is_deleted']
-
-
 
 # --- Configuración Global ---
 class GlobalConfigurationSerializer(serializers.ModelSerializer):

@@ -2,6 +2,9 @@ from django.db import models
 from django.utils import timezone
 
 
+def default_activation_date():
+    return timezone.now().date()
+
 
 class Module(models.Model):
     CALCULATION_CHOICES = [
@@ -42,7 +45,7 @@ class Variant(models.Model):
 class AssociateVariant(models.Model):
     associate = models.ForeignKey('orbiflow.Associate', on_delete=models.CASCADE)
     variant = models.ForeignKey(Variant, on_delete=models.CASCADE)
-    activation_date = models.DateField(default=timezone.now)
+    activation_date = models.DateField(default=default_activation_date)
 
     class Meta:
         db_table = 'associate_variants'
