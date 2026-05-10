@@ -1,14 +1,13 @@
 {
 	"info": {
-		"_postman_id": "orbiflow-master-coll",
+		"_postman_id": "orbiflow-final-fixed",
 		"name": "OrbiFlow",
-		"description": "Colección para el sistema de gestión de cooperativas OrbiFlow.",
+		"description": "Colección completa y corregida para OrbiFlow.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Auth",
-			"description": "Endpoints relacionados con la seguridad y gestión de tokens JWT.",
 			"item": [
 				{
 					"name": "1. Login",
@@ -21,7 +20,6 @@
 									"if (response.access) {",
 									"    pm.environment.set(\"access_token\", response.access);",
 									"    pm.environment.set(\"refresh_token\", response.refresh);",
-									"    console.log(\"Tokens actualizados correctamente\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -30,15 +28,13 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{ "key": "Content-Type", "value": "application/json", "type": "text" }
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"tu_password_aca\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}",
+							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login/",
@@ -52,16 +48,9 @@
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{access_token}}",
-									"type": "string"
-								}
-							]
+							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
 						},
 						"method": "GET",
-						"header": [],
 						"url": {
 							"raw": "{{base_url}}/auth/me/",
 							"host": ["{{base_url}}"],
@@ -87,15 +76,13 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{ "key": "Content-Type", "value": "application/json", "type": "text" }
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/refresh/",
@@ -107,14 +94,90 @@
 			]
 		},
 		{
-			"name": "Asociados",
-			"description": "",
-			"item": []
+			"name": "Usuarios",
+			"item": [
+				{
+					"name": "Listar Usuarios",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				},
+				{
+					"name": "Crear Usuario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json", "type": "text" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"susana_gomez\",\n    \"email\": \"susana@orbiflow.coop\",\n    \"password\": \"password123\",\n    \"first_name\": \"Susana\",\n    \"last_name\": \"Gomez\",\n    \"role\": \"treasurer\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				}
+			]
 		},
 		{
-			"name": "Liquidaciones",
-			"description": "",
-			"item": []
+			"name": "Asociados",
+			"item": [
+				{
+					"name": "Listar Asociados",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/associates/",
+							"host": ["{{base_url}}"],
+							"path": ["associates", ""]
+						}
+					}
+				},
+				{
+					"name": "Crear Asociado",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+						},
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json", "type": "text" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 2,\n    \"dni\": \"33444555\",\n    \"cbu\": \"0123456789012345678901\",\n    \"entry_date\": \"2024-05-10\",\n    \"work_email\": \"mica@orbiflow.coop\",\n    \"personal_email\": \"mica.p@gmail.com\",\n    \"phone_number\": \"1122334455\",\n    \"address\": \"Almagro, CABA\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/associates/",
+							"host": ["{{base_url}}"],
+							"path": ["associates", ""]
+						}
+					}
+				}
+			]
 		}
 	]
 }
