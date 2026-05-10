@@ -24,7 +24,6 @@ class Associate(models.Model):
     cbu = models.CharField(max_length=22, unique=True)
     entry_date = models.DateField()
     base_hours = models.IntegerField(default=8)
-    work_email = models.EmailField(unique=True)
     personal_email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20) 
     address = models.CharField(max_length=255)
@@ -49,6 +48,10 @@ class Associate(models.Model):
     @property
     def full_name(self):
         return f"{self.user.first_name} {self.user.last_name}"
+    
+    @property
+    def work_email(self):
+        return self.user.email
     
     @property
     def years_in_coop(self):

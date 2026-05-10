@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "orbiflow-final-fixed",
+		"_postman_id": "orbiflow-master-fix-v2",
 		"name": "OrbiFlow",
-		"description": "Colección completa y corregida para OrbiFlow.",
+		"description": "Colección completa con CRUD funcional para Usuarios y Asociados (Opción A aplicada).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -28,9 +28,7 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json", "type": "text" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}",
@@ -46,10 +44,7 @@
 				{
 					"name": "2. Get My Info",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
-						},
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
 						"method": "GET",
 						"url": {
 							"raw": "{{base_url}}/auth/me/",
@@ -76,9 +71,7 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json", "type": "text" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
@@ -99,10 +92,7 @@
 				{
 					"name": "Listar Usuarios",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
-						},
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
 						"method": "GET",
 						"url": {
 							"raw": "{{base_url}}/users/",
@@ -114,23 +104,60 @@
 				{
 					"name": "Crear Usuario",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
-						},
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json", "type": "text" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"susana_gomez\",\n    \"email\": \"susana@orbiflow.coop\",\n    \"password\": \"password123\",\n    \"first_name\": \"Susana\",\n    \"last_name\": \"Gomez\",\n    \"role\": \"treasurer\"\n}",
+							"raw": "{\n    \"username\": \"pedro_s\",\n    \"email\": \"pedro@orbiflow.coop\",\n    \"password\": \"password123\",\n    \"first_name\": \"Pedro\",\n    \"last_name\": \"Solis\",\n    \"role\": \"associate\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/users/",
 							"host": ["{{base_url}}"],
 							"path": ["users", ""]
+						}
+					}
+				},
+				{
+					"name": "Detalle Usuario",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/users/3/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "3", ""]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Usuario",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Pedro Manuel\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/users/3/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "3", ""]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Usuario",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/users/3/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "3", ""]
 						}
 					}
 				}
@@ -142,10 +169,7 @@
 				{
 					"name": "Listar Asociados",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
-						},
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
 						"method": "GET",
 						"url": {
 							"raw": "{{base_url}}/associates/",
@@ -157,23 +181,60 @@
 				{
 					"name": "Crear Asociado",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
-						},
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json", "type": "text" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": 2,\n    \"dni\": \"33444555\",\n    \"cbu\": \"0123456789012345678901\",\n    \"entry_date\": \"2024-05-10\",\n    \"work_email\": \"mica@orbiflow.coop\",\n    \"personal_email\": \"mica.p@gmail.com\",\n    \"phone_number\": \"1122334455\",\n    \"address\": \"Almagro, CABA\"\n}",
+							"raw": "{\n    \"user\": 3,\n    \"dni\": \"32444555\",\n    \"cbu\": \"0123456789012355678901\",\n    \"entry_date\": \"2020-08-10\",\n    \"phone_number\": \"1122334455\",\n    \"personal_email\": \"jachal_99@gmail.com\",\n    \"address\": \"Jachal, San Juan\"\n}",
 							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/associates/",
 							"host": ["{{base_url}}"],
 							"path": ["associates", ""]
+						}
+					}
+				},
+				{
+					"name": "Detalle Asociado",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/associates/1/",
+							"host": ["{{base_url}}"],
+							"path": ["associates", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Asociado",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone_number\": \"1199887766\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/associates/1/",
+							"host": ["{{base_url}}"],
+							"path": ["associates", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Asociado",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"method": "DELETE",
+						"url": {
+							"raw": "{{base_url}}/associates/1/",
+							"host": ["{{base_url}}"],
+							"path": ["associates", "1", ""]
 						}
 					}
 				}
