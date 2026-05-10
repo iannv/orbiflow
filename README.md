@@ -144,6 +144,7 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
    - Abrir PR en GitHub hacia la rama `develop`
    - Esperar a que el check test (GitHub Action) se ponga en verde
    - Hacer clic en "Merge pull request"
+   - Si ya no se necesita la rama, eliminarla desde GitHub
 
 
 6. **Limpieza Local**

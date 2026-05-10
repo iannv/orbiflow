@@ -1,9 +1,16 @@
 from django.db import models
 from django.utils import timezone
 
+
+
 class Module(models.Model):
+    CALCULATION_CHOICES = [
+        ('simple', 'Valor Fijo / Porcentaje Simple'),
+        ('seniority', 'Multiplicar por Años de Antigüedad'),
+    ]
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
+    calculation_type = models.CharField(max_length=20, choices=CALCULATION_CHOICES, default='simple')
     applies_to_cap = models.BooleanField(default=False)
     is_exclusive = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)

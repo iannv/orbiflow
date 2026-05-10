@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "orbiflow-master-fix-v2",
+		"_postman_id": "5e620fa5-0092-496b-8b02-f0af0abca79c",
 		"name": "OrbiFlow",
-		"description": "Colección completa con CRUD funcional para Usuarios y Asociados (Opción A aplicada).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"description": "Colección definitiva con CRUD completo para Usuarios, Asociados, Configuración, Módulos y Variantes.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19669280"
 	},
 	"item": [
 		{
@@ -28,61 +29,96 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login/",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "2. Get My Info",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/auth/me/",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "me", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "3. Refresh Token",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const response = pm.response.json();",
-									"if (response.access) {",
-									"    pm.environment.set(\"access_token\", response.access);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
 					"request": {
 						"method": "POST",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/refresh/",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "refresh", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"refresh",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -92,74 +128,173 @@
 				{
 					"name": "Listar Usuarios",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/users/",
-							"host": ["{{base_url}}"],
-							"path": ["users", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Crear Usuario",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"pedro_s\",\n    \"email\": \"pedro@orbiflow.coop\",\n    \"password\": \"password123\",\n    \"first_name\": \"Pedro\",\n    \"last_name\": \"Solis\",\n    \"role\": \"associate\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"raw": "{\n    \"username\": \"marcos_v\",\n    \"email\": \"marcos@orbiflow.coop\",\n    \"password\": \"pass123\",\n    \"first_name\": \"Marcos\",\n    \"last_name\": \"Vazquez\",\n    \"role\": \"treasurer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/users/",
-							"host": ["{{base_url}}"],
-							"path": ["users", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Detalle Usuario",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
+						"header": [],
 						"url": {
-							"raw": "{{base_url}}/users/3/",
-							"host": ["{{base_url}}"],
-							"path": ["users", "3", ""]
+							"raw": "{{base_url}}/users/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"2",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Actualizar Usuario",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PATCH",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"first_name\": \"Pedro Manuel\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"raw": "{\n    \"first_name\": \"Marcos Antonio\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": "{{base_url}}/users/3/",
-							"host": ["{{base_url}}"],
-							"path": ["users", "3", ""]
+							"raw": "{{base_url}}/users/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"1",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Eliminar Usuario",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
+						"header": [],
 						"url": {
-							"raw": "{{base_url}}/users/3/",
-							"host": ["{{base_url}}"],
-							"path": ["users", "3", ""]
+							"raw": "{{base_url}}/users/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"1",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				}
 			]
 		},
@@ -169,74 +304,614 @@
 				{
 					"name": "Listar Asociados",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/associates/",
-							"host": ["{{base_url}}"],
-							"path": ["associates", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associates",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Crear Asociado",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user\": 3,\n    \"dni\": \"32444555\",\n    \"cbu\": \"0123456789012355678901\",\n    \"entry_date\": \"2020-08-10\",\n    \"phone_number\": \"1122334455\",\n    \"personal_email\": \"jachal_99@gmail.com\",\n    \"address\": \"Jachal, San Juan\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"raw": "{\n    \"user\": 2,\n    \"dni\": \"40123456\",\n    \"cbu\": \"0123456789012345678901\",\n    \"entry_date\": \"2024-01-01\",\n    \"personal_email\": \"marcos@gmail.com\",\n    \"address\": \"Avenida Corrientes 1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/associates/",
-							"host": ["{{base_url}}"],
-							"path": ["associates", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associates",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Detalle Asociado",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/associates/1/",
-							"host": ["{{base_url}}"],
-							"path": ["associates", "1", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associates",
+								"1",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Actualizar Asociado",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PATCH",
-						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phone_number\": \"1199887766\"\n}",
-							"options": { "raw": { "language": "json" } }
+							"raw": "{\n    \"address\": \"Pueyrredón 500\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/associates/1/",
-							"host": ["{{base_url}}"],
-							"path": ["associates", "1", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associates",
+								"1",
+								""
+							]
 						}
-					}
+					},
+					"response": []
 				},
 				{
 					"name": "Eliminar Asociado",
 					"request": {
-						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }] },
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/associates/1/",
-							"host": ["{{base_url}}"],
-							"path": ["associates", "1", ""]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associates",
+								"1",
+								""
+							]
 						}
-					}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Configuración Global",
+			"item": [
+				{
+					"name": "Listar Historial",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/config/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Config (Nuevo Valor)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hour_value\": \"5000.00\",\n    \"cap_percentage\": \"30.00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/config/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Módulos",
+			"item": [
+				{
+					"name": "Listar Módulos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/modules/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detalle Modulo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/modules/7/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"7",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Módulo (Simple)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Viáticos\",\n    \"description\": \"Compensación fija por traslado\",\n    \"applies_to_cap\": false,\n    \"calculation_type\": \"simple\",\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/modules/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carga Masiva (Bulk)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"name\": \"Antigüedad\",\n        \"description\": \"Adicional automático de 1% por cada año cumplido\",\n        \"calculation_type\": \"seniority\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Valor por año\", \"type\": \"percentage\", \"value\": \"1.00\", \"is_default\": true }\n        ]\n    },\n    {\n        \"name\": \"Presentismo\",\n        \"description\": \"Bono por asistencia a la cooperativa\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Completo\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": true },\n            { \"name\": \"Medio\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Seniority\",\n        \"description\": \"Categoría según experiencia técnica\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Junior\", \"type\": \"percentage\", \"value\": \"2.00\", \"is_default\": true },\n            { \"name\": \"Semi-Senior\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false },\n            { \"name\": \"Senior\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Formación\",\n        \"description\": \"Títulos académicos obtenidos\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": false,\n        \"variants\": [\n            { \"name\": \"Título de Grado\", \"type\": \"percentage\", \"value\": \"3.00\", \"is_default\": false },\n            { \"name\": \"Posgrado / MBA\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Viáticos\",\n        \"description\": \"Compensación fija por traslado\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Lejos de oficina\", \"type\": \"fixed_amount\", \"value\": \"5000.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Personas a cargo\",\n        \"description\": \"Adicional por grupo familiar\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"1 persona\", \"type\": \"percentage\", \"value\": \"15.00\", \"is_default\": false },\n            { \"name\": \"2 personas\", \"type\": \"percentage\", \"value\": \"25.00\", \"is_default\": false },\n            { \"name\": \"3 o más personas\", \"type\": \"percentage\", \"value\": \"30.00\", \"is_default\": false }\n        ]\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/modules/bulk/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"bulk",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Módulo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Descripción actualizada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/modules/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Módulo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/modules/5/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"modules",
+								"5",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Variantes",
+			"item": [
+				{
+					"name": "Listar Variantes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/variants/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"variants",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Variante",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"module\": 7,\n    \"name\": \"Lejos de oficina\",\n    \"type\": \"fixed_amount\",\n    \"value\": \"5000.00\",\n    \"is_default\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/variants/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"variants",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Variante",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"1500.00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/variants/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"variants",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Variante",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/variants/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"variants",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

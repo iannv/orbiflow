@@ -35,7 +35,7 @@ class AssociateAdmin(admin.ModelAdmin):
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'applies_to_cap', 'is_exclusive', 'is_active')
+    list_display = ('name', 'applies_to_cap', 'calculation_type', 'is_exclusive', 'is_active')
     inlines = [VariantInline] # Gestión de variantes dentro del módulo
 
 @admin.register(LiquidationPeriod)
