@@ -98,19 +98,57 @@ Si realizás cambios en los archivos `models.py`, seguí este flujo:
 
 Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comandos desde la raíz:
 
-| Tarea | Comando |
-| :--- | :--- |
-| **Levantar proyecto** | `make up` |
-| **Reconstruir y levantar** | `make build` |
-| **Correr todos los tests** | `make tests` |
-| **Generar migraciones** | `make makemigrations` |
-| **Aplicar migraciones** | `make migrate` |
-| **Crear administrador** | `make superuser` |
-| **Ver logs del backend** | `make logs` |
-| **Detener contenedores** | `make down` |
-| **Limpiar base de datos** | `make clean` |
-| **Entrar a la terminal de la DB** | `make db-shell` |
-| **Entrar al shell de Django** | `make shell` |
+| Tarea                             | Comando               |
+| :-------------------------------- | :-------------------- |
+| **Levantar proyecto**             | `make up`             |
+| **Reconstruir y levantar**        | `make build`          |
+| **Correr todos los tests**        | `make tests`          |
+| **Generar migraciones**           | `make makemigrations` |
+| **Aplicar migraciones**           | `make migrate`        |
+| **Crear administrador**           | `make superuser`      |
+| **Ver logs del backend**          | `make logs`           |
+| **Detener contenedores**          | `make down`           |
+| **Limpiar base de datos**         | `make clean`          |
+| **Entrar a la terminal de la DB** | `make db-shell`       |
+| **Entrar al shell de Django**     | `make shell`          |
 
 
-*Nota: Si no tenés `make` instalado, podés seguir usando los comandos de `docker compose` detallados arriba.*
+
+## Flujo de trabajo recomendado
+
+1. **Sincronizar**
+   ```bash
+   git checkout develop
+   git pull origin develop
+   ```
+
+2. **Nueva Rama**
+   ```bash
+   git checkout -b feat/nombre-tarea
+   ```
+
+3. **Desarrollar y Testear**
+   - Realizar cambios en el código
+   - Correr tests locales: `make tests`
+   - No avanzar si los tests fallan
+
+
+4. **Subir Cambios**
+   ```bash
+   git add .
+   git commit -m "feat: descripción"
+   git push origin feat/nombre-tarea
+   ```
+
+5. **Pull Request (PR)**
+   - Abrir PR en GitHub hacia la rama `develop`
+   - Esperar a que el check test (GitHub Action) se ponga en verde
+   - Hacer clic en "Merge pull request"
+
+
+6. **Limpieza Local**
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git branch -d feat/nombre-tarea
+   ```
