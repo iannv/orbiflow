@@ -1,0 +1,66 @@
+<main class="login-page">
+  <section class="login-panel" aria-labelledby="login-title">
+    <img
+      class="login-logo"
+      src="assets/logo.png"
+      alt="OrbiFlow"
+    >
+
+    <div class="login-heading">
+      <h1 id="login-title">Iniciar sesión</h1>
+      <p>Ingresá con tu email y contraseña para acceder al panel.</p>
+    </div>
+
+    <form
+      class="login-form"
+      [formGroup]="loginForm"
+      (ngSubmit)="submit()"
+      novalidate
+    >
+      <div class="login-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="text"
+          inputmode="email"
+          autocomplete="email"
+          formControlName="email"
+          [class.is-invalid]="hasFieldError('email')"
+        >
+
+        @if (hasFieldError('email')) {
+          <span class="login-field-error">Ingresá un email válido.</span>
+        }
+      </div>
+
+      <div class="login-field">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          formControlName="password"
+          [class.is-invalid]="hasFieldError('password')"
+        >
+
+        @if (hasFieldError('password')) {
+          <span class="login-field-error">Ingresá tu contraseña.</span>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p class="login-error" role="alert">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      <button
+        class="login-submit"
+        type="submit"
+        [disabled]="isSubmitting()"
+      >
+        {{ isSubmitting() ? 'Ingresando...' : 'Ingresar' }}
+      </button>
+    </form>
+  </section>
+</main>
