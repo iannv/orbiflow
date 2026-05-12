@@ -153,3 +153,19 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
    git pull origin develop
    git branch -d feat/nombre-tarea
    ```
+
+   ## Windows (PowerShell)
+
+Si no tenés `make` instalado, usá estos comandos:
+
+### Levantar el proyecto
+docker compose up --build
+
+### Detener contenedores
+docker compose down
+
+### Crear superusuario
+docker compose exec backend python manage.py createsuperuser
+
+### Correr tests
+docker compose exec backend python manage.py test
