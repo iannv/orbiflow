@@ -1,0 +1,432 @@
+<div class="showcase-page">
+
+  <div class="showcase-title">
+    <h1>Modal Showcase</h1>
+  </div>
+
+  <div class="showcase-grid">
+
+    <button class="demo-btn" (click)="openModal(showNewUserModal)">
+      Nuevo usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditUserModal)">
+      Editar usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showDeleteUserModal)">
+      Eliminar usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showNewModuleModal)">
+      Nuevo módulo
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditModuleModal)">
+      Editar módulo
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showNewAssociateModal)">
+      Nuevo asociado
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditAssociateModal)">
+      Editar asociado
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showAssociateModulesModal)">
+      Módulos asociado
+    </button>
+
+  </div>
+
+  <!-- NUEVO USUARIO -->
+
+  <app-modal
+    [isOpen]="showNewUserModal()"
+    title="Nuevo usuario"
+    subtitle="Ingrese los datos para el nuevo usuario"
+    primaryBtnText="Crear Usuario"
+    size="md"
+    (close)="closeModal(showNewUserModal)"
+    (secondaryBtnClick)="closeModal(showNewUserModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Usuario</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Rol</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR USUARIO -->
+
+  <app-modal
+    [isOpen]="showEditUserModal()"
+    title="Editar usuario"
+    subtitle="Ingrese los datos para el nuevo usuario"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showEditUserModal)"
+    (secondaryBtnClick)="closeModal(showEditUserModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Usuario</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Rol</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- ELIMINAR USUARIO -->
+
+  <app-modal
+    [isOpen]="showDeleteUserModal()"
+    title="Eliminar usuario"
+    primaryBtnText="Eliminar"
+    primaryBtnColor="red"
+    primaryBtnPosition="left"
+    size="sm"
+    (close)="closeModal(showDeleteUserModal)"
+    (secondaryBtnClick)="closeModal(showDeleteUserModal)"
+  >
+
+    <p class="app-modal-confirm-text">
+      ¿Está seguro de eliminar al usuario <strong>tesorero</strong>?
+    </p>
+
+  </app-modal>
+
+  <!-- NUEVO MODULO -->
+
+  <app-modal
+    [isOpen]="showNewModuleModal()"
+    title="Nuevo módulo"
+    subtitle="Define un concepto de liquidación como monto fijo o porcentaje"
+    primaryBtnText="Crear módulo"
+    size="md"
+    (close)="closeModal(showNewModuleModal)"
+    (secondaryBtnClick)="closeModal(showNewModuleModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre del módulo</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Descripción</label>
+        <app-textarea></app-textarea>
+      </div>
+
+      <div class="app-modal-grid-2">
+
+        <div class="app-modal-field">
+          <label>Tipo</label>
+          <app-select></app-select>
+        </div>
+
+        <div class="app-modal-field">
+          <label>Valor</label>
+          <app-input></app-input>
+        </div>
+
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR MODULO -->
+
+  <app-modal
+    [isOpen]="showEditModuleModal()"
+    title="Editar módulo"
+    subtitle="Define un concepto de liquidación como monto fijo o porcentaje"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showEditModuleModal)"
+    (secondaryBtnClick)="closeModal(showEditModuleModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre del módulo</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Descripción</label>
+        <app-textarea></app-textarea>
+      </div>
+
+      <div class="app-modal-grid-2">
+
+        <div class="app-modal-field">
+          <label>Tipo</label>
+          <app-select></app-select>
+        </div>
+
+        <div class="app-modal-field">
+          <label>Valor</label>
+          <app-input></app-input>
+        </div>
+
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- NUEVO ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showNewAssociateModal()"
+    title="Nuevo Asociado"
+    subtitle="Datos personales y bancarios del socio cooperativo"
+    primaryBtnText="Crear legajo"
+    size="lg"
+    (close)="closeModal(showNewAssociateModal)"
+    (secondaryBtnClick)="closeModal(showNewAssociateModal)"
+  >
+
+    <form class="app-modal-form app-modal-grid-2">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Apellido</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>DNI</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Fecha ingreso</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>CBU</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Jornada base</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email trabajo</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email personal</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Teléfono</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Domicilio</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showEditAssociateModal()"
+    title="Editar Asociado"
+    subtitle="Datos personales y bancarios del socio cooperativo"
+    primaryBtnText="Guardar cambios"
+    size="lg"
+    (close)="closeModal(showEditAssociateModal)"
+    (secondaryBtnClick)="closeModal(showEditAssociateModal)"
+  >
+
+    <form class="app-modal-form app-modal-grid-2">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Apellido</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>DNI</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Fecha ingreso</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>CBU</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Jornada base</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email trabajo</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email personal</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Teléfono</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Domicilio</label>
+        <app-input></app-input>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+        <app-select></app-select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- MODULOS ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showAssociateModulesModal()"
+    title="Módulos de Romina Palacios"
+    subtitle="Activar o desactivar conceptos de liquidación"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showAssociateModulesModal)"
+    (secondaryBtnClick)="closeModal(showAssociateModulesModal)"
+  >
+
+    <div class="modules-list">
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Presentismo</h4>
+          <p>$100.000</p>
+        </div>
+
+        <app-switch></app-switch>
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Antigüedad</h4>
+          <p>5%</p>
+        </div>
+
+        <app-switch></app-switch>
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Título profesional</h4>
+          <p>5%</p>
+        </div>
+
+        <app-switch></app-switch>
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Productividad</h4>
+          <p>5%</p>
+        </div>
+
+        <app-switch></app-switch>
+      </div>
+
+    </div>
+
+  </app-modal>
+
+</div>

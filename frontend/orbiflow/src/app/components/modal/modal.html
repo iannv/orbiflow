@@ -1,0 +1,74 @@
+@if (isOpen) {
+  <div
+    class="app-modal-overlay"
+    (click)="onBackdropClick()"
+  >
+    <div
+      class="app-modal"
+      [ngClass]="'app-modal-' + size"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="title ? titleId : null"
+      [attr.aria-describedby]="subtitle ? subtitleId : null"
+    >
+      <div class="app-modal-header">
+        <div class="app-modal-heading">
+          <h2
+            class="app-modal-title"
+            [id]="titleId"
+          >
+            {{ title }}
+          </h2>
+
+          @if (subtitle) {
+            <p
+              class="app-modal-subtitle"
+              [id]="subtitleId"
+            >
+              {{ subtitle }}
+            </p>
+          }
+        </div>
+
+        <button
+          class="app-modal-close-btn"
+          type="button"
+          aria-label="Cerrar modal"
+          (click)="onClose()"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="app-modal-body">
+        <ng-content></ng-content>
+      </div>
+
+      @if (showFooter) {
+        <div
+          class="app-modal-footer"
+          [class.app-modal-footer-primary-left]="primaryBtnPosition === 'left'"
+        >
+          <button
+            class="app-modal-btn app-modal-btn-secondary"
+            type="button"
+            (click)="onSecondaryClick()"
+          >
+            {{ secondaryBtnText }}
+          </button>
+
+          <button
+            class="app-modal-btn app-modal-btn-primary"
+            type="button"
+            [ngClass]="'app-modal-btn-' + primaryBtnColor"
+            [disabled]="isPrimaryDisabled"
+            (click)="onPrimaryClick()"
+          >
+            {{ primaryBtnText }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

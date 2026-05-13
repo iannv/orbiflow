@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
-import { BaseCard } from "../../components/base-card/base-card";
+
+import { BaseCard } from '../../components/base-card/base-card';
 
 @Component({
   selector: 'app-panel-principal',
+  standalone: true,
   imports: [BaseCard],
   templateUrl: './panel-principal.html',
   styleUrl: './panel-principal.css',
 })
+
 export class PanelPrincipal {
   asociadosActivos: number = 0;
   totalAsociados: number = 0;
@@ -22,3 +25,4 @@ export class PanelPrincipal {
   usuariosRegistrados: number = 0;
   ultimaLiquidacion: string = '';
 }
+

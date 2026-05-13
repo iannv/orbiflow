@@ -1,0 +1,63 @@
+.showcase-page {
+  padding: 2rem;
+}
+
+.showcase-title {
+  margin-bottom: 2rem;
+}
+
+.showcase-title h1 {
+  font-size: 2rem;
+  color: var(--verde-petroleo);
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.demo-btn {
+  border: none;
+  background: var(--verde-mate);
+  color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.demo-btn:hover {
+  background: var(--verde-bosque);
+  transform: translateY(-2px);
+}
+
+.modules-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.module-item {
+  border: 1px solid var(--gris-claro);
+  border-radius: 0.6rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-info h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.module-info p {
+  margin: 0.2rem 0 0;
+  opacity: .7;
+}
+
+.switch {
+  width: 42px;
+  height: 24px;
+}

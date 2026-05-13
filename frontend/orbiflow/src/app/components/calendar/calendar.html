@@ -1,0 +1,56 @@
+<div class="calendar-container">
+
+  <div class="calendar-header">
+    <button class="nav-btn" (click)="previousMonth()" aria-label="Mes anterior">
+      <img src="assets/flecha-derecha.png" alt="anterior" width="16"
+           style="transform: rotate(180deg)" />
+    </button>
+    <span class="month-year">{{ monthYear }}</span>
+    <button class="nav-btn" (click)="nextMonth()" aria-label="Mes siguiente">
+      <img src="assets/flecha-derecha.png" alt="siguiente" width="16" />
+    </button>
+  </div>
+
+  <div class="weekdays">
+    @for (day of daysOfWeek; track day) {
+      <div class="weekday">{{ day }}</div>
+    }
+  </div>
+
+  <div class="days-grid">
+    @for (day of calendarDays; track $index) {
+      <button
+        type="button"
+        class="day"
+        [class.empty]="day === null"
+        [class.selected]="isDaySelected(day)"
+        [class.in-range]="isDayInRange(day)"
+        [class.disabled]="isDayDisabled(day)"
+        [class.today]="isToday(day)"
+        [disabled]="day === null || isDayDisabled(day)"
+        (click)="selectDate(day)"
+      >
+        {{ day }}
+      </button>
+    }
+  </div>
+
+  @if (mode === 'range') {
+    <div class="date-range-info">
+      <div class="date-item">
+        <span class="label">Desde</span>
+        <span class="date">{{ formatDate(selectedStartDate) }}</span>
+      </div>
+      <div class="divider"></div>
+      <div class="date-item">
+        <span class="label">Hasta</span>
+        <span class="date">{{ formatDate(selectedEndDate) }}</span>
+      </div>
+    </div>
+  }
+
+  <div class="calendar-footer">
+    <button class="btn-today" (click)="goToToday()">Hoy</button>
+  </div>
+
+</div>
