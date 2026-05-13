@@ -17,9 +17,9 @@ export class Login {
   readonly errorMessage = signal('');
 
   readonly loginForm = new FormGroup({
-    email: new FormControl('', {
+    username: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.email],
+      validators: [Validators.required],
     }),
     password: new FormControl('', {
       nonNullable: true,
@@ -40,10 +40,10 @@ export class Login {
       return;
     }
 
-    const { email, password } = this.loginForm.getRawValue();
+    const { username, password } = this.loginForm.getRawValue();
     this.isSubmitting.set(true);
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(username, password).subscribe({
       next: (response) => {
         this.isSubmitting.set(false);
         void this.router.navigate([this.authService.getRedirectPath(response.user.role)]);
@@ -55,7 +55,7 @@ export class Login {
     });
   }
 
-  hasFieldError(fieldName: 'email' | 'password'): boolean {
+  hasFieldError(fieldName: 'username' | 'password'): boolean {
     const field = this.loginForm.controls[fieldName];
     return field.invalid && (field.dirty || field.touched);
   }
@@ -66,7 +66,7 @@ export class Login {
     }
 
     if (status === 401) {
-      return 'Email o contraseña incorrectos.';
+      return 'Usuario o contraseña incorrectos.';
     }
 
     return 'No se pudo iniciar sesión. Intentá nuevamente.';

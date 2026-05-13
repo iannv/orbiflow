@@ -20,9 +20,9 @@ export class AuthService {
 
   constructor(private readonly http: HttpClient) {}
 
-  login(email: string, password: string) {
+  login(username: string, password: string) {
     return this.http
-      .post<LoginResponse>(`${API_BASE_URL}/auth/login/`, { email, password })
+      .post<LoginResponse>(`${API_BASE_URL}/auth/login/`, { username, password })
       .pipe(tap((response) => this.storeSession(response)));
   }
 

@@ -8,7 +8,7 @@
 
     <div class="login-heading">
       <h1 id="login-title">Iniciar sesión</h1>
-      <p>Ingresá con tu email y contraseña para acceder al panel.</p>
+      <p>Ingresá con tu usuario y contraseña para acceder al panel.</p>
     </div>
 
     <form
@@ -18,18 +18,17 @@
       novalidate
     >
       <div class="login-field">
-        <label for="email">Email</label>
+        <label for="username">Usuario</label>
         <input
-          id="email"
+          id="username"
           type="text"
-          inputmode="email"
-          autocomplete="email"
-          formControlName="email"
-          [class.is-invalid]="hasFieldError('email')"
+          autocomplete="username"
+          formControlName="username"
+          [class.is-invalid]="hasFieldError('username')"
         >
 
-        @if (hasFieldError('email')) {
-          <span class="login-field-error">Ingresá un email válido.</span>
+        @if (hasFieldError('username')) {
+          <span class="login-field-error">Ingresá tu usuario.</span>
         }
       </div>
 
