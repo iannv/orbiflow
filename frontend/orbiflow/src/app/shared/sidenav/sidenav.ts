@@ -1,29 +1,25 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { NgClass } from "@angular/common";
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-sidenav',
-  imports: [],
+  imports: [NgClass, RouterLink],
   templateUrl: './sidenav.html',
   styleUrl: './sidenav.css',
 })
 export class Sidenav {
-  @Input() sideNavStatus: boolean = false;
+  @Input() isExpanded: boolean = false;
+  @Output() toggleSidebar: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  @Output() sideNavToggled = new EventEmitter<boolean>();
+  handleSidebarToggle = () => this.toggleSidebar.emit(!this.isExpanded);
 
-  menuStatus: boolean = false;
-
-  SideNavToggle() {
-    this.menuStatus = !this.menuStatus;
-    this.sideNavToggled.emit(this.menuStatus);
-  }
-
-  menu = [
+    menu = [
     {
       id: '0',
       name: 'Panel principal',
       iconName: 'assets/panel-principal.png',
-      route: '#',
+      route: '/panel-principal',
     },
     {
       id: '1',
@@ -73,6 +69,5 @@ export class Sidenav {
       iconName: 'assets/archivo-coop.png',
       route: '#',
     },
-
-  ];
+  ]
 }
