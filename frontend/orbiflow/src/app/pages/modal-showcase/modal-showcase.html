@@ -1,0 +1,467 @@
+<div class="showcase-page">
+
+  <div class="showcase-title">
+    <h1>Modal Showcase</h1>
+  </div>
+
+  <div class="showcase-grid">
+
+    <button class="demo-btn" (click)="openModal(showNewUserModal)">
+      Nuevo usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditUserModal)">
+      Editar usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showDeleteUserModal)">
+      Eliminar usuario
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showNewModuleModal)">
+      Nuevo módulo
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditModuleModal)">
+      Editar módulo
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showNewAssociateModal)">
+      Nuevo asociado
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showEditAssociateModal)">
+      Editar asociado
+    </button>
+
+    <button class="demo-btn" (click)="openModal(showAssociateModulesModal)">
+      Módulos asociado
+    </button>
+
+  </div>
+
+  <!-- NUEVO USUARIO -->
+
+  <app-modal
+    [isOpen]="showNewUserModal()"
+    title="Nuevo usuario"
+    subtitle="Ingrese los datos para el nuevo usuario"
+    primaryBtnText="Crear Usuario"
+    size="md"
+    (close)="closeModal(showNewUserModal)"
+    (secondaryBtnClick)="closeModal(showNewUserModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Usuario</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email</label>
+        <input type="email">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Rol</label>
+
+        <select>
+          <option selected>Seleccione un rol</option>
+          <option>Administrador</option>
+          <option>Tesorero</option>
+          <option>Asociado</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR USUARIO -->
+
+  <app-modal
+    [isOpen]="showEditUserModal()"
+    title="Editar usuario"
+    subtitle="Ingrese los datos para el nuevo usuario"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showEditUserModal)"
+    (secondaryBtnClick)="closeModal(showEditUserModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <input type="text" value="Tesorero">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Usuario</label>
+        <input type="text" value="tesorero">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email</label>
+        <input type="email" value="tesorero@orbiflow.com">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Rol</label>
+
+        <select>
+          <option>Administrador</option>
+          <option selected>Tesorero</option>
+          <option>Asociado</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- ELIMINAR USUARIO -->
+
+  <app-modal
+    [isOpen]="showDeleteUserModal()"
+    title="Eliminar usuario"
+    primaryBtnText="Eliminar"
+    primaryBtnColor="red"
+    primaryBtnPosition="left"
+    size="sm"
+    (close)="closeModal(showDeleteUserModal)"
+    (secondaryBtnClick)="closeModal(showDeleteUserModal)"
+  >
+
+    <p class="app-modal-confirm-text">
+      ¿Está seguro de eliminar al usuario <strong>tesorero</strong>?
+    </p>
+
+  </app-modal>
+
+  <!-- NUEVO MODULO -->
+
+  <app-modal
+    [isOpen]="showNewModuleModal()"
+    title="Nuevo módulo"
+    subtitle="Define un concepto de liquidación como monto fijo o porcentaje"
+    primaryBtnText="Crear módulo"
+    size="md"
+    (close)="closeModal(showNewModuleModal)"
+    (secondaryBtnClick)="closeModal(showNewModuleModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre del módulo</label>
+        <input type="text" placeholder="Ej: Presentismo, Antigüedad">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Descripción</label>
+        <textarea placeholder="Descripción del concepto"></textarea>
+      </div>
+
+      <div class="app-modal-grid-2">
+
+        <div class="app-modal-field">
+          <label>Tipo</label>
+
+          <select>
+            <option selected>Monto fijo</option>
+            <option>Porcentaje</option>
+          </select>
+        </div>
+
+        <div class="app-modal-field">
+          <label>Valor</label>
+          <input type="number" placeholder="0.00">
+        </div>
+
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+
+        <select>
+          <option>Activo</option>
+          <option selected>Inactivo</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR MODULO -->
+
+  <app-modal
+    [isOpen]="showEditModuleModal()"
+    title="Editar módulo"
+    subtitle="Define un concepto de liquidación como monto fijo o porcentaje"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showEditModuleModal)"
+    (secondaryBtnClick)="closeModal(showEditModuleModal)"
+  >
+
+    <form class="app-modal-form">
+
+      <div class="app-modal-field">
+        <label>Nombre del módulo</label>
+        <input type="text" value="Presentismo">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Descripción</label>
+        <textarea>Bono por asistencia</textarea>
+      </div>
+
+      <div class="app-modal-grid-2">
+
+        <div class="app-modal-field">
+          <label>Tipo</label>
+
+          <select>
+            <option selected>Monto fijo</option>
+            <option>Porcentaje</option>
+          </select>
+        </div>
+
+        <div class="app-modal-field">
+          <label>Valor</label>
+          <input type="number" value="100000">
+        </div>
+
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+
+        <select>
+          <option selected>Activo</option>
+          <option>Inactivo</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- NUEVO ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showNewAssociateModal()"
+    title="Nuevo Asociado"
+    subtitle="Datos personales y bancarios del socio cooperativo"
+    primaryBtnText="Crear legajo"
+    size="lg"
+    (close)="closeModal(showNewAssociateModal)"
+    (secondaryBtnClick)="closeModal(showNewAssociateModal)"
+  >
+
+    <form class="app-modal-form app-modal-grid-2">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Apellido</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>DNI</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Fecha ingreso</label>
+        <input type="date">
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>CBU</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Jornada base</label>
+        <input type="number" placeholder="Cantidad de horas">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email trabajo</label>
+        <input type="email">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email personal</label>
+        <input type="email">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Teléfono</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Domicilio</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+
+        <select>
+          <option selected>Activo</option>
+          <option>Inactivo</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- EDITAR ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showEditAssociateModal()"
+    title="Editar Asociado"
+    subtitle="Datos personales y bancarios del socio cooperativo"
+    primaryBtnText="Guardar cambios"
+    size="lg"
+    (close)="closeModal(showEditAssociateModal)"
+    (secondaryBtnClick)="closeModal(showEditAssociateModal)"
+  >
+
+    <form class="app-modal-form app-modal-grid-2">
+
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <input type="text" value="Lucio">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Apellido</label>
+        <input type="text" value="Rodriguez">
+      </div>
+
+      <div class="app-modal-field">
+        <label>DNI</label>
+        <input type="text" value="12345678">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Fecha ingreso</label>
+        <input type="date">
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>CBU</label>
+        <input type="text" value="0000003100010000001221">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Jornada base</label>
+        <input type="number" value="8">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email trabajo</label>
+        <input type="email" value="lucior@orbicoop.com">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email personal</label>
+        <input type="email" value="r.lucio@gmail.com">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Teléfono</label>
+        <input type="text" value="1234567890">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Domicilio</label>
+        <input type="text">
+      </div>
+
+      <div class="app-modal-field">
+        <label>Estado</label>
+
+        <select>
+          <option>Activo</option>
+          <option selected>Inactivo</option>
+        </select>
+      </div>
+
+    </form>
+
+  </app-modal>
+
+  <!-- MODULOS ASOCIADO -->
+
+  <app-modal
+    [isOpen]="showAssociateModulesModal()"
+    title="Módulos de Romina Palacios"
+    subtitle="Activar o desactivar conceptos de liquidación"
+    primaryBtnText="Guardar cambios"
+    size="md"
+    (close)="closeModal(showAssociateModulesModal)"
+    (secondaryBtnClick)="closeModal(showAssociateModulesModal)"
+  >
+
+    <div class="modules-list">
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Presentismo</h4>
+          <p>$100.000</p>
+        </div>
+
+        <input class="switch" type="checkbox" checked>
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Antigüedad</h4>
+          <p>5%</p>
+        </div>
+
+        <input class="switch" type="checkbox" checked>
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Título profesional</h4>
+          <p>5%</p>
+        </div>
+
+        <input class="switch" type="checkbox">
+      </div>
+
+      <div class="module-item">
+        <div class="module-info">
+          <h4>Productividad</h4>
+          <p>5%</p>
+        </div>
+
+        <input class="switch" type="checkbox">
+      </div>
+
+    </div>
+
+  </app-modal>
+
+</div>
