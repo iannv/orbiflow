@@ -1,10 +1,14 @@
 .card {
-  margin-top: 4rem !important;
   padding: 1rem;
   border: 1px solid var(--gris-claro);
-  max-width: 90%;
-  margin: 0 auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
+/* .card:hover {
+  background-color: red;
+} */
 
 .header h3 {
   font-size: 20px;
@@ -20,4 +24,3 @@
     padding: 1.5rem;
   }
 }
-
