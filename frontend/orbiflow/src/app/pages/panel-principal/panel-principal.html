@@ -6,43 +6,43 @@
     <app-base-card>
       <div>
         <h3>Asociados activos</h3>
-        <img src="assets/pesos.png" alt="" />
+        <img src="assets/panel-asociados.png" alt="" />
       </div>
       <div>
-        <h4>3</h4>
-        <span class="fw300">Total: 4</span>
+        <h4>{{ asociadosActivos }}</h4>
+        <span class="fw300">Total: {{ totalAsociados }}</span>
       </div>
     </app-base-card>
 
     <app-base-card>
       <div>
         <h3>Módulos activos</h3>
-        <img src="assets/pesos.png" alt="" />
+        <img src="assets/panel-modulo.png" alt="" />
       </div>
       <div>
-        <h4>3</h4>
-        <span class="fw300">Total: 4</span>
+        <h4>{{ modulosActivos }}</h4>
+        <span class="fw300">Total: {{ totalModulos }}</span>
       </div>
     </app-base-card>
 
     <app-base-card>
       <div>
         <h3>Liquidaciones del mes</h3>
-        <img src="assets/pesos.png" alt="" />
+        <img src="assets/panel-liquidaciones.png" alt="" />
       </div>
       <div>
-        <h4>3</h4>
-        <span class="fw300">04/2026</span>
+        <h4>{{ liquidacionesMes }}</h4>
+        <span class="fw300">04/2026 {{ fechaLiquidaciones }}</span>
       </div>
     </app-base-card>
 
     <app-base-card>
       <div>
         <h3>Recibos generados</h3>
-        <img src="assets/pesos.png" alt="" />
+        <img src="assets/panel-recibos.png" alt="" />
       </div>
       <div>
-        <h4>3</h4>
+        <h4>{{recibosGenerados}}</h4>
         <span class="fw300">Total histórico</span>
       </div>
     </app-base-card>
@@ -67,11 +67,13 @@
       <app-base-card title="Información del sistema" subtitle="Estado actual">
         <div>
           <p class="p-info-sistema fw300">Usuarios registrados</p>
-          <span class="span-info-sistema"><strong>3</strong></span>
+          <span class="span-info-sistema"><strong>{{usuariosRegistrados}}</strong></span>
         </div>
         <div>
           <p class="p-info-sistema fw300 m-0">Última liquidación</p>
-          <span class="span-info-sistema" style="color: var(--azul);"><strong>Sin datos</strong></span>
+          <span class="span-info-sistema" style="color: var(--azul)"
+            ><strong>Sin datos {{ultimaLiquidacion}}</strong></span
+          >
         </div>
       </app-base-card>
     </div>
