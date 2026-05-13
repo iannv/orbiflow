@@ -17,6 +17,10 @@ class OrbiflowTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         update_last_login(sender=self.user.__class__, user=self.user)
+        
+        # Agrega los datos del usuario a la respuesta del login
+        data['user'] = UserSerializer(self.user).data
+        
         return data
 
 
