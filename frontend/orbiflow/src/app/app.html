@@ -3,10 +3,10 @@
 
   <!-- <app-sidenav></app-sidenav> -->
 
-  <app-sidenav2
+  <app-sidenav
     [isExpanded]="sidebarExpanded"
     (toggleSidebar)="sidebarExpanded = !sidebarExpanded"
-  ></app-sidenav2>
+  ></app-sidenav>
 
 
   <div class="content" [ngClass]="{ sidebarExpanded: sidebarExpanded }">

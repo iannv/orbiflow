@@ -10,21 +10,27 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
     canActivate: [guestGuard],
   },
+
   {
     path: 'panel',
     loadComponent: () =>
-      import('./pages/panel-principal/panel-principal').then((m) => m.PanelPrincipal),
+      import('./pages/panel-principal/panel-principal').then(
+        (m) => m.PanelPrincipal
+      ),
     canActivate: [authGuard],
   },
+
   {
     path: 'modal-showcase',
     component: ModalShowcase,
   },
+
   {
     path: '',
     pathMatch: 'full',
     redirectTo: 'panel',
   },
+
   {
     path: '**',
     redirectTo: 'panel',
