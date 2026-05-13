@@ -153,4 +153,3 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
    git pull origin develop
    git branch -d feat/nombre-tarea
    ```
-
