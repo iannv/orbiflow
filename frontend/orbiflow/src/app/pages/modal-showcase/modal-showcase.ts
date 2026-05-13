@@ -2,10 +2,21 @@ import { Component, signal } from '@angular/core';
 
 import { Modal } from '../../components/modal/modal';
 
+import { input } from '../../components/input/input';
+import { Select } from '../../components/select/select';
+import { Textarea } from '../../components/textarea/textarea';
+import { Switch } from '../../components/button/switch/switch';
+
 @Component({
   selector: 'app-modal-showcase',
   standalone: true,
-  imports: [Modal],
+ imports: [
+  Modal,
+  input,
+  Select,
+  Textarea,
+  Switch,
+],
   templateUrl: './modal-showcase.html',
   styleUrl: './modal-showcase.css',
 })
