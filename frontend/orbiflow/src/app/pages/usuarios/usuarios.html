@@ -1,0 +1,31 @@
+<main class="p-5">
+  <h1 class="h1-title">Gestión de Usuarios</h1>
+  <h2 class="h2-subtitle">Administrar cuentas y permisos del sistema</h2>
+
+  <section id="section-users">
+    <app-base-card title="Usuarios Registrados" subtitle="{{ totalUsers }} usuarios">
+      <!-- @for (user of userList; track $index) {} -->
+      <app-base-card>
+        <div class="section-users-div">
+          <div class="div-user-chip">
+            <p class="fw500">Emmanuel Nuñez</p>
+            <div>
+              <app-chip
+                name="admin"
+                backgroundColor="var(--rojo-bg)"
+                colorName="var(--rojo)"
+              ></app-chip>
+              <img src="assets/punto.png" alt="usuario" id="imgPunto">
+              <span class="fw200" style="font-size: .85rem;">Usuario: <strong>admin_emma</strong></span>
+            </div>
+          </div>
+
+          <div class="div-actions">
+            <app-action btnImg="assets/editar.png"></app-action>
+            <app-action btnImg="assets/eliminar.png"></app-action>
+          </div>
+        </div>
+      </app-base-card>
+    </app-base-card>
+  </section>
+</main>
