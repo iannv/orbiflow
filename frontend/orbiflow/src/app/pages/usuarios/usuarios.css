@@ -13,6 +13,10 @@
   margin: 0 0 0.2rem 0;
 }
 
+#section-users app-base-card app-base-card {
+  margin: 1rem;
+}
+
 #section-users app-base-card app-base-card .div-user-chip {
   display: flex;
   flex-direction: column;
