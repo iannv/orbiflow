@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../core/api/api.config';
 import { Associate } from '../interfaces/Associate';
@@ -21,8 +20,6 @@ export class AssociateService {
   }
 
   public getAssociateByUser(userId: number): Observable<Associate[]> {
-    return this.http.get<Associate[]>(`${API_BASE_URL}/associates/`).pipe(
-      map((associates) => associates.filter((associate) => associate['user'] === userId)),
-    );
+    return this.http.get<Associate[]>(`${API_BASE_URL}/associates/?user=${userId}`);
   }
 }

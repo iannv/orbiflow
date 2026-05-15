@@ -16,6 +16,12 @@ import { Associate } from '../../interfaces/Associate';
 export class Profile implements OnInit {
   associate: Associate | null = null;
   error = '';
+  modules= [
+    { title: 'Horas trabajadas', subtitle: 'Registro mensual de horas', quantity: '120 hs/mes' },
+    { title: 'Presentismo', subtitle: 'Bono por asistencia', quantity: '$100.000' },
+    { title: 'Antigüedad', subtitle: 'Adicional por años de servicio', quantity: '+ 5 % adicional' },
+    
+  ];
 
   constructor(
     private readonly authService: AuthService,

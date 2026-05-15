@@ -40,9 +40,35 @@
             <div class="divisor"></div>
 
             <div class="bottom-container">
-                <div class="data"><p>Jornada: </p> <strong>{{associate?.base_hours}} hs</strong></div>
-                <div class="data"><p>Antigüedad en la cooperativa: </p> <strong>{{associate?.years_in_coop}} años</strong></div>
+                <div class="data">
+                    <p>Jornada: </p> <strong>{{associate?.base_hours}} hs</strong>
+                </div>
+                <div class="data">
+                    <p>Antigüedad en la cooperativa: </p> <strong>{{associate?.years_in_coop}} años</strong>
+                </div>
             </div>
+        </app-base-card>
+
+
+    </section>
+    <section>
+        <app-base-card title="Módulos que impactan en tu retiro"
+            subtitle="Estos módulos determinan el cálculo de tu liquidación mensual según los criterios democráticos de la cooperativa.">
+
+            @for (module of modules; track $index) {
+            <section><app-base-card>
+                    <div class="module-card">
+                        <div class="module-info">
+                            <img src="assets/pesos.png" alt="{{module.title}}" class="module-icon">
+                            <div>
+                                <span class="module-title">{{module.title}}</span>
+                                <div class="module-subtitle">{{module.subtitle}}</div>
+                            </div>
+                        </div>
+                        <div class="module-quantity">{{module.quantity}}</div>
+                    </div>
+                </app-base-card></section>
+            }
         </app-base-card>
     </section>
 </main>
