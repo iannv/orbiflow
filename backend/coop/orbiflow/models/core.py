@@ -19,16 +19,22 @@ class LiquidationPeriod(models.Model):
         return f"{self.month}/{self.year} - {self.get_status_display()}"
 
 class RetirementDetail(models.Model):
-    liquidation = models.ForeignKey(LiquidationPeriod, on_delete=models.CASCADE)
+    liquidation = models.ForeignKey(LiquidationPeriod, on_delete=models.CASCADE, related_name='retirements')
     associate = models.ForeignKey('orbiflow.Associate', on_delete=models.PROTECT)
-    hours_worked = models.IntegerField()
-    base_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    additional_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    hours_worked = models.IntegerField(default=0)
+    base_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    additional_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cap_adjustment = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="Monto descontado por superar el tope reglamentario.",
+    )
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         db_table = 'retirement_details'
-        unique_together = ('liquidation', 'associate') 
+        unique_together = ('liquidation', 'associate')
         verbose_name = 'Detalle de Retiro'
         verbose_name_plural = 'Detalles de Retiros'
 

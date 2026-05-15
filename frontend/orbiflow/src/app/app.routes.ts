@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-
-import { ModalShowcase } from './pages/modal-showcase/modal-showcase';
-
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { Usuarios } from './pages/usuarios/usuarios';
 
@@ -30,12 +27,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
     canActivate: [authGuard],
   },
-
-  {
-    path: 'modal-showcase',
-    component: ModalShowcase,
-  },
-
   {
     path: '',
     pathMatch: 'full',
