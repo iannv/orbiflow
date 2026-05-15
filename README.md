@@ -43,7 +43,7 @@ Esto iniciará los contenedores para la base de datos, el backend y el frontend.
 
 ## Gestión de la Aplicación
 
-Una vez que los contenedores estén corriendo, debes crear el superusuario para acceder al panel de Django:
+Una vez que los contenedores estén corriendo, crear el superusuario para acceder al panel de Django:
 
  ```bash
 make superuser
@@ -85,6 +85,21 @@ Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico
    ```bash
    make tests
    ```
+## Documentación de la API
+La documentación de la API se genera automáticamente con drf-spectacular. 
+### Rutas de Acceso
+Una vez que el servidor esté corriendo, puedes acceder a:
+* **Swagger UI (Interactiva):** [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/)
+* **Redoc (Estática):** [http://localhost:8000/api/redoc/](http://localhost:8000/api/redoc/)
+* **Esquema OpenAPI:** [http://localhost:8000/api/schema/](http://localhost:8000/api/schema/)
+
+### Cómo probar los endpoints protegidos
+La mayoría de los endpoints requieren autenticación mediante JWT:
+
+1. Obtené un `access_token` en `/api/auth/login/`.
+2. En Swagger UI, haz clic en el botón **"Authorize"** (arriba a la derecha).
+3. Ingresa el token con el formato: `Bearer <tu_token_aqui>`.
+4. Haz clic en **"Authorize"** y ya puedes ejecutar peticiones con "Try it out".
 
 ## Desarrollo y modelos de datos
 
