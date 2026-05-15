@@ -28,30 +28,40 @@ def healthcheck(_request):
 class UserViewSet(viewsets.ModelViewSet):
     """
     CRUD completo de usuarios del sistema.
+
+    Filtros disponibles vía query string (django-filter):
+        ?id=, ?role=, ?username=, ?email=
     """
     queryset = User.objects.filter(is_deleted=False)
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ['id', 'role', 'username', 'email']
+
 
 class AssociateViewSet(viewsets.ModelViewSet):
     """
     Controlador para la gestión de asociados.
-    Maneja automáticamente el listado y las operaciones de detalle.
+
+    Filtros disponibles vía query string (django-filter):
+        ?user=<id>, ?dni=, ?cbu=
     """
+    queryset = Associate.objects.filter(is_deleted=False).select_related('user')
     serializer_class = AssociateSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ['user', 'dni', 'cbu']
 
-    def get_queryset(self):
-        # Filtramos para no mostrar asociados marcados como eliminados
-        return Associate.objects.filter(is_deleted=False).select_related('user')
 
 class AssociateVariantViewSet(viewsets.ModelViewSet):
     """
     API para gestionar el legajo: asignar o quitar variantes a los asociados.
+
+    Filtros disponibles vía query string (django-filter):
+        ?associate=<id>, ?variant=<id>
     """
     queryset = AssociateVariant.objects.all()
     serializer_class = AssociateVariantSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ['associate', 'variant']
 
     def create(self, request, *args, **kwargs):
         # Lógica para evitar duplicados del mismo módulo si es exclusivo
@@ -72,14 +82,18 @@ class AssociateVariantViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
 
-class GlobalConfigurationViewSet(mixins.ListModelMixin, 
-                                mixins.CreateModelMixin, 
+class GlobalConfigurationViewSet(mixins.ListModelMixin,
+                                mixins.CreateModelMixin,
                                 viewsets.GenericViewSet):
     """
     CRUD de configuración global. Solo Listar y Crear (Historial).
+
+    Filtros disponibles vía query string (django-filter):
+        ?user=<id>
     """
     queryset = GlobalConfiguration.objects.all().order_by('-change_date')
     serializer_class = GlobalConfigurationSerializer
+    filterset_fields = ['user']
 
     def perform_create(self, serializer):
         previous_config = GlobalConfiguration.objects.order_by('-change_date').first()
@@ -102,8 +116,15 @@ class GlobalConfigurationViewSet(mixins.ListModelMixin,
         )
 
 class ModuleViewSet(viewsets.ModelViewSet):
+    """
+    CRUD de Módulos.
+
+    Filtros disponibles vía query string:
+        ?is_active=true|false, ?calculation_type=, ?is_exclusive=
+    """
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
+    filterset_fields = ['is_active', 'calculation_type', 'is_exclusive']
 
     @action(detail=False, methods=['post'], url_path='bulk')
     def bulk_upload(self, request):
@@ -127,5 +148,14 @@ class ModuleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class VariantViewSet(viewsets.ModelViewSet):
+    """
+    CRUD de Variantes.
+
+    Filtros disponibles vía query string:
+        ?module=<id>, ?type=, ?is_default=
+    """
+
     queryset = Variant.objects.all()
     serializer_class = VariantSerializer
+    filterset_fields = ['module', 'type', 'is_default']
+
