@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "5e620fa5-0092-496b-8b02-f0af0abca79c",
-		"name": "OrbiFlow",
-		"description": "Colección definitiva con CRUD completo para Usuarios, Asociados, Configuración, Módulos y Variantes.",
+		"_postman_id": "7bdcf311-fbaf-472b-91ba-8a8086c97c70",
+		"name": "OrbiFlow - Colección Completa",
+		"description": "Colección definitiva con CRUD completo.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "19669280"
 	},
@@ -919,6 +919,64 @@
 			"name": "Legajos (Variantes)",
 			"item": [
 				{
+					"name": "Listar Variantes por Legajo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/associate-variants/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associate-variants",
+								""
+							]
+						},
+						"description": "Lista todas las asignaciones de variantes. Filtros: ?associate=<id>&variant=<id>"
+					},
+					"response": []
+				},
+				{
+					"name": "Detalle Variante por Legajo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/associate-variants/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"associate-variants",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Asignar Variante a Legajo",
 					"request": {
 						"auth": {
@@ -951,8 +1009,10 @@
 								"associate-variants",
 								""
 							]
-						}
-					}
+						},
+						"description": "POST apunta a la URL de lista (sin /id/). Las variantes con is_default=true ya se asignan automáticamente al crear el asociado."
+					},
+					"response": []
 				},
 				{
 					"name": "Quitar Variante de Legajo",
@@ -968,6 +1028,7 @@
 							]
 						},
 						"method": "DELETE",
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/associate-variants/1/",
 							"host": [
@@ -979,7 +1040,475 @@
 								""
 							]
 						}
-					}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Periodos de Liquidación",
+			"item": [
+				{
+					"name": "Listar Periodos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								""
+							]
+						},
+						"description": "Lista los periodos de liquidación. Filtros: ?year=&month=&status="
+					},
+					"response": []
+				},
+				{
+					"name": "Detalle Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"month\": 12,\n    \"year\": 2025,\n    \"applied_hour_value\": \"100.00\",\n    \"applied_cap_pct\": \"30.00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								""
+							]
+						},
+						"description": "Crea un periodo congelando valor hora y tope (%)."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"reviewed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Motor de Liquidación (Acciones)",
+			"item": [
+				{
+					"name": "Cargar Horas (Bulk)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entries\": [\n        {\"associate_id\": 1, \"hours_worked\": 160}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/upload-hours/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"upload-hours",
+								""
+							]
+						},
+						"description": "Sube las horas trabajadas del mes (puede llamarse en lote)."
+					},
+					"response": []
+				},
+				{
+					"name": "Ejecutar Motor (dry-run)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"test_mode\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/calculate/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"calculate",
+								""
+							]
+						},
+						"description": "Devuelve el desglose sin persistir nada (modo prueba)."
+					},
+					"response": []
+				},
+				{
+					"name": "Ejecutar Motor (definitivo)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"test_mode\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/calculate/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"calculate",
+								""
+							]
+						},
+						"description": "Persiste RetirementDetail + LiquidationItem y registra AuditLog."
+					},
+					"response": []
+				},
+				{
+					"name": "Resumen del Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/summary/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"summary",
+								""
+							]
+						},
+						"description": "Trae los totales del periodo + lista resumida de recibos."
+					},
+					"response": []
+				},
+				{
+					"name": "Recibos del Periodo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/retirements/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"retirements",
+								""
+							]
+						},
+						"description": "Recibos persistidos del periodo (no recalcula)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Recibos (Detalle de Retiro)",
+			"item": [
+				{
+					"name": "Listar Recibos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/retirements/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"retirements",
+								""
+							]
+						},
+						"description": "Filtros: ?liquidation=<id>&associate=<id>"
+					},
+					"response": []
+				},
+				{
+					"name": "Detalle Recibo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/retirements/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"retirements",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Salud del Sistema",
+			"item": [
+				{
+					"name": "Healthcheck",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health",
+								""
+							]
+						},
+						"description": "Verifica que el backend y la DB respondan. No requiere autenticación."
+					},
+					"response": []
 				}
 			]
 		}

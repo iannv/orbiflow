@@ -1,0 +1,548 @@
+{
+	"info": {
+		"_postman_id": "2fb15352-746e-435f-b368-008bd3948863",
+		"name": "OrbiFlow - Happy Path (Liquidación)",
+		"description": "Camino feliz completo del Motor de Liquidación de OrbiFlow:\n\n1. Login\n2. Configuración Global (valor hora + tope)\n3. Carga masiva de Módulos + Variantes\n4. Creación de un Asociado (User + Associate)\n5. Asignación de Variantes al Asociado\n6. Creación del Periodo de Liquidación\n7. Carga masiva de Horas\n8. Ejecución del Motor (definitivo)\n9. Resumen del periodo (recibo)\n\nPre-requisito: backend levantado y un superusuario existente. Configurá las variables `admin_username` y `admin_password` antes de correr.\n\nNota: `base_url` ya incluye el prefijo `/api` para mantener consistencia con la colección completa y el entorno Orbiflow - local.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19669280"
+	},
+	"item": [
+		{
+			"name": "1. Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Login OK', () => pm.response.to.have.status(200));",
+							"const json = pm.response.json();",
+							"pm.collectionVariables.set('access_token', json.access);",
+							"pm.test('Trae access token', () => pm.expect(json.access).to.be.a('string').and.not.empty);"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login",
+						""
+					]
+				},
+				"description": "Obtiene el access/refresh token JWT y lo guarda como variable de colección."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Configuración Global (valor hora + tope)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Config creada', () => pm.response.to.have.status(201));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"hour_value\": \"100.00\",\n  \"cap_percentage\": \"30.00\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/config/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"config",
+						""
+					]
+				},
+				"description": "Crea una nueva entrada de configuración global. Queda registrada en el historial y dispara un AuditLog."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Carga masiva de Módulos + Variantes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Módulos creados', () => pm.response.to.have.status(201));",
+							"const arr = pm.response.json();",
+							"pm.collectionVariables.set('module_presentismo_id', arr[0].id);",
+							"pm.collectionVariables.set('module_seniority_id', arr[1].id);",
+							"pm.collectionVariables.set('variant_presentismo_id', arr[0].variants[0].id);",
+							"pm.collectionVariables.set('variant_seniority_id', arr[1].variants[0].id);",
+							"pm.collectionVariables.set('variant_formacion_id', arr[3].variants[0].id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"name\": \"Presentismo\",\n    \"description\": \"Bono por asistencia\",\n    \"calculation_type\": \"simple\",\n    \"applies_to_cap\": false,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"Completo\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": true},\n      {\"name\": \"Parcial\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false}\n    ]\n  },\n  {\n    \"name\": \"Antigüedad\",\n    \"description\": \"Plus por años en la cooperativa\",\n    \"calculation_type\": \"seniority\",\n    \"applies_to_cap\": true,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"1% por año\", \"type\": \"percentage\", \"value\": \"1.00\", \"is_default\": true}\n    ]\n  },\n   {\n        \"name\": \"Seniority\",\n        \"description\": \"Categoría según experiencia técnica\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Junior\", \"type\": \"percentage\", \"value\": \"2.00\", \"is_default\": true },\n            { \"name\": \"Semi-Senior\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false },\n            { \"name\": \"Senior\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Formación\",\n        \"description\": \"Títulos académicos obtenidos\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": false,\n        \"variants\": [\n            { \"name\": \"Título de Grado\", \"type\": \"percentage\", \"value\": \"3.00\", \"is_default\": false },\n            { \"name\": \"Posgrado / MBA\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Viáticos\",\n        \"description\": \"Compensación fija por traslado\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Lejos de oficina\", \"type\": \"fixed_amount\", \"value\": \"5000.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Personas a cargo\",\n        \"description\": \"Adicional por grupo familiar\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"1 persona\", \"type\": \"percentage\", \"value\": \"15.00\", \"is_default\": false },\n            { \"name\": \"2 personas\", \"type\": \"percentage\", \"value\": \"25.00\", \"is_default\": false },\n            { \"name\": \"3 o más personas\", \"type\": \"percentage\", \"value\": \"30.00\", \"is_default\": false }\n        ]\n    }\n]"
+				},
+				"url": {
+					"raw": "{{base_url}}/modules/bulk/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"modules",
+						"bulk",
+						""
+					]
+				},
+				"description": "Crea dos módulos (uno simple con tope, uno seniority) cada uno con su variante."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Crear Usuario del Asociado",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Usuario creado', () => pm.response.to.have.status(201));",
+							"pm.collectionVariables.set('user_id', pm.response.json().id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"socio_{{run_suffix}}\",\n  \"email\": \"socio_{{run_suffix}}@orbiflow.coop\",\n  \"password\": \"socio12345\",\n  \"first_name\": \"Ana\",\n  \"last_name\": \"Pérez\",\n  \"role\": \"associate\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/users/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						""
+					]
+				},
+				"description": "Crea el User que después se enlaza al Associate (relación 1:1)."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Crear Asociado",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Asociado creado', () => pm.response.to.have.status(201));",
+							"pm.collectionVariables.set('associate_id', pm.response.json().id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"user\": {{user_id}},\n  \"dni\": \"3{{run_suffix}}1\",\n  \"cbu\": \"{{run_suffix}}0000000000000000\",\n  \"entry_date\": \"2022-01-15\",\n  \"base_hours\": 8,\n  \"personal_email\": \"ana_{{run_suffix}}@personal.com\",\n  \"phone_number\": \"1122334455\",\n  \"address\": \"Calle Falsa 123\",\n  \"emergency_contact\": {\"nombre\": \"Juan\", \"telefono\": \"1199887766\", \"vinculo\": \"Hermano\"}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/associates/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"associates",
+						""
+					]
+				},
+				"description": "Crea el Associate con fecha de ingreso (relevante para módulos seniority). Las variantes con is_default=true se asignan automáticamente."
+			},
+			"response": []
+		},
+		{
+			"name": "6a. Asignar Variante Presentismo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Variante Presentismo asignada (201 nuevo, 400 si ya está)', () => pm.expect([201, 400]).to.include(pm.response.code));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"associate\": {{associate_id}},\n  \"variant\": {{variant_presentismo_id}}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/associate-variants/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"associate-variants",
+						""
+					]
+				},
+				"description": "Si la variante es default ya quedó asignada al crear el asociado; este POST refuerza la elección manual."
+			},
+			"response": []
+		},
+		{
+			"name": "6b. Asignar Variante Formacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Variante Antigüedad asignada (201 nuevo, 400 si ya está)', () => pm.expect([201, 400]).to.include(pm.response.code));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"associate\": {{associate_id}},\n  \"variant\": {{variant_formacion_id}}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/associate-variants/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"associate-variants",
+						""
+					]
+				},
+				"description": "Idem 6a. Si la variante ya estaba como default, la API puede devolver 400 por unique_together."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Crear Periodo de Liquidación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Periodo creado', () => pm.response.to.have.status(201));",
+							"pm.collectionVariables.set('period_id', pm.response.json().id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"month\": 12,\n  \"year\": 2025,\n  \"applied_hour_value\": \"100.00\",\n  \"applied_cap_pct\": \"30.00\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/liquidations/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"liquidations",
+						""
+					]
+				},
+				"description": "Define el periodo a liquidar congelando el valor hora y el tope vigentes."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Carga Masiva de Horas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
+							"const json = pm.response.json();",
+							"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/liquidations/{{period_id}}/upload-hours/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"liquidations",
+						"{{period_id}}",
+						"upload-hours",
+						""
+					]
+				},
+				"description": "Sube las horas trabajadas del mes para todos los asociados (acepta lote completo)."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Ejecutar Motor (definitivo)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Motor ejecutado', () => pm.response.to.have.status(200));",
+							"const json = pm.response.json();",
+							"pm.test('No es dry-run', () => pm.expect(json.test_mode).to.eql(false));",
+							"pm.test('Devuelve recibos', () => pm.expect(json.retirements_count).to.be.at.least(1));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"test_mode\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/liquidations/{{period_id}}/calculate/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"liquidations",
+						"{{period_id}}",
+						"calculate",
+						""
+					]
+				},
+				"description": "Ejecuta el motor en modo DEFINITIVO: persiste RetirementDetail + LiquidationItem y registra AuditLog."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Resumen / Recibo del Periodo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Resumen OK', () => pm.response.to.have.status(200));",
+							"const json = pm.response.json();",
+							"pm.test('Totales presentes', () => pm.expect(json.totals).to.have.property('total_amount'));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/liquidations/{{period_id}}/summary/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"liquidations",
+						"{{period_id}}",
+						"summary",
+						""
+					]
+				},
+				"description": "Trae los totales y los recibos persistidos con su desglose item por item."
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"if (!pm.collectionVariables.get('run_suffix')) {",
+					"    pm.collectionVariables.set('run_suffix', String(Date.now()).slice(-6));",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "admin_username",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "admin_password",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "associate_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "module_presentismo_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "module_seniority_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "variant_presentismo_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "variant_seniority_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "period_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "run_suffix",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

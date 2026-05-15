@@ -29,3 +29,10 @@ class UserTests(APITestCase):
         """Verifica que el JSON de respuesta no incluya el campo password."""
         response = self.client.get(self.url)
         self.assertNotIn('password', response.data[0])
+
+    def test_list_users_filter_by_role(self):
+        User.objects.create_user(
+            username='socio', password='x', email='s@s.com', role='associate',
+        )
+        admins = self.client.get(self.url, {'role': 'admin'})
+        self.assertTrue(all(u['role'] == 'admin' for u in admins.data))

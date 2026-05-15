@@ -45,10 +45,13 @@ class LiquidationPeriodAdmin(admin.ModelAdmin):
 
 @admin.register(RetirementDetail)
 class RetirementDetailAdmin(admin.ModelAdmin):
-    list_display = ('associate', 'liquidation', 'total_amount')
+    list_display = (
+        'associate', 'liquidation', 'hours_worked',
+        'base_amount', 'additional_amount', 'cap_adjustment', 'total_amount',
+    )
     list_filter = ('liquidation',)
     search_fields = ('associate__user__last_name', 'associate__dni')
-    inlines = [LiquidationItemInline] # Ver ítems del recibo
+    inlines = [LiquidationItemInline]
 
 @admin.register(GlobalConfiguration)
 class GlobalConfigurationAdmin(admin.ModelAdmin):
