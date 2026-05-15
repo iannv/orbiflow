@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass } from "@angular/common";
-import { RouterLink } from "@angular/router";
+import { RouterLink, RouterLinkActive } from "@angular/router";
 
 @Component({
   selector: 'app-sidenav',
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, RouterLinkActive],
   templateUrl: './sidenav.html',
   styleUrl: './sidenav.css',
 })
@@ -19,13 +19,13 @@ export class Sidenav {
       id: '0',
       name: 'Panel principal',
       iconName: 'assets/panel-principal.png',
-      route: '/panel-principal',
+      route: '/panel',
     },
     {
       id: '1',
       name: 'Usuarios',
       iconName: 'assets/usuarios.png',
-      route: '#',
+      route: '/usuarios',
     },
     {
       id: '2',
@@ -61,7 +61,7 @@ export class Sidenav {
       id: '7',
       name: 'Mi perfil',
       iconName: 'assets/mi-perfil.png',
-      route: '#',
+      route: '/profile',
     },
     {
       id: '8',
