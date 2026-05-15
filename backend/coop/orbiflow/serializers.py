@@ -2,6 +2,11 @@
 from .models.identity import Associate, User
 from .models.audit import GlobalConfiguration, AuditLog
 from .models.rules import AssociateVariant, Variant, Module
+from .models.core import LiquidationPeriod, RetirementDetail, LiquidationItem
+from .services.defaults import (
+    apply_default_variant_to_associates,
+    apply_default_variants_to_associate,
+)
 
 from rest_framework import serializers
 
@@ -62,6 +67,11 @@ class AssociateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['is_deleted']
 
+    def create(self, validated_data):
+        associate = super().create(validated_data)
+        apply_default_variants_to_associate(associate)
+        return associate
+
 # --- Configuración Global ---
 class GlobalConfigurationSerializer(serializers.ModelSerializer):
     user_name = serializers.ReadOnlyField(source='user.username')
@@ -84,6 +94,20 @@ class VariantSerializer(serializers.ModelSerializer):
         fields = ['id', 'module', 'name', 'type', 'value', 'is_default']
         extra_kwargs = {'module': {'required': False}}
 
+    def create(self, validated_data):
+        variant = super().create(validated_data)
+        # Propaga la variante a los asociados existentes si es default.
+        apply_default_variant_to_associates(variant)
+        return variant
+
+    def update(self, instance, validated_data):
+        previously_default = instance.is_default
+        variant = super().update(instance, validated_data)
+        # Si recién pasó a ser default, propagar a asociados existentes.
+        if variant.is_default and not previously_default:
+            apply_default_variant_to_associates(variant)
+        return variant
+
 class ModuleSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, required=False)
 
@@ -95,5 +119,89 @@ class ModuleSerializer(serializers.ModelSerializer):
         variants_data = validated_data.pop('variants', [])
         module = Module.objects.create(**validated_data)
         for variant_data in variants_data:
-            Variant.objects.create(module=module, **variant_data)
+            variant = Variant.objects.create(module=module, **variant_data)
+            # Propaga cada variante default embebida en el módulo recién creado.
+            apply_default_variant_to_associates(variant)
         return module
+
+
+# --- Motor de Liquidación ---
+
+class LiquidationPeriodSerializer(serializers.ModelSerializer):
+    """CRUD de periodos de liquidación (mes/año, valor hora y tope vigentes)."""
+
+    class Meta:
+        model = LiquidationPeriod
+        fields = [
+            'id', 'month', 'year',
+            'applied_hour_value', 'applied_cap_pct',
+            'status',
+        ]
+
+    def validate_month(self, value):
+        if value < 1 or value > 12:
+            raise serializers.ValidationError("El mes debe estar entre 1 y 12.")
+        return value
+
+    def validate_year(self, value):
+        if value < 2000 or value > 2100:
+            raise serializers.ValidationError("Año fuera de rango razonable.")
+        return value
+
+
+class LiquidationItemSerializer(serializers.ModelSerializer):
+    """Línea de detalle persistida de un recibo."""
+
+    class Meta:
+        model = LiquidationItem
+        fields = ['id', 'module_name', 'calculated_value']
+
+
+class RetirementDetailSerializer(serializers.ModelSerializer):
+    """Cabecera del recibo de un asociado para un periodo dado."""
+    associate_full_name = serializers.ReadOnlyField(source='associate.full_name')
+    associate_dni = serializers.ReadOnlyField(source='associate.dni')
+    items = LiquidationItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RetirementDetail
+        fields = [
+            'id', 'liquidation', 'associate',
+            'associate_full_name', 'associate_dni',
+            'hours_worked', 'base_amount', 'additional_amount',
+            'cap_adjustment', 'total_amount', 'items',
+        ]
+
+
+class HoursEntrySerializer(serializers.Serializer):
+    """Item individual del payload masivo de carga de horas."""
+    associate_id = serializers.IntegerField(min_value=1)
+    hours_worked = serializers.IntegerField(min_value=0)
+
+
+class BulkHoursSerializer(serializers.Serializer):
+    """
+    Payload para `POST /api/liquidations/{id}/upload-hours/`.
+
+    Ejemplo:
+        {"entries": [{"associate_id": 1, "hours_worked": 160}, ...]}
+    """
+    entries = HoursEntrySerializer(many=True)
+
+    def validate_entries(self, value):
+        if not value:
+            raise serializers.ValidationError("Debe enviarse al menos una entrada.")
+        seen = set()
+        for entry in value:
+            associate_id = entry['associate_id']
+            if associate_id in seen:
+                raise serializers.ValidationError(
+                    f"Asociado duplicado en el payload: id={associate_id}."
+                )
+            seen.add(associate_id)
+        return value
+
+
+class CalculateLiquidationSerializer(serializers.Serializer):
+    """Payload para `POST /api/liquidations/{id}/calculate/`."""
+    test_mode = serializers.BooleanField(default=True)
