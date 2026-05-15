@@ -9,14 +9,14 @@
 
   <div class="div-content">
     @for (item of menu; track $index) {
-      <div class="link">
+      <a [routerLink]="item.route" class="link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <div class="content">
           <div class="icon">
             <img [src]="item.iconName" alt="" />
           </div>
           <div class="title">{{ item.name }}</div>
         </div>
-      </div>
+      </a>
     }
   </div>
 </div>

@@ -1,0 +1,74 @@
+<main class="p-5">
+    <h1 class="h1-title">Mi perfil</h1>
+    <h2 class="h2-subtitle">Información personal y módulos que impactan en tu retiro mensual</h2>
+
+    <section>
+        <app-base-card title="Datos personales">
+            <div class="name">{{ associate?.first_name }} {{ associate?.last_name }}</div>
+            <div class="dni-container">
+                <img src="assets/dni.png" alt="dni" class="dni-img">
+                <span class="dni-label">DNI:</span>
+                <span class="dni">{{ associate?.dni }}</span>
+            </div>
+            <div class="entry-container">
+                <img src="assets/fecha-ingreso.png" alt="entry" class="entry-img">
+                <span class="entry-label">Ingreso:</span>
+                <span class="entry">{{ associate?.entry_date }}</span>
+            </div>
+            <div class="contacto-container">
+
+                <div class="data-container">
+                    <div>
+                        <img src="assets/email.png" alt="mail" class="mail-img">
+                        <span class="mail-label">{{ associate?.work_email }}</span>
+                    </div>
+
+                    <div>
+                        <img src="assets/tel.png" alt="phone" class="phone-img">
+                        <span class="phone">{{ associate?.phone_number }}</span>
+                    </div>
+                </div>
+
+                <div class="data-container">
+                    <span class="mail">{{ associate?.personal_email }}</span>
+
+                    <span class="address">{{ associate?.address }}</span>
+                </div>
+
+            </div>
+
+            <div class="divisor"></div>
+
+            <div class="bottom-container">
+                <div class="data">
+                    <p>Jornada: </p> <strong>{{associate?.base_hours}} hs</strong>
+                </div>
+                <div class="data">
+                    <p>Antigüedad en la cooperativa: </p> <strong>{{associate?.years_in_coop}} años</strong>
+                </div>
+            </div>
+        </app-base-card>
+
+
+    </section>
+    <section>
+        <app-base-card title="Módulos que impactan en tu retiro"
+            subtitle="Estos módulos determinan el cálculo de tu liquidación mensual según los criterios democráticos de la cooperativa.">
+
+            @for (module of modules; track $index) {
+            <section><app-base-card>
+                    <div class="module-card">
+                        <div class="module-info">
+                            <img src="assets/pesos.png" alt="{{module.title}}" class="module-icon">
+                            <div>
+                                <span class="module-title">{{module.title}}</span>
+                                <div class="module-subtitle">{{module.subtitle}}</div>
+                            </div>
+                        </div>
+                        <div class="module-quantity">{{module.quantity}}</div>
+                    </div>
+                </app-base-card></section>
+            }
+        </app-base-card>
+    </section>
+</main>

@@ -98,3 +98,21 @@
   max-width: 0px;
   overflow: hidden;
 }
+
+a{
+  text-decoration: none;
+}
+
+/* ACTIVE LINK STYLES */
+.sidebar .div-content .link.active .content {
+  background-color: var(--verde-selva);
+  border-radius: 6px;
+}
+.sidebar .div-content .link.active .content .title {
+  background-color: transparent;
+}
+
+
+.sidebar .div-content .link.active .content .icon img {
+  background-color: transparent;
+}
