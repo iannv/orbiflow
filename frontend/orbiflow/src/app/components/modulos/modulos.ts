@@ -233,6 +233,31 @@ export class Modulos implements OnInit {
 
   // --- FEEDBACK VISUAL ---
 
+  toggleEstadoModulo(event: Event, modulo: Modulo): void {
+    const checkbox = event.target as HTMLInputElement;
+    const nuevoEstado = checkbox.checked;
+    
+    if (!modulo.id) return;
+
+    // Enviamos solo el campo is_active para actualizar
+    this.modulosService.updateModulo(modulo.id, { is_active: nuevoEstado }).subscribe({
+      next: () => {
+        // Actualizamos el estado local para que Angular cambie el color del chip
+        modulo.is_active = nuevoEstado;
+        this.lanzarToast('Estado actualizado', `El módulo "${modulo.name}" ahora está ${nuevoEstado ? 'activo' : 'inactivo'}.`);
+        this.cdr.detectChanges();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al cambiar el estado', err);
+        // Si el backend falla, revertimos el switch visualmente a como estaba
+        checkbox.checked = !nuevoEstado; 
+        const msj = this.extraerMensajeError(err);
+        this.lanzarToast('Error al actualizar', msj);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   lanzarToast(titulo: string, subtitulo: string): void {
     this.toastTitle = titulo;
     this.toastSubtitle = subtitulo;

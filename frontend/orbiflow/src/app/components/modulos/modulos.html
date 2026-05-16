@@ -1,8 +1,5 @@
 @if (mostrarToast) {
-  <app-toast 
-    [title]="toastTitle" 
-    [subtitle]="toastSubtitle">
-  </app-toast>
+  <app-toast [title]="toastTitle" [subtitle]="toastSubtitle"> </app-toast>
 }
 
 <main class="p-5">
@@ -15,7 +12,7 @@
       <app-primary
         (btnClick)="openModal()"
         name="Nuevo Módulo"
-        btnImg="assets/nuevo-legajo.png" 
+        btnImg="assets/nuevo-legajo.png"
       ></app-primary>
     </div>
   </section>
@@ -31,7 +28,10 @@
 
           <div class="modulo-actions">
             <app-action btnImg="assets/editar.png" (btnClick)="editarModulo(modulo)"></app-action>
-            <app-action btnImg="assets/eliminar.png" (btnClick)="confirmarEliminacion(modulo.id)"></app-action>
+            <app-action
+              btnImg="assets/eliminar.png"
+              (btnClick)="confirmarEliminacion(modulo.id)"
+            ></app-action>
           </div>
         </div>
 
@@ -41,38 +41,51 @@
               <div class="variante-row">
                 <div class="variante-detalles">
                   <span class="fw500">{{ variante.name }}</span>
-                  <app-chip 
+                  <app-chip
                     [name]="variante.type === 'fixed_amount' ? 'Monto fijo' : 'Porcentaje'"
                     backgroundColor="var(--gris-blanco)"
-                    colorName="var(--verde-azulado)">
+                    colorName="var(--verde-azulado)"
+                  >
                   </app-chip>
-                  <app-chip 
+                  <app-chip
                     [name]="modulo.is_active ? 'Activo' : 'Inactivo'"
                     [backgroundColor]="modulo.is_active ? 'var(--verde-bg)' : 'var(--rojo-bg)'"
-                    [colorName]="modulo.is_active ? 'var(--verde-selva)' : 'var(--rojo)'">
+                    [colorName]="modulo.is_active ? 'var(--verde-selva)' : 'var(--rojo)'"
+                  >
                   </app-chip>
                 </div>
-                
+
                 <div class="variante-valor">
                   <div class="valor-box">
-                    <span class="fw300 text-muted" style="font-size: 0.8rem;">Valor</span>
+                    <span class="fw300 text-muted" style="font-size: 0.8rem">Valor</span>
                     <p class="fw600 m-0">
-                      {{ variante.type === 'fixed_amount' ? '$' : '' }}{{ variante.value }}{{ variante.type === 'percentage' ? '%' : '' }}
+                      {{ variante.type === 'fixed_amount' ? '$' : '' }}{{ variante.value
+                      }}{{ variante.type === 'percentage' ? '%' : '' }}
                     </p>
                   </div>
                   <div class="valor-box">
-                    <span class="fw300 text-muted" style="font-size: 0.8rem;">Activado</span>
+                    <span class="fw300 text-muted" style="font-size: 0.8rem">Activado</span>
                     <div class="form-check form-switch">
-                      <input class="form-check-input btn-switch" type="checkbox" role="switch" [checked]="modulo.is_active" disabled>
+                      <input
+                        class="form-check-input btn-switch"
+                        type="checkbox"
+                        role="switch"
+                        [checked]="modulo.is_active"
+                        (change)="toggleEstadoModulo($event, modulo)"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
-              @if (!$last) { <hr class="my-2" style="border-color: var(--gris-claro);"> }
+              @if (!$last) {
+                <hr class="my-2" style="border-color: var(--gris-claro)" />
+              }
             }
           </div>
         } @else {
-          <p class="fw300 text-muted mt-2" style="font-size: 0.85rem;">No hay variantes configuradas para este módulo.</p>
+          <p class="fw300 text-muted mt-2" style="font-size: 0.85rem">
+            No hay variantes configuradas para este módulo.
+          </p>
         }
       </app-base-card>
     }
@@ -91,7 +104,7 @@
       <div class="app-modal-grid-2">
         <div class="app-modal-field">
           <label>Nombre del Módulo</label>
-          <input type="text" formControlName="name" placeholder="Ej. Presentismo">
+          <input type="text" formControlName="name" placeholder="Ej. Presentismo" />
         </div>
         <div class="app-modal-field">
           <label>Tipo de Cálculo</label>
@@ -104,41 +117,73 @@
 
       <div class="app-modal-field">
         <label>Descripción</label>
-        <textarea formControlName="description" rows="2" placeholder="Breve detalle del módulo..."></textarea>
+        <textarea
+          formControlName="description"
+          rows="2"
+          placeholder="Breve detalle del módulo..."
+        ></textarea>
       </div>
 
       <div class="app-modal-grid-2 mt-2">
         <div class="form-check form-switch d-flex align-items-center gap-2">
-          <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="applies_to_cap" id="switchCap">
-          <label class="form-check-label" for="switchCap" style="margin-top: 2px;">Aplica al tope máximo</label>
+          <input
+            class="form-check-input btn-switch m-0"
+            type="checkbox"
+            formControlName="applies_to_cap"
+            id="switchCap"
+          />
+          <label class="form-check-label" for="switchCap" style="margin-top: 2px"
+            >Aplica al tope máximo</label
+          >
         </div>
         <div class="form-check form-switch d-flex align-items-center gap-2">
-          <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="is_exclusive" id="switchEx">
-          <label class="form-check-label" for="switchEx" style="margin-top: 2px;">Es exclusivo (1 variante por socio)</label>
+          <input
+            class="form-check-input btn-switch m-0"
+            type="checkbox"
+            formControlName="is_exclusive"
+            id="switchEx"
+          />
+          <label class="form-check-label" for="switchEx" style="margin-top: 2px"
+            >Es exclusivo (1 variante por socio)</label
+          >
         </div>
       </div>
 
-      <hr style="border-color: var(--gris-claro); margin: 1.5rem 0;">
+      <hr style="border-color: var(--gris-claro); margin: 1.5rem 0" />
 
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <label class="fw600" style="font-size: 1rem; color: var(--verde-petroleo);">Variantes</label>
-        <button type="button" class="btn btn-outline-green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="agregarVariante()">
+        <label class="fw600" style="font-size: 1rem; color: var(--verde-petroleo)">Variantes</label>
+        <button
+          type="button"
+          class="btn btn-outline-green"
+          style="padding: 0.2rem 0.5rem; font-size: 0.8rem"
+          (click)="agregarVariante()"
+        >
           + Añadir Variante
         </button>
       </div>
 
       <div formArrayName="variants">
         @for (variante of variantesFormArray.controls; track $index) {
-          <div [formGroupName]="$index" class="p-3 mb-2 rounded" style="background-color: var(--gris-blanco); border: 1px solid var(--gris-claro);">
+          <div
+            [formGroupName]="$index"
+            class="p-3 mb-2 rounded"
+            style="background-color: var(--gris-blanco); border: 1px solid var(--gris-claro)"
+          >
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="fw500" style="font-size: 0.9rem;">Variante #{{ $index + 1 }}</span>
-              <button type="button" class="btn-close" style="font-size: 0.7rem;" (click)="eliminarVariante($index)"></button>
+              <span class="fw500" style="font-size: 0.9rem">Variante #{{ $index + 1 }}</span>
+              <button
+                type="button"
+                class="btn-close"
+                style="font-size: 0.7rem"
+                (click)="eliminarVariante($index)"
+              ></button>
             </div>
-            
+
             <div class="app-modal-grid-2">
               <div class="app-modal-field">
                 <label>Nombre</label>
-                <input type="text" formControlName="name" placeholder="Ej. Completo">
+                <input type="text" formControlName="name" placeholder="Ej. Completo" />
               </div>
               <div class="app-modal-field">
                 <label>Tipo de valor</label>
@@ -149,12 +194,22 @@
               </div>
               <div class="app-modal-field">
                 <label>Valor</label>
-                <input type="number" formControlName="value" placeholder="0.00">
+                <input type="number" formControlName="value" placeholder="0.00" />
               </div>
               <div class="app-modal-field d-flex align-items-start justify-content-center pt-4">
                 <div class="form-check form-switch d-flex align-items-center gap-2">
-                  <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="is_default" [id]="'switchDef'+$index">
-                  <label class="form-check-label" [for]="'switchDef'+$index" style="margin-top: 2px;">Asignar por defecto</label>
+                  <input
+                    class="form-check-input btn-switch m-0"
+                    type="checkbox"
+                    formControlName="is_default"
+                    [id]="'switchDef' + $index"
+                  />
+                  <label
+                    class="form-check-label"
+                    [for]="'switchDef' + $index"
+                    style="margin-top: 2px"
+                    >Asignar por defecto</label
+                  >
                 </div>
               </div>
             </div>
