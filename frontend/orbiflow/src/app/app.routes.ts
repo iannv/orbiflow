@@ -32,7 +32,12 @@ export const routes: Routes = [
     pathMatch: 'full',
     redirectTo: 'panel',
   },
-
+  {
+    path: 'asociados',
+    loadComponent: () =>
+      import('./pages/asociados/page-asociados').then((m) => m.PageAsociados),
+    canActivate: [authGuard],
+  },
   {
     path: '**',
     redirectTo: 'panel',

@@ -18,11 +18,22 @@ export interface Associate {
   personal_email: string;
   phone_number: string;
   address: string;
-  emergency_contact: string;
+  emergency_contact: Record<string, unknown> | null;
   first_name: string;
   last_name: string;
   full_name: string;
-  years_in_coop: string;
+  years_in_coop: number;
   is_deleted: boolean;
   variants: AssociateVariant[];
+}
+
+export interface CreateAssociatePayload {
+  user: number;
+  dni: string;
+  cbu: string;
+  entry_date: string;
+  base_hours: number;
+  personal_email: string;
+  phone_number: string;
+  address: string;
 }
