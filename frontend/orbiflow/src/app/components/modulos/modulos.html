@@ -1,0 +1,178 @@
+@if (mostrarToast) {
+  <app-toast 
+    [title]="toastTitle" 
+    [subtitle]="toastSubtitle">
+  </app-toast>
+}
+
+<main class="p-5">
+  <section id="section-title">
+    <div>
+      <h1 class="h1-title">Gestión de Módulos</h1>
+      <h2 class="h2-subtitle">Conceptos dinámicos de liquidación</h2>
+    </div>
+    <div id="div-btn">
+      <app-primary
+        (btnClick)="openModal()"
+        name="Nuevo Módulo"
+        btnImg="assets/nuevo-legajo.png" 
+      ></app-primary>
+    </div>
+  </section>
+
+  <section id="section-modulos" class="mt-4">
+    @for (modulo of modulosList; track modulo.id) {
+      <app-base-card class="mb-3 d-block">
+        <div class="modulo-card-content">
+          <div class="modulo-info">
+            <h3 class="fw600 m-0">{{ modulo.name }}</h3>
+            <p class="fw300 mt-1 mb-2 text-muted">{{ modulo.description || 'Sin descripción' }}</p>
+          </div>
+
+          <div class="modulo-actions">
+            <app-action btnImg="assets/editar.png" (btnClick)="editarModulo(modulo)"></app-action>
+            <app-action btnImg="assets/eliminar.png" (btnClick)="confirmarEliminacion(modulo.id)"></app-action>
+          </div>
+        </div>
+
+        @if (modulo.variants && modulo.variants.length > 0) {
+          <div class="variantes-container mt-3">
+            @for (variante of modulo.variants; track variante.id) {
+              <div class="variante-row">
+                <div class="variante-detalles">
+                  <span class="fw500">{{ variante.name }}</span>
+                  <app-chip 
+                    [name]="variante.type === 'fixed_amount' ? 'Monto fijo' : 'Porcentaje'"
+                    backgroundColor="var(--gris-blanco)"
+                    colorName="var(--verde-azulado)">
+                  </app-chip>
+                  <app-chip 
+                    [name]="modulo.is_active ? 'Activo' : 'Inactivo'"
+                    [backgroundColor]="modulo.is_active ? 'var(--verde-bg)' : 'var(--rojo-bg)'"
+                    [colorName]="modulo.is_active ? 'var(--verde-selva)' : 'var(--rojo)'">
+                  </app-chip>
+                </div>
+                
+                <div class="variante-valor">
+                  <div class="valor-box">
+                    <span class="fw300 text-muted" style="font-size: 0.8rem;">Valor</span>
+                    <p class="fw600 m-0">
+                      {{ variante.type === 'fixed_amount' ? '$' : '' }}{{ variante.value }}{{ variante.type === 'percentage' ? '%' : '' }}
+                    </p>
+                  </div>
+                  <div class="valor-box">
+                    <span class="fw300 text-muted" style="font-size: 0.8rem;">Activado</span>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input btn-switch" type="checkbox" role="switch" [checked]="modulo.is_active" disabled>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              @if (!$last) { <hr class="my-2" style="border-color: var(--gris-claro);"> }
+            }
+          </div>
+        } @else {
+          <p class="fw300 text-muted mt-2" style="font-size: 0.85rem;">No hay variantes configuradas para este módulo.</p>
+        }
+      </app-base-card>
+    }
+  </section>
+
+  <app-modal
+    [isOpen]="isModalOpen"
+    [title]="moduloEnEdicion ? 'Editar Módulo' : 'Registrar Nuevo Módulo'"
+    subtitle="Configure las reglas de cálculo y sus variantes"
+    size="lg"
+    (close)="closeModal()"
+    (primaryBtnClick)="guardarModulo()"
+    (secondaryBtnClick)="closeModal()"
+  >
+    <form [formGroup]="moduloForm" class="app-modal-form mt-2">
+      <div class="app-modal-grid-2">
+        <div class="app-modal-field">
+          <label>Nombre del Módulo</label>
+          <input type="text" formControlName="name" placeholder="Ej. Presentismo">
+        </div>
+        <div class="app-modal-field">
+          <label>Tipo de Cálculo</label>
+          <select formControlName="calculation_type" class="form-select-bg">
+            <option value="simple">Valor Fijo / Porcentaje Simple</option>
+            <option value="seniority">Multiplicar por Años (Antigüedad)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="app-modal-field">
+        <label>Descripción</label>
+        <textarea formControlName="description" rows="2" placeholder="Breve detalle del módulo..."></textarea>
+      </div>
+
+      <div class="app-modal-grid-2 mt-2">
+        <div class="form-check form-switch d-flex align-items-center gap-2">
+          <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="applies_to_cap" id="switchCap">
+          <label class="form-check-label" for="switchCap" style="margin-top: 2px;">Aplica al tope máximo</label>
+        </div>
+        <div class="form-check form-switch d-flex align-items-center gap-2">
+          <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="is_exclusive" id="switchEx">
+          <label class="form-check-label" for="switchEx" style="margin-top: 2px;">Es exclusivo (1 variante por socio)</label>
+        </div>
+      </div>
+
+      <hr style="border-color: var(--gris-claro); margin: 1.5rem 0;">
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <label class="fw600" style="font-size: 1rem; color: var(--verde-petroleo);">Variantes</label>
+        <button type="button" class="btn btn-outline-green" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" (click)="agregarVariante()">
+          + Añadir Variante
+        </button>
+      </div>
+
+      <div formArrayName="variants">
+        @for (variante of variantesFormArray.controls; track $index) {
+          <div [formGroupName]="$index" class="p-3 mb-2 rounded" style="background-color: var(--gris-blanco); border: 1px solid var(--gris-claro);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw500" style="font-size: 0.9rem;">Variante #{{ $index + 1 }}</span>
+              <button type="button" class="btn-close" style="font-size: 0.7rem;" (click)="eliminarVariante($index)"></button>
+            </div>
+            
+            <div class="app-modal-grid-2">
+              <div class="app-modal-field">
+                <label>Nombre</label>
+                <input type="text" formControlName="name" placeholder="Ej. Completo">
+              </div>
+              <div class="app-modal-field">
+                <label>Tipo de valor</label>
+                <select formControlName="type" class="form-select-bg">
+                  <option value="fixed_amount">Monto Fijo</option>
+                  <option value="percentage">Porcentaje</option>
+                </select>
+              </div>
+              <div class="app-modal-field">
+                <label>Valor</label>
+                <input type="number" formControlName="value" placeholder="0.00">
+              </div>
+              <div class="app-modal-field d-flex align-items-start justify-content-center pt-4">
+                <div class="form-check form-switch d-flex align-items-center gap-2">
+                  <input class="form-check-input btn-switch m-0" type="checkbox" formControlName="is_default" [id]="'switchDef'+$index">
+                  <label class="form-check-label" [for]="'switchDef'+$index" style="margin-top: 2px;">Asignar por defecto</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal
+    [isOpen]="isConfirmModalOpen"
+    title="Eliminar Módulo"
+    subtitle="¿Está seguro que desea eliminar este módulo? Esta acción no se puede deshacer."
+    size="sm"
+    primaryBtnText="Eliminar"
+    primaryBtnColor="red"
+    (close)="isConfirmModalOpen = false"
+    (primaryBtnClick)="eliminarModuloDefinitivo()"
+    (secondaryBtnClick)="isConfirmModalOpen = false"
+  ></app-modal>
+</main>

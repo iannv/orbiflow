@@ -37,7 +37,7 @@ export class Sidenav {
       id: '3',
       name: 'Módulos',
       iconName: 'assets/modulo.png',
-      route: '#',
+      route: '/modulos',
     },
     {
       id: '4',
