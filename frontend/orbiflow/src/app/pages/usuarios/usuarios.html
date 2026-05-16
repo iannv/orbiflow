@@ -32,7 +32,7 @@
     <label for="rol"> Rol </label>
     <app-select name="rol">
       @for (role of roles; track $index) {
-        <option [value]="role">{{role}}</option>
+        <option [value]="role">{{ role }}</option>
       }
     </app-select>
   </app-modal>
@@ -47,9 +47,9 @@
               <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
               <div>
                 <app-chip
-                  [name]="chipName"
-                  [backgroundColor]="chipBackgroundColor"
-                  [colorName]="chipColorName"
+                  [name]="user.chipName"
+                  [backgroundColor]="user.chipBackgroundColor"
+                  [colorName]="user.chipColorName"
                 ></app-chip>
                 <img src="assets/punto.png" alt="usuario" id="imgPunto" />
                 <span class="fw200" style="font-size: 0.85rem"
@@ -99,6 +99,9 @@
           </ul>
         </app-base-card>
       </div>
+
+      <!-- Agregar input de busqueda -->
+      <!-- Agregar paginator -->
     </app-base-card>
   </section>
 </main>

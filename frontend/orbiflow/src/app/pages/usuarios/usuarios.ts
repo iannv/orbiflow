@@ -24,25 +24,44 @@ export class Usuarios implements OnInit {
   ) {}
 
   userList: User[] = [];
+  RolEnum!: RolEnum;
   roles = Object.values(RolEnum);
   nameUser: string = '';
   user: string = '';
 
-  chipName: string = '';
-  chipColorName: string = '';
-  chipBackgroundColor: string = '';
-
-  // var(--rojo-bg)
-
   ngOnInit() {
     this.getUsers();
-
-    
   }
 
   getUsers() {
     this.userService.getUsers().subscribe((users) => {
-      this.userList = users;
+      this.userList = users.map((user) => {
+        let chipName: string = '';
+        let chipColorName: string = '';
+        let chipBackgroundColor: string = '';
+
+        if (user.role === RolEnum.ADMIN) {
+          chipName = 'administrador';
+          chipColorName = 'var(--rojo)';
+          chipBackgroundColor = 'var(--rojo-bg)';
+        } else if (user.role === RolEnum.TESORERO) {
+          chipName = 'tesorero';
+          chipColorName = 'var(--azul)';
+          chipBackgroundColor = 'var(--azul-bg)';
+        } else {
+          chipName = 'asociado';
+          chipColorName = 'var(--verde-selva)';
+          chipBackgroundColor = 'var(--verde-bg)';
+        }
+
+        return {
+          ...user,
+          chipName,
+          chipColorName,
+          chipBackgroundColor,
+        };
+      });
+
       this.cdr.detectChanges();
     });
   }
