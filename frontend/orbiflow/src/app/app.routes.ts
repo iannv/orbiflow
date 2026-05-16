@@ -24,7 +24,7 @@ export const routes: Routes = [
   
   {
     path: 'modulos',
-    loadComponent: () => import('./components/modulos/modulos').then((m) => m.Modulos),
+    loadComponent: () => import('./pages/modulos/modulos').then((m) => m.Modulos),
     canActivate: [authGuard],
   },
 

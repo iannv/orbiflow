@@ -6,12 +6,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ModulosService } from '../../services/modulos-service';
 import { Modulo } from '../../interfaces/Modulo';
 
-import { BaseCard } from '../base-card/base-card';
-import { Primary } from '../button/primary/primary';
-import { Action } from '../button/action/action';
-import { Chip } from '../chip/chip';
-import { Modal } from '../modal/modal';
-import { Toast } from '../toast/toast'; 
+import { BaseCard } from '../../components/base-card/base-card';
+import { Primary } from '../../components/button/primary/primary';
+import { Action } from '../../components/button/action/action';
+import { Chip } from '../../components/chip/chip';
+import { Modal } from '../../components/modal/modal';
+import { Toast } from '../../components/toast/toast';
 
 @Component({
   selector: 'app-modulos',
