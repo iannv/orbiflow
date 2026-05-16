@@ -89,6 +89,8 @@ class AuditLogSerializer(serializers.ModelSerializer):
 # --- Módulos Dinámicos ---
 
 class VariantSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False) 
+
     class Meta:
         model = Variant
         fields = ['id', 'module', 'name', 'type', 'value', 'is_default']
@@ -96,14 +98,14 @@ class VariantSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         variant = super().create(validated_data)
-        # Propaga la variante a los asociados existentes si es default.
+        from .services.defaults import apply_default_variant_to_associates
         apply_default_variant_to_associates(variant)
         return variant
 
     def update(self, instance, validated_data):
         previously_default = instance.is_default
         variant = super().update(instance, validated_data)
-        # Si recién pasó a ser default, propagar a asociados existentes.
+        from .services.defaults import apply_default_variant_to_associates
         if variant.is_default and not previously_default:
             apply_default_variant_to_associates(variant)
         return variant
@@ -118,11 +120,49 @@ class ModuleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         variants_data = validated_data.pop('variants', [])
         module = Module.objects.create(**validated_data)
+        from .services.defaults import apply_default_variant_to_associates
         for variant_data in variants_data:
             variant = Variant.objects.create(module=module, **variant_data)
-            # Propaga cada variante default embebida en el módulo recién creado.
             apply_default_variant_to_associates(variant)
         return module
+
+    # --- MÉTODO UPDATE PARA SOPORTAR EDICIÓN ANIDADA ---
+    def update(self, instance, validated_data):
+        variants_data = validated_data.pop('variants', None)
+        
+        # 1. Actualizamos los campos propios del módulo
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # 2. Manejamos la lógica de las variantes si vinieron en el request
+        if variants_data is not None:
+            existing_variants = {v.id: v for v in instance.variants.all()}
+            seen_ids = []
+
+            for v_data in variants_data:
+                variant_id = v_data.get('id')
+                
+                if variant_id and variant_id in existing_variants:
+                    # Actualiza la variante existente
+                    variant = existing_variants[variant_id]
+                    for attr, value in v_data.items():
+                        setattr(variant, attr, value)
+                    variant.save()
+                    seen_ids.append(variant.id)
+                else:
+                    # Crea una variante nueva agregada desde la edición
+                    new_variant = Variant.objects.create(module=instance, **v_data)
+                    seen_ids.append(new_variant.id)
+                    from .services.defaults import apply_default_variant_to_associates
+                    apply_default_variant_to_associates(new_variant)
+            
+            # 3. Elimina las variantes que el usuario quitó 
+            for v_id, variant in existing_variants.items():
+                if v_id not in seen_ids:
+                    variant.delete()
+
+        return instance
 
 
 # --- Motor de Liquidación ---
