@@ -1,3 +1,13 @@
+#section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#div-btn {
+  margin-bottom: 1.5rem;
+}
+
 .section-users-div {
   display: flex;
   justify-content: space-between;
@@ -33,6 +43,19 @@
   display: none;
 }
 
+#section-permisos-rol {
+  margin-top: 1rem;
+}
+
+#section-permisos-rol div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
 /* QUERIES */
 
 /* @media (min-width: 480px) { } */
@@ -44,11 +67,21 @@
     /* gap: 0.5rem; */
     align-items: last baseline;
   }
-
   #imgPunto {
     display: inline;
     width: 4px;
     align-self: center;
+  }
+}
+
+@media (min-width: 800px) {
+  #section-title {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #div-btn {
+    margin-bottom: 0;
   }
 }
 

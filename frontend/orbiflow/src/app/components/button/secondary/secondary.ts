@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { NgStyle } from "@angular/common";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { NgStyle } from '@angular/common';
 
 @Component({
   selector: 'app-secondary',
@@ -11,4 +11,10 @@ export class Secondary {
   @Input() name: string = '';
   @Input() newColor: string = '';
   @Input() btnImg: string = '';
+
+  @Output() btnClick = new EventEmitter();
+
+  click() {
+    this.btnClick.emit();
+  }
 }

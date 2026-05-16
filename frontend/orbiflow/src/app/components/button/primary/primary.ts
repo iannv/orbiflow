@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-primary',
@@ -9,4 +9,9 @@ import { Component, Input } from '@angular/core';
 export class Primary {
   @Input() name: string = '';
   @Input() btnImg: string = '';
+  @Output() btnClick = new EventEmitter();
+
+  click() {
+    this.btnClick.emit();
+  }
 }

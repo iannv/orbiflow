@@ -1,6 +1,13 @@
+<!-- Usar en otros componentes:
+ name -> nombre del btn
+ btnImg -> imagen del btn
+ click -> pasarle evento
+-->
+
 <button
   type="button"
   class="btn btn-outline-green"
+  (click)="click()"
   [ngStyle]="{'border-color': newColor, 'color': newColor}"
   style="--bs-btn-padding-y: 0.6rem; --bs-btn-padding-x: 1rem; --bs-btn-font-size: 1rem"
 >

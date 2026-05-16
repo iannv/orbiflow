@@ -2,6 +2,7 @@ export interface User {
     id: number;
     password: string;
     last_login: Date;
+    username: string;
     is_superuser: boolean;
     first_name: string;
     last_name: string;
