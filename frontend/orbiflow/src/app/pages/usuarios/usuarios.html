@@ -1,9 +1,45 @@
 <main class="p-5">
-  <h1 class="h1-title">Gestión de Usuarios</h1>
-  <h2 class="h2-subtitle">Administrar cuentas y permisos del sistema</h2>
+  <section id="section-title">
+    <div>
+      <h1 class="h1-title">Gestión de Usuarios</h1>
+      <h2 class="h2-subtitle">Administrar cuentas y permisos del sistema</h2>
+    </div>
+    <div id="div-btn">
+      <app-primary
+        (btnClick)="openModal()"
+        name="Nuevo Usuario"
+        btnImg="assets/nuevo-legajo.png"
+      ></app-primary>
+    </div>
+  </section>
 
+  <!-- Modal -->
+  <app-modal
+    [isOpen]="isModalOpen"
+    title="Nuevo usuario"
+    subtitle="Ingrese los datos para el nuevo usuario"
+    (close)="closeModal()"
+  >
+    <label for="nombre"> Nombre </label>
+    <app-input type="text"></app-input>
+
+    <label for="usuario"> Usuario </label>
+    <app-input type="text"></app-input>
+
+    <label for="email"> Email </label>
+    <app-input type="email"></app-input>
+
+    <label for="rol"> Rol </label>
+    <app-select name="rol">
+      @for (role of roles; track $index) {
+        <option [value]="role">{{role}}</option>
+      }
+    </app-select>
+  </app-modal>
+
+  <!-- Usuarios registrados -->
   <section id="section-users">
-    <app-base-card title="Usuarios Registrados" subtitle="{{userList.length}} usuarios">
+    <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
       @for (user of userList; track $index) {
         <app-base-card>
           <div class="section-users-div">
@@ -11,13 +47,13 @@
               <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
               <div>
                 <app-chip
-                  name="admin"
-                  backgroundColor="var(--rojo-bg)"
-                  colorName="var(--rojo)"
+                  [name]="chipName"
+                  [backgroundColor]="chipBackgroundColor"
+                  [colorName]="chipColorName"
                 ></app-chip>
                 <img src="assets/punto.png" alt="usuario" id="imgPunto" />
                 <span class="fw200" style="font-size: 0.85rem"
-                  >Usuario: <strong>nombreDeUsuario</strong></span
+                  >Usuario: <strong>{{ user.username }}</strong></span
                 >
               </div>
             </div>
@@ -29,6 +65,40 @@
           </div>
         </app-base-card>
       }
+    </app-base-card>
+  </section>
+
+  <!-- Permisos por rol -->
+  <section id="section-permisos-rol">
+    <app-base-card title="Permisos por Rol" subtitle="Accesos definidos en el sistema">
+      <div>
+        <app-base-card>
+          <p class="fw600" style="color: var(--rojo)">Administrador</p>
+          <ul>
+            <li>Gestión completa de usuarios</li>
+            <li>Crear y editar módulos</li>
+            <li>Aplicar acciones masivas</li>
+            <li>Visualizar todos los recibos</li>
+          </ul>
+        </app-base-card>
+        <app-base-card>
+          <p class="fw600" style="color: var(--azul)">Tesorero</p>
+          <ul>
+            <li>Gestionar legajos de asociados</li>
+            <li>Asignar módulos a asociados</li>
+            <li>Procesar liquidaciones</li>
+            <li>Generar recibos en PDF</li>
+          </ul>
+        </app-base-card>
+        <app-base-card>
+          <p class="fw600" style="color: var(--verde-selva)">Asociado</p>
+          <ul>
+            <li>Ver y descargar recibos propios</li>
+            <li>Auditoria social de pares</li>
+            <li>Consultar perfil y datos</li>
+          </ul>
+        </app-base-card>
+      </div>
     </app-base-card>
   </section>
 </main>
