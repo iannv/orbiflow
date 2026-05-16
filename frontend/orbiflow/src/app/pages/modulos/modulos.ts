@@ -90,7 +90,7 @@ export class Modulos implements OnInit {
     this.modulosService.getModulos().subscribe({
       next: (data) => {
         this.modulosList = data;
-        this.cdr.detectChanges(); // <-- Obliga a Angular a redibujar la grilla
+        this.cdr.detectChanges(); 
       },
       error: (err) => console.error('Error al cargar módulos', err)
     });
@@ -99,7 +99,7 @@ export class Modulos implements OnInit {
   // --- LÓGICA DE MODALES Y FORMULARIOS ---
 
   openModal(): void {
-    this.moduloEnEdicion = null; // Modo creación
+    this.moduloEnEdicion = null;
     this.moduloForm.reset({ 
       calculation_type: 'simple', 
       is_exclusive: true,
@@ -147,10 +147,9 @@ export class Modulos implements OnInit {
       return;
     }
 
-    // Clonamos los datos para no modificar el formulario en tiempo real
+
     const datosModulo = { ...this.moduloForm.value };
 
-    // Limpiamos los IDs nulos de las variantes para que DRF no rechace el POST
     if (datosModulo.variants && datosModulo.variants.length > 0) {
       datosModulo.variants = datosModulo.variants.map((v: any) => {
         if (v.id === null || v.id === undefined) {
@@ -167,13 +166,13 @@ export class Modulos implements OnInit {
           this.lanzarToast('Módulo actualizado', 'Los cambios se guardaron correctamente.');
           this.closeModal();
           this.cargarModulos(); 
-          this.cdr.detectChanges(); // <-- Forzar renderizado
+          this.cdr.detectChanges(); 
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error al actualizar', err);
           const msj = this.extraerMensajeError(err);
           this.lanzarToast('Error al guardar', msj);
-          this.cdr.detectChanges(); // <-- Forzar renderizado
+          this.cdr.detectChanges(); 
         }
       });
     } else {
@@ -183,13 +182,13 @@ export class Modulos implements OnInit {
           this.lanzarToast('Módulo guardado', 'El nuevo concepto se registró en el sistema.');
           this.closeModal();
           this.cargarModulos();
-          this.cdr.detectChanges(); // <-- Forzar renderizado
+          this.cdr.detectChanges(); 
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error al crear', err);
           const msj = this.extraerMensajeError(err);
           this.lanzarToast('Error al crear', msj);
-          this.cdr.detectChanges(); // <-- Forzar renderizado
+          this.cdr.detectChanges(); 
         }
       });
     }
@@ -239,17 +238,17 @@ export class Modulos implements OnInit {
     
     if (!modulo.id) return;
 
-    // Enviamos solo el campo is_active para actualizar
+  
     this.modulosService.updateModulo(modulo.id, { is_active: nuevoEstado }).subscribe({
       next: () => {
-        // Actualizamos el estado local para que Angular cambie el color del chip
+      
         modulo.is_active = nuevoEstado;
         this.lanzarToast('Estado actualizado', `El módulo "${modulo.name}" ahora está ${nuevoEstado ? 'activo' : 'inactivo'}.`);
         this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al cambiar el estado', err);
-        // Si el backend falla, revertimos el switch visualmente a como estaba
+  
         checkbox.checked = !nuevoEstado; 
         const msj = this.extraerMensajeError(err);
         this.lanzarToast('Error al actualizar', msj);
@@ -262,12 +261,12 @@ export class Modulos implements OnInit {
     this.toastTitle = titulo;
     this.toastSubtitle = subtitulo;
     this.mostrarToast = true;
-    this.cdr.detectChanges(); // <-- Forzar aparición del toast
+    this.cdr.detectChanges(); 
     
     // Ocultar automáticamente 
     setTimeout(() => {
       this.mostrarToast = false;
-      this.cdr.detectChanges(); // <-- Forzar desaparición del toast después de los 3.5 segundos
+      this.cdr.detectChanges(); 
     }, 3500);
   }
 }
