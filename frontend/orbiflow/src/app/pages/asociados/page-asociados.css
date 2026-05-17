@@ -1,3 +1,4 @@
+/* ── Encabezado de página ── */
 #section-title {
   display: flex;
   flex-direction: column;
@@ -8,6 +9,7 @@
   margin-bottom: 1.5rem;
 }
 
+/* ── Filtros y búsqueda ── */
 #section-filters {
   margin-bottom: 1.5rem;
 }
@@ -19,9 +21,10 @@
   background: #fff;
   border: 1px solid var(--gris-claro);
   border-radius: 12px;
-  padding: 0.35rem 0.85rem;
+  padding: 0 0.85rem;
   box-sizing: border-box;
   margin-bottom: 0.75rem;
+  height: 2.75rem;
 }
 
 .search-icon {
@@ -38,17 +41,23 @@
   flex: 1;
   border: none;
   outline: none;
-  padding: 0.55rem 0;
   background: transparent;
   font-size: 0.95rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  /* height auto para que el flex container controle el centrado */
+  height: auto;
+  align-self: center;
 }
 
 .btn-clear {
+  display: flex;
+  align-items: center;
   border: none;
   background: none;
   cursor: pointer;
   padding: 0;
-  line-height: 0;
 }
 
 .btn-clear img {
@@ -96,8 +105,16 @@
   width: 14px;
 }
 
-#section-associates app-base-card {
-  margin-bottom: 1rem;
+/* ── Tarjetas de asociados ── */
+#section-associates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Reducir padding interno de la tarjeta */
+#section-associates :ng-deep .card {
+  padding: 0.6rem 0.85rem !important;
 }
 
 .card-head {
@@ -105,7 +122,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .card-head-actions {
@@ -115,22 +132,73 @@
   flex-shrink: 0;
 }
 
-.asociados-grid {
-  width: 100%;
-  margin-top: 0.5rem;
+/* Cuerpo de la tarjeta: 4 filas apiladas */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.15rem;
 }
 
-.cbu-col {
-  align-self: start;
+/* Fila horizontal de datos */
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 2rem;
+  align-items: center;
 }
 
+.card-datum {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--gris-oscuro);
+  white-space: nowrap;
+}
+
+.datum-img {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.65;
+}
+
+/* Reducir margen del divisor (heredado de profile.css) */
+.divisor {
+  margin: 0.4rem 0 !important;
+}
+
+/* ── Pie de tarjeta: módulos + botón ── */
 .card-foot {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.4rem;
   align-items: stretch;
 }
 
+/* Botón Gestionar módulos: alineado a la derecha, texto en negrita */
+.card-foot app-secondary {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+:host .card-foot ::ng-deep button.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.85rem !important;
+}
+
+/* Oculta la imagen vacía que corre el texto */
+:host .card-foot ::ng-deep button.btn .btn-img {
+  display: none !important;
+}
+
+/* ── Tags de módulos asignados ── */
 .modules-title {
   display: block;
   font-size: 0.85rem;
@@ -145,19 +213,79 @@
 
 .module-tag {
   background: #f3f4f6;
-  border: none;
   border-radius: 8px;
   padding: 0.3rem 0.7rem;
   font-size: 0.8rem;
   color: #444;
+}
+
+/* ── Modal de módulos: items con card como en el mockup ── */
+.module-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.module-item:last-child {
+  margin-bottom: 0;
+}
+
+.module-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.module-name {
+  font-size: 0.95rem;
+  color: var(--verde-petroleo);
+}
+
+.module-value {
+  font-size: 0.85rem;
+  color: var(--verde-mate);
+  opacity: 0.75;
+}
+
+/* Toggle switch nativo estilizado */
+.module-toggle {
+  width: 44px;
+  height: 24px;
+  appearance: none;
+  background: var(--gris-claro);
+  border-radius: 12px;
+  position: relative;
   cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
 }
 
-.module-tag.active {
-  background: var(--verde-bg);
-  color: var(--verde-selva);
+.module-toggle::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+.module-toggle:checked {
+  background: var(--verde-mate);
+}
+
+.module-toggle:checked::before {
+  transform: translateX(20px);
+}
+
+/* ── Paginación ── */
 .pagination {
   display: flex;
   justify-content: center;
@@ -167,6 +295,9 @@
 }
 
 .page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 36px;
   height: 36px;
   border: 1px solid var(--gris-claro);
@@ -194,19 +325,47 @@
   transform: rotate(180deg);
 }
 
+.page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+  color: var(--verde-mate);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Errores y estados generales ── */
 .text-danger {
   color: var(--rojo);
 }
 
+/* ── Modal CU-05: campos del formulario ── */
+.modal-fields-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.modal-hint {
+  font-size: 0.9rem;
+  color: var(--verde-mate);
+  opacity: 0.8;
+  margin: 0.25rem 0;
+}
+
+.modal-error {
+  margin-top: 1rem;
+  color: var(--rojo);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
 @media (min-width: 768px) {
-  .asociados-grid {
-    grid-template-columns: 1.2fr 1fr 0.7fr;
-  }
-
-  .cbu-col {
-    text-align: right;
-  }
-
   .card-foot {
     flex-direction: row;
     justify-content: space-between;

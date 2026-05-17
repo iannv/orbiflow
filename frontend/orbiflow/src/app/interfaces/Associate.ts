@@ -36,4 +36,5 @@ export interface CreateAssociatePayload {
   personal_email: string;
   phone_number: string;
   address: string;
+  emergency_contact?: Record<string, unknown> | null;
 }
