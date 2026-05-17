@@ -46,7 +46,7 @@ class AssociateViewSet(viewsets.ModelViewSet):
     Controlador para la gestión de asociados.
 
     """
-    queryset = Associate.objects.all().select_related('user')
+    queryset = Associate.objects.filter(is_deleted=False).select_related('user')
     serializer_class = AssociateSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ['user', 'dni', 'cbu']
