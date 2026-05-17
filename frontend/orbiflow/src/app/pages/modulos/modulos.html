@@ -100,7 +100,7 @@
     (primaryBtnClick)="guardarModulo()"
     (secondaryBtnClick)="closeModal()"
   >
-    <form [formGroup]="moduloForm" class="app-modal-form mt-2">
+    <form [formGroup]="moduloForm" *ngIf="isModalOpen" class="app-modal-form mt-2">
       <div class="app-modal-grid-2">
         <div class="app-modal-field">
           <label>Nombre del Módulo</label>
