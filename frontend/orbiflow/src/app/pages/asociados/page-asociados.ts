@@ -77,6 +77,9 @@ export class PageAsociados implements OnInit {
   }
 
   // ── Carga de la lista de asociados ──
+  // NOTA: el backend filtra is_deleted=False por defecto (AssociateViewSet en views.py).
+  // Para mostrar asociados inactivos, cambiar el queryset a:
+  //   Associate.objects.all().select_related('user')
 
   loadAssociates(): void {
     this.loading = true;
