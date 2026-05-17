@@ -146,10 +146,17 @@ class ModuleSerializer(serializers.ModelSerializer):
                 if variant_id and variant_id in existing_variants:
                     # Actualiza la variante existente
                     variant = existing_variants[variant_id]
+                    previously_default = variant.is_default # Guardar estado anterior
+
                     for attr, value in v_data.items():
                         setattr(variant, attr, value)
                     variant.save()
                     seen_ids.append(variant.id)
+
+                    if variant.is_default and not previously_default:
+                        from .services.defaults import apply_default_variant_to_associates
+                        apply_default_variant_to_associates(variant)
+                    
                 else:
                     # Crea una variante nueva agregada desde la edición
                     new_variant = Variant.objects.create(module=instance, **v_data)
