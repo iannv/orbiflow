@@ -112,6 +112,7 @@ export class Modulos implements OnInit {
 
   editarModulo(modulo: Modulo): void {
     this.moduloEnEdicion = modulo; 
+    this.moduloForm.reset();
     this.moduloForm.patchValue({
       name: modulo.name,
       description: modulo.description,
@@ -141,6 +142,7 @@ export class Modulos implements OnInit {
   }
 
   guardarModulo(): void {
+    console.log('Datos del formulario al hacer clic:', this.moduloForm.value);
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
       this.lanzarToast('Formulario incompleto', 'Por favor, complete todos los campos obligatorios.');
@@ -152,10 +154,11 @@ export class Modulos implements OnInit {
 
     if (datosModulo.variants && datosModulo.variants.length > 0) {
       datosModulo.variants = datosModulo.variants.map((v: any) => {
-        if (v.id === null || v.id === undefined) {
-          delete v.id;
+        const variantCopy = { ...v }; 
+        if (variantCopy.id === null || variantCopy.id === undefined) {
+          delete variantCopy.id;
         }
-        return v;
+        return variantCopy;
       });
     }
 
