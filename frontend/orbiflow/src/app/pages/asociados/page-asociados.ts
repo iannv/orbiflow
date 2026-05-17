@@ -32,39 +32,39 @@ import { User } from '../../interfaces/User';
 })
 export class PageAsociados implements OnInit {
   // ── Lista de asociados ──
-  associateList: Associate[] = [];  // datos completos del backend
-  filteredList: Associate[] = [];   // resultado tras búsqueda y ordenamiento
+  associateList: Associate[] = [];
+  filteredList: Associate[] = [];
 
   // ── Estados de UI ──
-  loading = true;                   // muestra spinner mientras carga
-  error: string | null = null;      // error global (fuera del modal)
-  modalError: string | null = null; // error dentro del modal CU-05
+  loading = true;
+  error: string | null = null;
+  modalError: string | null = null;
 
   // ── Búsqueda, ordenamiento y paginación ──
   searchQuery = '';
   sortField: 'first_name' | 'last_name' = 'last_name';
   sortAsc = true;
   currentPage = 1;
-  readonly pageSize = 5;       // asociados por página
-  readonly ellipsis = '…';     // separador visual entre números de página
+  readonly pageSize = 5;
+  readonly ellipsis = '…';
 
   // ── Visibilidad de modales ──
-  showModal = false;           // modal CU-05: crear / editar legajo
-  showModulesModal = false;    // modal CU-06: gestionar módulos
+  showModal = false;        // CU-05: crear / editar legajo
+  showModulesModal = false; // CU-06: gestionar módulos
   modalMode: 'create' | 'edit' = 'create';
 
-  // ── Datos compartidos entre modales ──
-  selectedAssociate: Associate | null = null; // asociado en foco
-  availableUsers: User[] = [];                // usuarios con rol 'associate' sin legajo
-  modulesCatalog: ModuleCatalog[] = [];       // catálogo de módulos activos
+  // ── Datos de los modales ──
+  selectedAssociate: Associate | null = null;
+  availableUsers: User[] = [];
+  modulesCatalog: ModuleCatalog[] = [];
   formData: CreateAssociatePayload = this.emptyForm();
-  emergencyContactInput = '';  // se maneja aparte porque el backend espera un objeto JSON
-  selectedUserEmail = '';      // email de trabajo, solo lectura, se autocompleta al elegir usuario
+  emergencyContactInput = ''; // campo aparte: el backend espera un objeto JSON
+  selectedUserEmail = '';     // solo lectura, se autocompleta al elegir usuario
 
-  // ── Estado temporal del modal CU-06 ──
-  // Los toggles modifican este Set; recién al confirmar se persiste en el backend
+  // ── Estado temporal CU-06 ──
+  // Los toggles modifican este Set; se persiste en el backend solo al confirmar
   pendingVariantIds = new Set<number>();
-  savingModules = false; // deshabilita el botón Guardar mientras se procesan las llamadas
+  savingModules = false;
 
   constructor(
     private readonly associateService: AssociateService,
