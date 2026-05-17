@@ -201,8 +201,9 @@ export class PageAsociados implements OnInit {
       next: (users) => {
         // Excluye usuarios ya vinculados a un legajo, eliminados, o sin rol 'associate'
         const linked = new Set(this.associateList.map((a) => a.user));
+        // El backend devuelve role='associate' (ver ROLE_CHOICES en identity.py)
         this.availableUsers = users.filter(
-          (u) => u.role === 'associate' && !linked.has(u.id) && !u.is_deleted,
+          (u) => (u.role as string) === 'associate' && !linked.has(u.id) && !u.is_deleted,
         );
         // Abre el modal solo cuando el select ya tiene opciones cargadas
         this.showModal = true;
