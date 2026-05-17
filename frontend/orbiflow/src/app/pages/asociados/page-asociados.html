@@ -1,0 +1,369 @@
+<main class="p-5">
+  <section id="section-title">
+    <div>
+      <h1 class="h1-title">Gestión de Asociados</h1>
+      <h2 class="h2-subtitle">Legajo único de socios cooperativos</h2>
+    </div>
+    <div id="div-btn">
+      <app-primary
+        name="Nuevo Legajo"
+        btnImg="assets/nuevo-legajo.png"
+        (btnClick)="openCreateModal()"
+      />
+    </div>
+  </section>
+
+  <section id="section-filters">
+    <div class="search-bar">
+      <span class="search-icon" aria-hidden="true"></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre, apellido o DNI"
+        [(ngModel)]="searchQuery"
+        (input)="applyFilters()"
+      />
+      @if (searchQuery) {
+        <button type="button" class="btn-clear" (click)="clearSearch()" aria-label="Limpiar">
+          <img src="assets/cerrar.png" alt="" />
+        </button>
+      }
+    </div>
+
+    <div class="filter-row">
+      <button type="button" class="btn-filter">
+        <img src="assets/filtro.png" alt="" />
+        Filtrar
+      </button>
+      <button type="button" class="btn-sort" (click)="setSort('first_name')">
+        Nombre
+        <img src="assets/ordenar.png" alt="" />
+      </button>
+      <button type="button" class="btn-sort" (click)="setSort('last_name')">
+        Apellido
+        <img src="assets/ordenar.png" alt="" />
+      </button>
+    </div>
+  </section>
+
+  @if (loading) {
+    <p>Cargando asociados...</p>
+  }
+
+  @if (error) {
+    <p class="text-danger">{{ error }}</p>
+  }
+
+  @if (!loading) {
+    <section id="section-associates">
+      @for (associate of paginatedList; track associate.id) {
+        <app-base-card>
+          <div class="card-head">
+            <p class="name fw500">{{ associate.full_name }}</p>
+
+            <div class="card-head-actions">
+              <span class="fw300">Jornada: {{ associate.base_hours }} hs</span>
+
+              <span
+                (click)="toggleStatus(associate)"
+                title="Clic para cambiar estado (visual)"
+                style="cursor:pointer"
+              >
+                <app-chip
+                  [name]="associate.is_deleted ? 'Inactivo' : 'Activo'"
+                  [backgroundColor]="associate.is_deleted ? 'var(--gris-claro)' : 'var(--verde-bg)'"
+                  [colorName]="associate.is_deleted ? 'var(--gris-oscuro)' : 'var(--verde-selva)'"
+                />
+              </span>
+
+              <app-action btnImg="assets/editar.png" (btnClick)="openEditModal(associate)" />
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Fila 1: DNI -->
+            <div class="card-row">
+              <span class="card-datum">
+                <img src="assets/dni.png" alt="" class="datum-img" />
+                DNI: {{ associate.dni }}
+              </span>
+            </div>
+
+            <!-- Fila 2: Ingreso -->
+            <div class="card-row">
+              <span class="card-datum">
+                <img src="assets/fecha-ingreso.png" alt="" class="datum-img" />
+                Ingreso: {{ associate.entry_date | date: 'dd/MM/yyyy' }}
+              </span>
+            </div>
+
+            <!-- Fila 3: Email trabajo · Email personal · CBU -->
+            <div class="card-row">
+              <span class="card-datum">
+                <img src="assets/email.png" alt="" class="datum-img" />
+                {{ associate.work_email }}
+              </span>
+              <span class="card-datum">
+                {{ associate.personal_email }}
+              </span>
+              <span class="card-datum">
+                CBU: {{ associate.cbu }}
+              </span>
+            </div>
+
+            <!-- Fila 4: Teléfono · Dirección -->
+            <div class="card-row">
+              <span class="card-datum">
+                <img src="assets/tel.png" alt="" class="datum-img" />
+                {{ associate.phone_number }}
+              </span>
+              <span class="card-datum">
+                {{ associate.address }}
+              </span>
+            </div>
+          </div>
+
+          <div class="divisor"></div>
+
+          <div class="card-foot">
+            <div>
+              <span class="fw300 modules-title">Módulos asignados</span>
+              <div class="modules-tags">
+                @for (v of associate.variants; track v.id) {
+                  <span class="module-tag">{{ v.module_name }}</span>
+                } @empty {
+                  <span class="fw200">Sin módulos</span>
+                }
+              </div>
+            </div>
+
+            <app-secondary name="Gestionar módulos" btnImg="" (btnClick)="openModulesModal(associate)" />
+          </div>
+        </app-base-card>
+      } @empty {
+        <p class="fw200">No hay asociados para mostrar.</p>
+      }
+    </section>
+  }
+
+  @if (!loading && totalPages > 1) {
+    <nav class="pagination">
+      <button
+        type="button"
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        <img src="assets/flecha-derecha.png" alt="" class="page-arrow-prev" />
+      </button>
+
+      @for (page of pageNumbers; track $index) {
+        @if (page === ellipsis) {
+          <span class="page-ellipsis">{{ page }}</span>
+        } @else {
+          <button
+            type="button"
+            class="page-btn"
+            [class.active]="page === currentPage"
+            (click)="goToPage(+page)"
+          >
+            {{ page }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        <img src="assets/flecha-derecha.png" alt="" />
+      </button>
+    </nav>
+  }
+</main>
+
+<app-modal
+  [isOpen]="showModal"
+  [title]="modalMode === 'create' ? 'Nuevo Asociado' : 'Editar Asociado'"
+  [subtitle]="'Datos personales y bancarios del socio cooperativo'"
+  [primaryBtnText]="modalMode === 'create' ? 'Crear legajo' : 'Guardar cambios'"
+  secondaryBtnText="Cancelar"
+  (close)="closeModal()"
+  (secondaryBtnClick)="closeModal()"
+  (primaryBtnClick)="submitForm()"
+>
+  @if (modalMode === 'create') {
+    <div class="app-modal-field">
+      <label>Usuario vinculado</label>
+      @if (availableUsers.length === 0) {
+        <p class="modal-hint">No hay usuarios con rol Asociado sin legajo. Creá uno primero desde Gestión de Usuarios.</p>
+      } @else {
+        <select
+          class="form-select"
+          [(ngModel)]="formData.user"
+          name="user"
+          (ngModelChange)="onUserSelect($event)"
+        >
+          <option [ngValue]="0">Seleccionar usuario...</option>
+          @for (user of availableUsers; track user.id) {
+            <option [ngValue]="user.id">
+              {{ user.first_name }} {{ user.last_name }}
+            </option>
+          }
+        </select>
+      }
+    </div>
+  }
+
+  @if (modalMode === 'edit' && selectedAssociate) {
+    <div class="app-modal-grid-2">
+      <div class="app-modal-field">
+        <label>Nombre</label>
+        <input type="text" [value]="selectedAssociate.first_name" readonly />
+      </div>
+      <div class="app-modal-field">
+        <label>Apellido</label>
+        <input type="text" [value]="selectedAssociate.last_name" readonly />
+      </div>
+    </div>
+  }
+
+  <div class="modal-fields-group">
+    <div class="app-modal-grid-2">
+      <div class="app-modal-field">
+        <label>DNI</label>
+        <input
+          type="text"
+          [(ngModel)]="formData.dni"
+          name="dni"
+          placeholder="Ej: 30123456"
+        />
+      </div>
+
+      <div class="app-modal-field">
+        <label>Fecha ingreso</label>
+        <input
+          type="date"
+          [(ngModel)]="formData.entry_date"
+          name="entry_date"
+        />
+      </div>
+    </div>
+
+    <div class="app-modal-field">
+      <label>CBU</label>
+      <input
+        type="text"
+        [(ngModel)]="formData.cbu"
+        name="cbu"
+        maxlength="22"
+        placeholder="22 dígitos"
+      />
+    </div>
+
+    <div class="app-modal-grid-2">
+      <div class="app-modal-field">
+        <label>Jornada base (hs)</label>
+        <input
+          type="number"
+          [(ngModel)]="formData.base_hours"
+          name="base_hours"
+          min="1"
+          max="12"
+          placeholder="8"
+        />
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email trabajo</label>
+        <input
+          type="email"
+          [value]="modalMode === 'create' ? selectedUserEmail : (selectedAssociate?.work_email ?? '')"
+          placeholder="Autocompletado al elegir usuario"
+          readonly
+        />
+      </div>
+
+      <div class="app-modal-field">
+        <label>Email personal</label>
+        <input
+          type="email"
+          [(ngModel)]="formData.personal_email"
+          name="personal_email"
+          placeholder="Ej: nombre@gmail.com"
+        />
+      </div>
+
+      <div class="app-modal-field">
+        <label>Teléfono</label>
+        <input
+          type="text"
+          [(ngModel)]="formData.phone_number"
+          name="phone_number"
+          placeholder="Ej: 1145231001"
+        />
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>Domicilio</label>
+        <input
+          type="text"
+          [(ngModel)]="formData.address"
+          name="address"
+          placeholder="Ej: Av. Corrientes 1234"
+        />
+      </div>
+
+      <div class="app-modal-field app-modal-field-full">
+        <label>Contacto de emergencia</label>
+        <input
+          type="text"
+          [(ngModel)]="emergencyContactInput"
+          name="emergency_contact"
+          placeholder="Nombre y teléfono"
+        />
+      </div>
+    </div>
+  </div>
+
+  @if (modalError) {
+    <p class="modal-error">
+      {{ modalError }}
+    </p>
+  }
+</app-modal>
+
+<app-modal
+  [isOpen]="showModulesModal"
+  [title]="'Módulos de ' + (selectedAssociate?.full_name ?? '')"
+  subtitle="Activar o desactivar conceptos de liquidación"
+  primaryBtnText="Guardar cambios"
+  secondaryBtnText="Cancelar"
+  [isPrimaryDisabled]="savingModules"
+  (close)="cancelModulesModal()"
+  (primaryBtnClick)="saveModules()"
+  (secondaryBtnClick)="cancelModulesModal()"
+>
+  @for (mod of modulesCatalog; track mod.id) {
+    @for (v of mod.variants; track v.id) {
+      <div class="module-item">
+        <div class="module-info">
+          <span class="module-name fw500">{{ mod.name }}</span>
+          <span class="module-value">{{ formatVariantValue(v) }}</span>
+        </div>
+
+        <input
+          type="checkbox"
+          class="module-toggle"
+          [id]="'module-' + v.id"
+          [checked]="isAssigned(v.id)"
+          (change)="toggleVariant(v.id)"
+        />
+      </div>
+    }
+  } @empty {
+    <p class="fw200">No hay módulos activos para mostrar.</p>
+  }
+</app-modal>

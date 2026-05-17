@@ -31,7 +31,7 @@ export class Sidenav {
       id: '2',
       name: 'Asociados',
       iconName: 'assets/asociados.png',
-      route: '#',
+      route: '/asociados',
     },
     {
       id: '3',
