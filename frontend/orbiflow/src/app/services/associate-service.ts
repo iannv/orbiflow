@@ -31,43 +31,43 @@ export interface ModuleCatalog {
 export class AssociateService {
   constructor(private readonly http: HttpClient) {}
 
-  getAssociates(): Observable<Associate[]> {
-    return this.http.get<Associate[]>(`${API_BASE_URL}/associates/`);
-  }
-
-  getAssociate(id: number): Observable<Associate> {
+  public getAssociate(id: number): Observable<Associate> {
     return this.http.get<Associate>(`${API_BASE_URL}/associates/${id}/`);
   }
 
-  getAssociateByUser(userId: number): Observable<Associate[]> {
+  public getAssociates(): Observable<Associate[]> {
+    return this.http.get<Associate[]>(`${API_BASE_URL}/associates/`);
+  }
+
+  public getAssociateByUser(userId: number): Observable<Associate[]> {
     return this.http.get<Associate[]>(`${API_BASE_URL}/associates/?user=${userId}`);
   }
 
-  createAssociate(payload: CreateAssociatePayload): Observable<Associate> {
+  public createAssociate(payload: CreateAssociatePayload): Observable<Associate> {
     return this.http.post<Associate>(`${API_BASE_URL}/associates/`, payload);
   }
 
-  updateAssociate(id: number, payload: Partial<CreateAssociatePayload>): Observable<Associate> {
+  public updateAssociate(id: number, payload: Partial<CreateAssociatePayload>): Observable<Associate> {
     return this.http.patch<Associate>(`${API_BASE_URL}/associates/${id}/`, payload);
   }
 
-  toggleAssociateStatus(id: number, isDeleted: boolean): Observable<Associate> {
+  public toggleAssociateStatus(id: number, isDeleted: boolean): Observable<Associate> {
     return this.http.patch<Associate>(`${API_BASE_URL}/associates/${id}/`, { is_deleted: isDeleted });
   }
 
-  deleteAssociate(id: number): Observable<void> {
+  public deleteAssociate(id: number): Observable<void> {
     return this.http.delete<void>(`${API_BASE_URL}/associates/${id}/`);
   }
 
-  getModules(): Observable<ModuleCatalog[]> {
+  public getModules(): Observable<ModuleCatalog[]> {
     return this.http.get<ModuleCatalog[]>(`${API_BASE_URL}/modules/`);
   }
 
-  createAssociateVariant(payload: { associate: number; variant: number }): Observable<AssociateVariant> {
+  public createAssociateVariant(payload: { associate: number; variant: number }): Observable<AssociateVariant> {
     return this.http.post<AssociateVariant>(`${API_BASE_URL}/associate-variants/`, payload);
   }
 
-  deleteAssociateVariant(id: number): Observable<void> {
+  public deleteAssociateVariant(id: number): Observable<void> {
     return this.http.delete<void>(`${API_BASE_URL}/associate-variants/${id}/`);
   }
 }
