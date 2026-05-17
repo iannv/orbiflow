@@ -10,19 +10,22 @@ import { Modal } from '../../components/modal/modal';
 import { input } from '../../components/input/input';
 import { Select } from '../../components/select/select';
 import { RolEnum } from '../../enums/rolEnum';
+import { FormBuilder, FormGroup, Validators, ɵInternalFormsSharedModule } from '@angular/forms';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [BaseCard, Chip, Action, Primary, Modal, input, Select],
+  imports: [BaseCard, Chip, Action, Primary, Modal, input, Select, ɵInternalFormsSharedModule],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
 export class Usuarios implements OnInit {
   constructor(
     private userService: UserService,
+    private formBuilder: FormBuilder,
     private cdr: ChangeDetectorRef,
   ) {}
 
+  userForm!: FormGroup;
   userList: User[] = [];
   RolEnum!: RolEnum;
   roles = Object.values(RolEnum);
@@ -31,6 +34,18 @@ export class Usuarios implements OnInit {
 
   ngOnInit() {
     this.getUsers();
+    this.initForm();
+  }
+
+  private initForm() {
+    this.userForm = this.formBuilder.group({
+      first_name: ['', Validators.required],
+      last_name: ['', Validators.required],
+      username: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      email: ['', [Validators.required, Validators.email]],
+      roleControl: ['', Validators.required],
+    });
   }
 
   getUsers() {

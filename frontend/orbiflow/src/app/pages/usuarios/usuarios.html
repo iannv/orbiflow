@@ -21,16 +21,25 @@
     (close)="closeModal()"
   >
     <label for="nombre"> Nombre </label>
-    <app-input type="text"></app-input>
+    <app-input type="text" formControlName="first_name"></app-input>
 
-    <label for="usuario"> Usuario </label>
-    <app-input type="text"></app-input>
+    <label for="nombre"> Apellido </label>
+    <app-input type="text" formControlName="last_name"></app-input>
 
     <label for="email"> Email </label>
-    <app-input type="email"></app-input>
+    <app-input type="email" formControlName="email"></app-input>
+
+    <label for="usuario"> Usuario </label>
+    <app-input type="text" formControlName="username"></app-input>
+
+    <label for="usuario"> Contraseña </label>
+    <app-input type="text" formControlName="password"></app-input>
+
+    <label for="usuario"> Repetir contraseña </label>
+    <app-input type="text" formControlName="password"></app-input>
 
     <label for="rol"> Rol </label>
-    <app-select name="rol">
+    <app-select name="rol" formControlName="roleControl">
       @for (role of roles; track $index) {
         <option [value]="role">{{ role }}</option>
       }
