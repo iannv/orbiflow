@@ -1,0 +1,158 @@
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+  <div class="mb-4">
+    <h1 class="h1-title mb-1">Configuración de parámetros generales</h1>
+    <p class="h2-subtitle text-muted">Permite gestionar las variables globales que alimentan el motor de cálculo.</p>
+  </div>
+
+  @if (isLoading()) {
+    <p>Cargando configuraciones...</p>
+  } @else {
+    @if (!currentConfig()) {
+      <app-base-card title="Sin configuración" subtitle="La base de datos está vacía.">
+        <div class="d-flex justify-content-center p-4">
+          <app-primary name="Setear valores iniciales" btnImg="assets/agregar.png" (btnClick)="openEditModal('both')"></app-primary>
+        </div>
+      </app-base-card>
+    } @else {
+      <div class="row">
+        <div class="col-12 mb-4">
+          <app-base-card>
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h3 class="mb-1" style="font-size: 20px;">Valor Hora</h3>
+                <p class="text-muted fw300" style="font-size: 16px;">Valor global actual por hora.</p>
+              </div>
+              <app-action btnImg="assets/editar.png" (btnClick)="openEditModal('hour')"></app-action>
+            </div>
+            
+            <div class="mt-3 mb-4">
+              <span class="text-muted d-block" style="font-size: 0.9rem">Actual:</span>
+              <span class="fw700" style="font-size: 1.5rem">${{ currentConfig()?.hour_value }}</span>
+            </div>
+
+            <hr style="border-color: var(--gris-claro);" />
+            
+            <div class="mt-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <span class="fw500">Última modificación</span><br>
+                  <span class="text-muted fw300" style="font-size: 0.85rem">
+                    Por <strong style="color: var(--verde-petroleo);">{{ lastModification()?.user_name }}</strong> 
+                    el {{ lastModification()?.change_date | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" (click)="openHistoryModal()">
+                  Ver historial
+                </button>
+              </div>
+            </div>
+          </app-base-card>
+        </div>
+
+        <div class="col-12">
+          <app-base-card>
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h3 class="mb-1" style="font-size: 20px;">Tope de adicionales</h3>
+                <p class="text-muted fw300" style="font-size: 16px;">Indica el tope máximo global.</p>
+              </div>
+              <app-action btnImg="assets/editar.png" (btnClick)="openEditModal('cap')"></app-action>
+            </div>
+            
+            <div class="mt-3">
+              <span class="text-muted d-block" style="font-size: 0.9rem">Valor:</span>
+              <span class="fw700" style="font-size: 1.5rem">{{ currentConfig()?.cap_percentage }}%</span>
+            </div>
+          </app-base-card>
+        </div>
+      </div>
+    }
+  }
+
+  <app-modal 
+    [isOpen]="isEditModalOpen()" 
+    [title]="modalTitle()"
+    primaryBtnText="Guardar"
+    (primaryBtnClick)="saveConfig()"
+    (close)="closeEditModal()"
+    (secondaryBtnClick)="closeEditModal()">
+    
+    <form [formGroup]="configForm" class="app-modal-form">
+      @if (editingField() === 'both' || editingField() === 'hour') {
+        <div class="app-modal-field mb-3">
+          <label class="form-label">Valor Hora ($)</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            formControlName="hour_value" 
+            [ngClass]="{'is-invalid': configForm.get('hour_value')?.invalid && configForm.get('hour_value')?.touched}" />
+            
+          @if (configForm.get('hour_value')?.invalid && configForm.get('hour_value')?.touched) {
+            <div class="text-danger mt-1" style="font-size: 0.85rem;">
+              @if (configForm.get('hour_value')?.hasError('required')) {
+                <span>El valor hora es requerido.</span>
+              }
+              @if (configForm.get('hour_value')?.hasError('min')) {
+                <span>El valor debe ser mayor a 0.</span>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (editingField() === 'both' || editingField() === 'cap') {
+        <div class="app-modal-field">
+          <label class="form-label">Tope de adicionales (%)</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            formControlName="cap_percentage" 
+            [ngClass]="{'is-invalid': configForm.get('cap_percentage')?.invalid && configForm.get('cap_percentage')?.touched}" />
+            
+          @if (configForm.get('cap_percentage')?.invalid && configForm.get('cap_percentage')?.touched) {
+            <div class="text-danger mt-1" style="font-size: 0.85rem;">
+              @if (configForm.get('cap_percentage')?.hasError('required')) {
+                <span>El tope es requerido.</span>
+              }
+              @if (configForm.get('cap_percentage')?.hasError('min')) {
+                <span>El tope no puede ser negativo.</span>
+              }
+              @if (configForm.get('cap_percentage')?.hasError('max')) {
+                <span>El tope no puede superar el 100%.</span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </form>
+  </app-modal>
+
+  <app-modal 
+    [isOpen]="isHistoryModalOpen()" 
+    title="Historial de Cambios"
+    primaryBtnText="Cerrar"
+    [hideSecondaryBtn]="true" 
+    primaryBtnPosition="full"
+    (primaryBtnClick)="closeHistoryModal()"
+    (close)="closeHistoryModal()">
+    
+    <div style="max-height: 400px; overflow-y: auto;">
+      @for (item of configs(); track item.id) {
+        <div class="p-3 mb-2 rounded d-flex justify-content-between align-items-center" style="border: 1px solid var(--gris-claro);">
+          <div>
+            <span class="fw600 d-block" style="color: var(--verde-petroleo);">{{ item.user_name }}</span>
+            <span class="text-muted" style="font-size: 0.85rem">
+              {{ item.change_date | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="text-end">
+            <div class="fw700">${{ item.hour_value }}</div>
+            <span class="badge" style="background-color: var(--verde-bg); color: var(--verde-bosque);">
+              Tope: {{ item.cap_percentage }}%
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </app-modal>
+</div>

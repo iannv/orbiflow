@@ -298,6 +298,27 @@
   box-shadow: 0 0 0 3px rgba(78, 124, 116, 0.13);
 }
 
+/* Centrar el botón */
+.app-modal-footer-center {
+  display: flex !important;
+  justify-content: center !important;
+}
+.app-modal-footer-center .app-modal-btn-primary {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Ocupar todo el ancho */
+.app-modal-footer-full {
+  display: flex !important;
+}
+.app-modal-footer-full .app-modal-btn-primary {
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+
 @media (max-width: 600px) {
   .app-modal-overlay {
     padding: 0.65rem;

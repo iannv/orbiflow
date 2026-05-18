@@ -22,11 +22,12 @@ export class Modal {
   @Input() primaryBtnText = 'Guardar';
   @Input() secondaryBtnText = 'Cancelar';
   @Input() primaryBtnColor: 'green' | 'red' | 'blue' = 'green';
-  @Input() primaryBtnPosition: 'left' | 'right' = 'right';
+  @Input() primaryBtnPosition: 'left' | 'right' | 'center' | 'full' = 'right';
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() showFooter = true;
   @Input() closeOnBackdrop = true;
   @Input() isPrimaryDisabled = false;
+  @Input() hideSecondaryBtn = false;
 
   @Output() primaryBtnClick = new EventEmitter<void>();
   @Output() secondaryBtnClick = new EventEmitter<void>();
