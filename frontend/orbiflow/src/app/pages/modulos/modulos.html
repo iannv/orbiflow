@@ -197,7 +197,23 @@
               </div>
               <div class="app-modal-field">
                 <label>Valor</label>
-                <input type="number" formControlName="value" placeholder="0.00" />
+                <input
+                  type="number"
+                  formControlName="value"
+                  placeholder="0.00"
+                  [max]="variante.get('type')?.value === 'percentage' ? 100 : null"
+                  [ngStyle]="{
+                    'border-color': variante.get('value')?.hasError('max') ? 'var(--rojo)' : '',
+                  }"
+                />
+
+                @if (variante.get('value')?.hasError('max')) {
+                  <small
+                    style="color: var(--rojo); font-size: 0.8rem; margin-top: 4px; display: block"
+                  >
+                    No puede superar el 100%
+                  </small>
+                }
               </div>
               <div class="app-modal-field d-flex align-items-start justify-content-center pt-4">
                 <div class="form-check form-switch d-flex align-items-center gap-2">
