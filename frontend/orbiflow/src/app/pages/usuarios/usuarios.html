@@ -19,22 +19,126 @@
     title="Nuevo usuario"
     subtitle="Ingrese los datos para el nuevo usuario"
     (close)="closeModal()"
+    (primaryBtnClick)="createUser()"
+    (secondaryBtnClick)="closeModal()"
   >
-    <label for="nombre"> Nombre </label>
-    <app-input type="text"></app-input>
+    <form [formGroup]="userForm">
+      <div id="form-div">
+        <div class="form-div">
+          <div>
+            <label for="first_name"> Nombre </label>
+            <input type="text" formControlName="first_name" required />
+          </div>
 
-    <label for="usuario"> Usuario </label>
-    <app-input type="text"></app-input>
+          <div>
+            <label for="last_name"> Apellido </label>
+            <input type="text" formControlName="last_name" required />
+          </div>
+        </div>
 
-    <label for="email"> Email </label>
-    <app-input type="email"></app-input>
+        <div class="form-div">
+          <div>
+            <label for="email"> Email </label>
+            <input type="email" formControlName="email" required />
+          </div>
+          <div>
+            <label for="username"> Usuario </label>
+            <input type="text" formControlName="username" required />
+          </div>
+        </div>
 
-    <label for="rol"> Rol </label>
-    <app-select name="rol">
-      @for (role of roles; track $index) {
-        <option [value]="role">{{ role }}</option>
+        <div class="form-div">
+          <div>
+            <label for="password"> Contraseña </label>
+            <input type="password" formControlName="password" required />
+          </div>
+          <div>
+            <label for="repeatPassword"> Repetir contraseña </label>
+            <input type="password" formControlName="repeatPassword" required />
+          </div>
+        </div>
+
+        <div class="form-div-checks form-div">
+          <div>
+            <label for="is_active"> Activo </label>
+            <input type="checkbox" name="is_active" formControlName="is_active" />
+          </div>
+          <div>
+            <label for="is_staff"> Staff </label>
+            <input type="checkbox" name="is_staff" formControlName="is_staff" />
+          </div>
+          <div>
+            <label for="is_superuser"> Superusuario </label>
+            <input type="checkbox" name="is_superuser" formControlName="is_superuser" />
+          </div>
+        </div>
+
+        <label for="rol"> Rol </label>
+        <app-select name="rol" formControlName="roleControl" required>
+          @for (role of roles; track $index) {
+            <option [value]="role.value">{{ role.label }}</option>
+          }
+        </app-select>
+      </div>
+
+      <!-- Validaciones -->
+      @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
+        @if (userForm.get('first_name')?.errors?.['required']) {
+          <p class="error">El nombre es obligatorio</p>
+        }
       }
-    </app-select>
+
+      @if (userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched) {
+        @if (userForm.get('last_name')?.errors?.['required']) {
+          <p class="error">El apellido es obligatorio</p>
+        }
+      }
+
+      @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+        @if (userForm.get('email')?.errors?.['required']) {
+          <p class="error">El email es obligatorio</p>
+        }
+        @if (userForm.get('email')?.errors?.['email']) {
+          <p class="error">El email no es válido</p>
+        }
+      }
+
+      @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
+        @if (userForm.get('username')?.errors?.['required']) {
+          <p class="error">El usuario es obligatorio</p>
+        }
+      }
+
+      @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+        @if (userForm.get('password')?.errors?.['required']) {
+          <p class="error">La contraseña es obligatoria</p>
+        }
+        @if (userForm.get('password')?.errors?.['minlength']) {
+          <p class="error">La contraseña debe contener al menos 8 caracteres,una letra y un número</p>
+        }
+        @if (userForm.get('password')?.errors?.['pattern']) {
+          <p class="error">La contraseña debe contener al menos 8 caracteres,una letra y un número</p>
+        }
+      }
+
+      @if (userForm.get('repeatPassword')?.touched) {
+        @if (userForm.get('repeatPassword')?.errors?.['required']) {
+          <p class="error">Debe repetir la contraseña</p>
+        }
+        @if (userForm.get('repeatPassword')?.errors?.['minlength']) {
+          <p class="error">Debe tener al menos 8 caracteres</p>
+        }
+        @if (userForm.hasError('passwordMismatch')) {
+          <p class="error">Las contraseñas no coinciden</p>
+        }
+      }
+
+      @if (userForm.get('roleControl')?.invalid && userForm.get('roleControl')?.touched) {
+        @if (userForm.get('roleControl')?.errors?.['required']) {
+          <p class="error">El rol es obligatorio</p>
+        }
+      }
+    </form>
   </app-modal>
 
   <!-- Usuarios registrados -->
@@ -47,9 +151,9 @@
               <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
               <div>
                 <app-chip
-                  [name]="user.chipName"
-                  [backgroundColor]="user.chipBackgroundColor"
-                  [colorName]="user.chipColorName"
+                  [name]="user.chipName || ''"
+                  [backgroundColor]="user.chipBackgroundColor || ''"
+                  [colorName]="user.chipColorName || ''"
                 ></app-chip>
                 <img src="assets/punto.png" alt="usuario" id="imgPunto" />
                 <span class="fw200" style="font-size: 0.85rem"

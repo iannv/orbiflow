@@ -222,13 +222,13 @@ export class Modulos implements OnInit {
         this.isConfirmModalOpen = false;
         this.moduloAEliminarId = undefined;
         this.cargarModulos();
-        this.cdr.detectChanges(); // <-- Forzar renderizado
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al eliminar', err);
         this.lanzarToast('Error de eliminación', 'No se puede borrar un módulo que está en uso.');
         this.isConfirmModalOpen = false;
-        this.cdr.detectChanges(); // <-- Forzar renderizado
+        this.cdr.detectChanges();
       }
     });
   }
