@@ -1,21 +1,21 @@
 import { RolEnum } from '../enums/rolEnum';
 
 export interface User {
-  id: number;
+  id?: number;
   password: string;
-  last_login: Date;
   username: string;
-  is_superuser: boolean;
   first_name: string;
   last_name: string;
+  email: string;
+  role: RolEnum;
   is_staff: boolean;
   is_active: boolean;
-  date_joined: Date;
-  role: RolEnum;
-  email: string;
-  is_deleted: boolean;
+  is_superuser: boolean;
+  is_deleted?: boolean;
+  date_joined: string;
+  last_login?: Date;
 
-  chipName: string;
-  chipColorName: string;
-  chipBackgroundColor: string;
+  chipName?: string;
+  chipColorName?: string;
+  chipBackgroundColor?: string;
 }
