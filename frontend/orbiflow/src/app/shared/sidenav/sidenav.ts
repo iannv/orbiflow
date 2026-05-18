@@ -55,7 +55,7 @@ export class Sidenav {
       id: '6',
       name: 'Configuración',
       iconName: 'assets/configuracion.png',
-      route: '#',
+      route: '/configuracion-general',
     },
     {
       id: '7',

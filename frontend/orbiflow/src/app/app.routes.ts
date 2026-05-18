@@ -29,6 +29,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'configuracion-general',
+    loadComponent: () => import('./pages/configuracion-general/configuracion-general').then((m) => m.ConfiguracionGeneral),
+    canActivate: [authGuard],
+  },
+
+
+  {
     path: 'profile',
     loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
     canActivate: [authGuard],
