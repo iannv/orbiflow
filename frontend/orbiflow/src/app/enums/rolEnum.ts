@@ -1,5 +1,5 @@
 export enum RolEnum {
-  ADMIN = 'Administrador',
-  TESORERO = 'Tesorero',
-  ASOCIADO = 'Asociado',
+  ADMIN = 'admin',
+  TREASURER = 'treasurer',
+  ASSOCIATE = 'associate'
 }

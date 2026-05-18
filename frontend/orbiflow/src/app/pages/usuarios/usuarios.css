@@ -1,3 +1,41 @@
+.error {
+    color: var(--rojo);
+}
+
+#form-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-div div {
+  width: 100%;
+}
+
+.form-div-checks {
+  display: flex;
+  justify-content: start;
+  align-items: last baseline;
+}
+
+.form-div-checks div {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.form-div-checks div label {
+  align-self: center;
+}
+
 #section-title {
   display: flex;
   flex-direction: column;
