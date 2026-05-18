@@ -116,3 +116,17 @@ a{
 .sidebar .div-content .link.active .content .icon img {
   background-color: transparent;
 }
+
+/* Centrado del logo */
+.logo-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center;     
+  width: 100%;            
+  margin: 20px 0;        
+}
+
+#logo {
+  max-width: 80%;
+  height: auto;
+}
