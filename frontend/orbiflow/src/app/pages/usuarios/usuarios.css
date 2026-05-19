@@ -67,7 +67,7 @@
 }
 
 #section-users app-base-card {
-  margin-top: -1.5rem;
+  margin-top: -1rem;
 }
 
 #section-users app-base-card app-base-card {
@@ -181,12 +181,29 @@
   justify-content: space-between;
   gap: 0.75rem;
 }
+.filter-row div {
+  display: flex;
+  align-items: last baseline;
+  gap: 0.5rem;
+  color: var(--gris-oscuro);
+  flex-wrap: wrap;
+}
+.filter-row p {
+  margin: 0;
+  font-size: 12px;
+  margin-left: -0.4rem;
+}
+
+.filter-row img {
+  width: 16px;
+  display: flex;
+  align-self: first baseline;
+}
 
 .btn-filter {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.85rem;
   border: 1px solid var(--gris-claro);
   border-radius: 8px;
   background: #fff;
@@ -196,10 +213,8 @@
   cursor: pointer;
 }
 
-.btn-filter img {
-  width: 16px;
+app-chip:active {
 }
-
 
 /* QUERIES */
 
