@@ -1,4 +1,5 @@
-import { Component, OnInit, DoCheck, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { BaseCard } from '../../components/base-card/base-card';
 import { Chip } from '../../components/chip/chip';
 import { Action } from '../../components/button/action/action';
@@ -16,12 +17,24 @@ import {
   AbstractControl,
   ValidationErrors,
   ValidatorFn,
+  FormsModule,
 } from '@angular/forms';
 import { Toast } from '../../components/toast/toast';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [ReactiveFormsModule, BaseCard, Chip, Action, Primary, Modal, Select, Toast],
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
+    BaseCard,
+    Chip,
+    Action,
+    Primary,
+    Modal,
+    Select,
+    Toast,
+  ],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
@@ -109,6 +122,8 @@ export class Usuarios implements OnInit {
           chipBackgroundColor: this.chipBackgroundColor,
         };
       });
+      this.filteredList = [...this.userList];
+      this.currentPage = 1;
       this.cdr.detectChanges();
     });
   }
@@ -299,19 +314,48 @@ export class Usuarios implements OnInit {
     }, 3500);
   }
 
-  // Paginator
+  // Paginator, búsqueda y filtrado
+  searchQuery = '';
+  filteredList: User[] = [];
   currentPage = 1;
   itemsPerPage = 5;
   get totalPages(): number {
-    return Math.ceil(this.userList.length / this.itemsPerPage);
+    return Math.max(1, Math.ceil(this.filteredList.length / this.itemsPerPage));
   }
   get paginatedUsers(): User[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.userList.slice(start, end);
+    return this.filteredList.slice(start, start + this.itemsPerPage);
   }
   changePage(page: number) {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
   }
+
+  applyFilters(): void {
+    const q = this.searchQuery.trim().toLowerCase();
+    const result = this.userList.filter((u) => {
+      if (!q) return true;
+      return [u.first_name, u.last_name].some((v) =>
+        String(v ?? '')
+          .toLowerCase()
+          .includes(q),
+      );
+    });
+    this.filteredList = result;
+    this.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.applyFilters();
+  }
+  
 }
+
+// result.sort((a, b) => {
+//   const cmp = String(a[this.sortField] ?? '')
+//     .toLowerCase()
+//     .localeCompare(String(b[this.sortField] ?? '').toLowerCase(), 'es');
+//   return this.sortAsc ? cmp : -cmp;
+// });

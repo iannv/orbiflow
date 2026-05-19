@@ -17,6 +17,56 @@
     </div>
   </section>
 
+  <!-- Barra de búsqueda -->
+  <section id="section-filters">
+    <div class="search-bar">
+      <span class="search-icon" aria-hidden="true"></span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre o apellido"
+        [(ngModel)]="searchQuery"
+        (input)="applyFilters()"
+      />
+      @if (searchQuery) {
+        <button type="button" class="btn-clear" (click)="clearSearch()" aria-label="Limpiar">
+          <img src="assets/cerrar.png" alt="" />
+        </button>
+      }
+    </div>
+
+    <div class="filter-row">
+      <button type="button" class="btn-filter">
+        <img src="assets/filtro.png" alt="" />
+        Filtrar
+      </button>
+
+      <!-- Paginator -->
+      @if (totalPages > 1) {
+        <nav>
+          <ul class="pagination justify-content-end">
+            <!-- Anterior -->
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
+            </li>
+            <!-- Números -->
+            @for (page of [].constructor(totalPages); let i = $index; track i) {
+              <li class="page-item" [class.active]="currentPage === i + 1">
+                <button class="page-link" (click)="changePage(i + 1)">
+                  {{ i + 1 }}
+                </button>
+              </li>
+            }
+            <!-- Siguiente -->
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
+            </li>
+          </ul>
+        </nav>
+      }
+    </div>
+  </section>
+
   <!-- Modal -->
   <app-modal
     [isOpen]="isModalOpen"
@@ -174,29 +224,6 @@
   <section id="section-users">
     <div style="display: flex; flex-direction: column; gap: 1rem">
       <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
-        <!-- Paginator -->
-        @if (totalPages > 1) {
-          <nav>
-            <ul class="pagination justify-content-end">
-              <!-- Anterior -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
-              </li>
-              <!-- Números -->
-              @for (page of [].constructor(totalPages); let i = $index; track i) {
-                <li class="page-item" [class.active]="currentPage === i + 1">
-                  <button class="page-link" (click)="changePage(i + 1)">
-                    {{ i + 1 }}
-                  </button>
-                </li>
-              }
-              <!-- Siguiente -->
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
-              </li>
-            </ul>
-          </nav>
-        }
         @for (user of paginatedUsers; track $index) {
           <app-base-card>
             <div class="section-users-div">
@@ -231,7 +258,7 @@
 
         <!-- Paginator -->
         @if (totalPages > 1) {
-          <nav>
+          <nav id="nav-paginator">
             <ul class="pagination justify-content-center">
               <!-- Anterior -->
               <li class="page-item" [class.disabled]="currentPage === 1">
