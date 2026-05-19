@@ -172,36 +172,88 @@
 
   <!-- Usuarios registrados -->
   <section id="section-users">
-    <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
-      @for (user of userList; track $index) {
-        <app-base-card>
-          <div class="section-users-div">
-            <div class="div-user-chip">
-              <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
-              <div>
-                <app-chip
-                  [name]="user.chipName || ''"
-                  [backgroundColor]="user.chipBackgroundColor || ''"
-                  [colorName]="user.chipColorName || ''"
-                ></app-chip>
-                <img src="assets/punto.png" alt="usuario" id="imgPunto" />
-                <span class="fw200" style="font-size: 0.85rem"
-                  >Usuario: <strong>{{ user.username }}</strong></span
-                >
+    <div style="display: flex; flex-direction: column; gap: 1rem">
+      <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
+        <!-- Paginator -->
+        @if (totalPages > 1) {
+          <nav>
+            <ul class="pagination justify-content-end">
+              <!-- Anterior -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
+              </li>
+              <!-- Números -->
+              @for (page of [].constructor(totalPages); let i = $index; track i) {
+                <li class="page-item" [class.active]="currentPage === i + 1">
+                  <button class="page-link" (click)="changePage(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+              }
+              <!-- Siguiente -->
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
+              </li>
+            </ul>
+          </nav>
+        }
+        @for (user of paginatedUsers; track $index) {
+          <app-base-card>
+            <div class="section-users-div">
+              <div class="div-user-chip">
+                <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
+                <div>
+                  <app-chip
+                    [name]="user.chipName || ''"
+                    [backgroundColor]="user.chipBackgroundColor || ''"
+                    [colorName]="user.chipColorName || ''"
+                  ></app-chip>
+                  <img src="assets/punto.png" alt="usuario" id="imgPunto" />
+                  <span class="fw200" style="font-size: 0.85rem"
+                    >Usuario: <strong>{{ user.username }}</strong></span
+                  >
+                </div>
+              </div>
+
+              <div class="div-actions">
+                <app-action
+                  btnImg="assets/editar.png"
+                  (btnClick)="openEditModal(user)"
+                ></app-action>
+                <app-action
+                  btnImg="assets/eliminar.png"
+                  (btnClick)="openDeleteModal(user)"
+                ></app-action>
               </div>
             </div>
+          </app-base-card>
+        }
 
-            <div class="div-actions">
-              <app-action btnImg="assets/editar.png" (btnClick)="openEditModal(user)"></app-action>
-              <app-action
-                btnImg="assets/eliminar.png"
-                (btnClick)="openDeleteModal(user)"
-              ></app-action>
-            </div>
-          </div>
-        </app-base-card>
-      }
-    </app-base-card>
+        <!-- Paginator -->
+        @if (totalPages > 1) {
+          <nav>
+            <ul class="pagination justify-content-center">
+              <!-- Anterior -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
+              </li>
+              <!-- Números -->
+              @for (page of [].constructor(totalPages); let i = $index; track i) {
+                <li class="page-item" [class.active]="currentPage === i + 1">
+                  <button class="page-link" (click)="changePage(i + 1)">
+                    {{ i + 1 }}
+                  </button>
+                </li>
+              }
+              <!-- Siguiente -->
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
+              </li>
+            </ul>
+          </nav>
+        }
+      </app-base-card>
+    </div>
   </section>
 
   <!-- Permisos por rol -->
@@ -237,7 +289,6 @@
       </div>
 
       <!-- Agregar input de busqueda -->
-      <!-- Agregar paginator -->
     </app-base-card>
   </section>
 </main>

@@ -99,6 +99,18 @@
   box-sizing: border-box;
 }
 
+/* Paginator */
+.page-link {
+  color: var(--verde-mate);
+  box-shadow: none;
+}
+.active > .page-link,
+.page-link.active {
+  background-color: var(--verde-mate);
+  border-color: var(--verde-mate);
+  color: var(--gris-blanco);
+}
+
 /* QUERIES */
 
 /* @media (min-width: 480px) { } */
