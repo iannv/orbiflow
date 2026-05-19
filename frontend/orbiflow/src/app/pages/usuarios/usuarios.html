@@ -35,12 +35,36 @@
       }
     </div>
 
+    <!-- Filtrar -->
     <div class="filter-row">
-      <button type="button" class="btn-filter">
+      <div>
         <img src="assets/filtro.png" alt="" />
-        Filtrar
-      </button>
-
+        <p class="fw600">Filtrar</p>
+        <app-chip
+          class="btn-filter"
+          name="Todos"
+          backgroundColor="var(--gris-blanco)"
+          colorName="var(--verde-azulado)"
+          (click)="filterByRole('all')"
+          [badgeActive]="selectedRole === 'all'"
+        ></app-chip>
+        @for (r of roles; track $index) {
+          <app-chip
+            class="btn-filter"
+            name="{{ r.label }}"
+            backgroundColor="var(--gris-blanco)"
+            colorName="var(--verde-azulado)"
+            (click)="filterByRole(r.value)"
+            [badgeActive]="
+              selectedRole === RolEnum.ADMIN ||
+              selectedRole === RolEnum.ASSOCIATE ||
+              selectedRole === RolEnum.TREASURER
+                ? selectedRole === r.value
+                : false
+            "
+          ></app-chip>
+        }
+      </div>
       <!-- Paginator -->
       @if (totalPages > 1) {
         <nav>
@@ -221,67 +245,75 @@
   </app-modal>
 
   <!-- Usuarios registrados -->
-  <section id="section-users">
-    <div style="display: flex; flex-direction: column; gap: 1rem">
-      <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
-        @for (user of paginatedUsers; track $index) {
-          <app-base-card>
-            <div class="section-users-div">
-              <div class="div-user-chip">
-                <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
-                <div>
-                  <app-chip
-                    [name]="user.chipName || ''"
-                    [backgroundColor]="user.chipBackgroundColor || ''"
-                    [colorName]="user.chipColorName || ''"
-                  ></app-chip>
-                  <img src="assets/punto.png" alt="usuario" id="imgPunto" />
-                  <span class="fw200" style="font-size: 0.85rem"
-                    >Usuario: <strong>{{ user.username }}</strong></span
-                  >
+  @if (userList.length === 0) {
+    <p class="fw200">Aún no hay usuarios registrados. Registre uno nuevo</p>
+  } @else {
+    <section id="section-users">
+      @if (filteredList.length === 0) {
+        <p class="fw200">No se encontraron resultados</p>
+      } @else {
+        <div style="display: flex; flex-direction: column; gap: 1rem">
+          <app-base-card title="Usuarios Registrados" subtitle="{{ userList.length }} usuarios">
+            @for (user of paginatedUsers; track $index) {
+              <app-base-card>
+                <div class="section-users-div">
+                  <div class="div-user-chip">
+                    <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
+                    <div>
+                      <app-chip
+                        [name]="user.chipName || ''"
+                        [backgroundColor]="user.chipBackgroundColor || ''"
+                        [colorName]="user.chipColorName || ''"
+                      ></app-chip>
+                      <img src="assets/punto.png" alt="usuario" id="imgPunto" />
+                      <span class="fw200" style="font-size: 0.85rem"
+                        >Usuario: <strong>{{ user.username }}</strong></span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="div-actions">
+                    <app-action
+                      btnImg="assets/editar.png"
+                      (btnClick)="openEditModal(user)"
+                    ></app-action>
+                    <app-action
+                      btnImg="assets/eliminar.png"
+                      (btnClick)="openDeleteModal(user)"
+                    ></app-action>
+                  </div>
                 </div>
-              </div>
+              </app-base-card>
+            }
 
-              <div class="div-actions">
-                <app-action
-                  btnImg="assets/editar.png"
-                  (btnClick)="openEditModal(user)"
-                ></app-action>
-                <app-action
-                  btnImg="assets/eliminar.png"
-                  (btnClick)="openDeleteModal(user)"
-                ></app-action>
-              </div>
-            </div>
+            <!-- Paginator -->
+            @if (totalPages > 1) {
+              <nav id="nav-paginator">
+                <ul class="pagination justify-content-center">
+                  <!-- Anterior -->
+                  <li class="page-item" [class.disabled]="currentPage === 1">
+                    <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
+                  </li>
+                  <!-- Números -->
+                  @for (page of [].constructor(totalPages); let i = $index; track i) {
+                    <li class="page-item" [class.active]="currentPage === i + 1">
+                      <button class="page-link" (click)="changePage(i + 1)">
+                        {{ i + 1 }}
+                      </button>
+                    </li>
+                  }
+                  <!-- Siguiente -->
+                  <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
+                  </li>
+                </ul>
+              </nav>
+            }
           </app-base-card>
-        }
-
-        <!-- Paginator -->
-        @if (totalPages > 1) {
-          <nav id="nav-paginator">
-            <ul class="pagination justify-content-center">
-              <!-- Anterior -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
-              </li>
-              <!-- Números -->
-              @for (page of [].constructor(totalPages); let i = $index; track i) {
-                <li class="page-item" [class.active]="currentPage === i + 1">
-                  <button class="page-link" (click)="changePage(i + 1)">
-                    {{ i + 1 }}
-                  </button>
-                </li>
-              }
-              <!-- Siguiente -->
-              <li class="page-item" [class.disabled]="currentPage === totalPages">
-                <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
-              </li>
-            </ul>
-          </nav>
-        }
-      </app-base-card>
-    </div>
-  </section>
+        </div>
+      }
+    </section>
+  }
 
   <!-- Permisos por rol -->
   <section id="section-permisos-rol">
@@ -314,8 +346,6 @@
           </ul>
         </app-base-card>
       </div>
-
-      <!-- Agregar input de busqueda -->
     </app-base-card>
   </section>
 </main>

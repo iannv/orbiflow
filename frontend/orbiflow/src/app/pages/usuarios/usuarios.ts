@@ -319,6 +319,8 @@ export class Usuarios implements OnInit {
   filteredList: User[] = [];
   currentPage = 1;
   itemsPerPage = 5;
+  selectedRole: RolEnum | 'all' = 'all';
+  badgeActive: boolean = false;
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredList.length / this.itemsPerPage));
   }
@@ -333,24 +335,29 @@ export class Usuarios implements OnInit {
 
   applyFilters(): void {
     const q = this.searchQuery.trim().toLowerCase();
-    const result = this.userList.filter((u) => {
-      if (!q) return true;
-      return [u.first_name, u.last_name].some((v) =>
-        String(v ?? '')
-          .toLowerCase()
-          .includes(q),
-      );
+    this.filteredList = this.userList.filter((u) => {
+      const matchesSearch =
+        !q ||
+        [u.first_name, u.last_name].some((v) =>
+          String(v ?? '')
+            .toLowerCase()
+            .includes(q),
+        );
+      const matchesRole = this.selectedRole === 'all' || u.role === this.selectedRole;
+      return matchesSearch && matchesRole;
     });
-    this.filteredList = result;
     this.currentPage = 1;
-    this.cdr.detectChanges();
+  }
+
+  filterByRole(role: RolEnum | 'all') {
+    this.selectedRole = role;
+    this.applyFilters();
   }
 
   clearSearch(): void {
     this.searchQuery = '';
     this.applyFilters();
   }
-  
 }
 
 // result.sort((a, b) => {
