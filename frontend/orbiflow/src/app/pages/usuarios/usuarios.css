@@ -1,5 +1,10 @@
 .error {
-    color: var(--rojo);
+  color: var(--rojo);
+}
+
+.optional {
+  font-size: 12px;
+  color: var(--gris-oscuro);
 }
 
 #form-div {

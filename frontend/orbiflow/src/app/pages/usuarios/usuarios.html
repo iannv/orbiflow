@@ -1,3 +1,7 @@
+@if (mostrarToast) {
+  <app-toast [title]="toastTitle" [subtitle]="toastSubtitle"></app-toast>
+}
+
 <main class="p-5">
   <section id="section-title">
     <div>
@@ -16,10 +20,10 @@
   <!-- Modal -->
   <app-modal
     [isOpen]="isModalOpen"
-    title="Nuevo usuario"
-    subtitle="Ingrese los datos para el nuevo usuario"
+    [title]="modalTtle"
+    [subtitle]="modalSubtitle"
     (close)="closeModal()"
-    (primaryBtnClick)="createUser()"
+    (primaryBtnClick)="modalSubmit()"
     (secondaryBtnClick)="closeModal()"
   >
     <form [formGroup]="userForm">
@@ -48,14 +52,30 @@
         </div>
 
         <div class="form-div">
-          <div>
-            <label for="password"> Contraseña </label>
-            <input type="password" formControlName="password" required />
-          </div>
-          <div>
-            <label for="repeatPassword"> Repetir contraseña </label>
-            <input type="password" formControlName="repeatPassword" required />
-          </div>
+          @if (modalMode === 'create') {
+            <div>
+              <label for="password"> Contraseña </label>
+              <input type="password" formControlName="password" required />
+            </div>
+            <div>
+              <label for="repeatPassword"> Repetir contraseña </label>
+              <input type="password" formControlName="repeatPassword" required />
+            </div>
+          }
+          @if (modalMode === 'edit') {
+            <div>
+              <label for="password">
+                Contraseña <span class="optional">{{ optionalPassword }}</span></label
+              >
+              <input type="password" formControlName="password" />
+            </div>
+            <div>
+              <label for="repeatPassword">
+                Repetir contraseña <span class="optional">{{ optionalPassword }}</span></label
+              >
+              <input type="password" formControlName="repeatPassword" />
+            </div>
+          }
         </div>
 
         <div class="form-div-checks form-div">
@@ -114,10 +134,14 @@
           <p class="error">La contraseña es obligatoria</p>
         }
         @if (userForm.get('password')?.errors?.['minlength']) {
-          <p class="error">La contraseña debe contener al menos 8 caracteres,una letra y un número</p>
+          <p class="error">
+            La contraseña debe contener al menos 8 caracteres,una letra y un número
+          </p>
         }
         @if (userForm.get('password')?.errors?.['pattern']) {
-          <p class="error">La contraseña debe contener al menos 8 caracteres,una letra y un número</p>
+          <p class="error">
+            La contraseña debe contener al menos 8 caracteres,una letra y un número
+          </p>
         }
       }
 
@@ -163,8 +187,8 @@
             </div>
 
             <div class="div-actions">
-              <app-action btnImg="assets/editar.png"></app-action>
-              <app-action btnImg="assets/eliminar.png"></app-action>
+              <app-action btnImg="assets/editar.png" (btnClick)="openEditModal(user)"></app-action>
+              <app-action btnImg="assets/eliminar.png" (btnClick)="deleteUser(user)"></app-action>
             </div>
           </div>
         </app-base-card>
