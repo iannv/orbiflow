@@ -298,4 +298,20 @@ export class Usuarios implements OnInit {
       this.cdr.detectChanges();
     }, 3500);
   }
+
+  // Paginator
+  currentPage = 1;
+  itemsPerPage = 5;
+  get totalPages(): number {
+    return Math.ceil(this.userList.length / this.itemsPerPage);
+  }
+  get paginatedUsers(): User[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.userList.slice(start, end);
+  }
+  changePage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
 }
