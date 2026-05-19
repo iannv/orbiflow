@@ -17,7 +17,7 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
-import { Toast } from "../../components/toast/toast";
+import { Toast } from '../../components/toast/toast';
 
 @Component({
   selector: 'app-usuarios',
@@ -32,7 +32,7 @@ export class Usuarios implements OnInit {
     private cdr: ChangeDetectorRef,
   ) {}
 
-  modalMode: 'create' | 'edit' = 'create';
+  modalMode: 'create' | 'edit' | 'delete' = 'create';
   userForm!: FormGroup;
   userList: User[] = [];
   RolEnum = RolEnum;
@@ -47,7 +47,6 @@ export class Usuarios implements OnInit {
   ];
 
   ngOnInit() {
-    // this.roles = Object.values(RolEnum);
     this.initForm();
   }
 
@@ -178,6 +177,14 @@ export class Usuarios implements OnInit {
   // Eliminar usuario
   deleteUser(user: User) {
     if (!user.id) return;
+    this.userService.deleteUser(user.id).subscribe(() => {
+      this.lanzarToast(
+        'Usuario eliminado',
+        `El usuario ${user.username} ha sido eliminado exitosamente`,
+      );
+      this.closeModal();
+      this.getUsers();
+    });
   }
 
   // Modal
@@ -185,12 +192,14 @@ export class Usuarios implements OnInit {
   modalTtle: string = '';
   modalSubtitle: string = '';
   optionalPassword: string = '';
+  primaryBtnText: string = '';
   // Abrir modal para crear nuevo usuario
   openModal() {
     this.modalMode = 'create';
     this.isModalOpen = true;
     this.modalTtle = 'Nuevo Usuario';
     this.modalSubtitle = 'Ingrese los datos para el nuevo usuario';
+    this.primaryBtnText = 'Crear usuario';
     if (this.modalMode === 'create') {
       this.userForm
         .get('password')
@@ -216,6 +225,7 @@ export class Usuarios implements OnInit {
     this.selectedUser = user;
     this.isModalOpen = true;
     this.optionalPassword = '(Opcional)';
+    this.primaryBtnText = 'Guardar cambios';
 
     this.userForm.patchValue({
       first_name: user.first_name,
@@ -235,12 +245,23 @@ export class Usuarios implements OnInit {
     this.userForm.get('password')?.updateValueAndValidity();
     this.userForm.get('repeatPassword')?.updateValueAndValidity();
   }
+  // Eliminar usuario con confirmación
+  openDeleteModal(user: User) {
+    this.modalMode = 'delete';
+    this.selectedUser = user;
+    this.modalTtle = 'Confirmar Eliminación';
+    this.modalSubtitle = `¿Está seguro de que desea eliminar al usuario ${user.username}? Esta acción no se puede deshacer.`;
+    this.primaryBtnText = 'Eliminar';
+    this.isModalOpen = true;
+  }
   // Enviar formulario para crear o actualizar usuario según el modo
   modalSubmit() {
     if (this.modalMode === 'create') {
       this.createUser();
     } else if (this.modalMode === 'edit' && this.selectedUser) {
       this.updateUser(this.selectedUser);
+    } else if (this.modalMode === 'delete' && this.selectedUser) {
+      this.deleteUser(this.selectedUser);
     }
   }
 
