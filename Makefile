@@ -15,6 +15,7 @@ help:
 	@echo "  make superuser        Crea un administrador para Django"
 	@echo "  make db-shell         Entrar a la terminal de la DB"
 	@echo "  make shell            Entrar al shell de Django"
+	@echo "  make data-diagram     Genera diagrama de clases"
 
 # Gestión de contenedores
 up:
@@ -60,3 +61,6 @@ db-shell:
 # Entrar al shell de Django
 shell:
 	docker compose exec backend python manage.py shell
+
+data-diagram:
+	docker compose exec backend python manage.py graph_models orbiflow -g -o orbiflow_core.png
