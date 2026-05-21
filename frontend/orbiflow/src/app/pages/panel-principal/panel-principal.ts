@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { BaseCard } from '../../components/base-card/base-card';
-import { RouterLink } from '@angular/router';
+// import { RouterLink } from '@angular/router';
 import { ModulosService } from '../../services/modulos-service';
 import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
@@ -9,7 +9,7 @@ import { UserService } from '../../services/user-service';
 @Component({
   selector: 'app-panel-principal',
   standalone: true,
-  imports: [BaseCard, RouterLink],
+  imports: [BaseCard],
   templateUrl: './panel-principal.html',
   styleUrl: './panel-principal.css',
 })
