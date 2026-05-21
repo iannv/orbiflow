@@ -56,8 +56,12 @@ h4 {
   color: var(--gris-oscuro);
 }
 
+.section-body app-base-card app-base-card:first-child {
+  padding: 0 !important;
+}
+
 .section-body app-base-card app-base-card:last-child {
-  padding: 2rem;
+  padding: 2rem !important;
 }
 
 .section-body .p-info-sistema {
@@ -76,6 +80,14 @@ h4 {
   display: flex;
   align-items: first baseline;
   justify-content: space-between;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  color: var(--gris-oscuro);
 }
 
 /* Queries */
