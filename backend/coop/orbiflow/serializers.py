@@ -53,7 +53,8 @@ class AssociateSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
     work_email = serializers.ReadOnlyField()
     years_in_coop = serializers.ReadOnlyField()
-    
+    is_active = serializers.ReadOnlyField()
+
     variants = AssociateVariantSerializer(source='associatevariant_set', many=True, read_only=True)
 
     class Meta:
@@ -63,7 +64,7 @@ class AssociateSerializer(serializers.ModelSerializer):
             'base_hours', 'work_email', 'personal_email', 
             'phone_number', 'address', 'emergency_contact',
             'first_name', 'last_name', 'full_name', 'years_in_coop',
-            'is_deleted', 'variants' 
+            'is_deleted', 'is_active','variants' 
         ]
         read_only_fields = ['is_deleted']
 
