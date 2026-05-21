@@ -4,7 +4,8 @@ import { BaseCard } from '../../components/base-card/base-card';
 import { ModulosService } from '../../services/modulos-service';
 import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RolEnum } from '../../enums/rolEnum';
 
 @Component({
   selector: 'app-panel-principal',
@@ -27,6 +28,11 @@ export class PanelPrincipal {
 
   usuariosRegistrados: number = 0;
   ultimaLiquidacion: string = '';
+
+  role = RolEnum;
+  admin: boolean = false;
+  tressurer: boolean = false;
+  associate: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -96,4 +102,29 @@ export class PanelPrincipal {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // TODO
   // getLastLiquidation() {}
+
+  // Roles del panel principal
+
+  getUserRole() {}
+
+  isAdmin() {
+    this.usersService.getUsers().subscribe((users) => {
+      this.admin = users.some((u) => u.role === RolEnum.ADMIN);
+      this.cdr.detectChanges();
+    });
+  }
+
+  isTressurer() {
+    this.usersService.getUsers().subscribe((users) => {
+      this.tressurer = users.some((u) => u.role === RolEnum.TREASURER);
+      this.cdr.detectChanges();
+    });
+  }
+
+  isAssociate() {
+    this.usersService.getUsers().subscribe((users) => {
+      this.associate = users.some((u) => u.role === RolEnum.ASSOCIATE);
+      this.cdr.detectChanges();
+    });
+  }
 }

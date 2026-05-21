@@ -66,22 +66,23 @@
       </app-base-card>
     </div>
 
-    <!-- @if(rol === 'admin'){} -->
-    <div class="section-body-div-info-sistema">
-      <app-base-card title="Información del sistema" subtitle="Estado actual">
-        <div>
-          <p class="p-info-sistema fw300">Usuarios registrados</p>
-          <span class="span-info-sistema"
-            ><strong>{{ usuariosRegistrados }}</strong></span
-          >
-        </div>
-        <div>
-          <p class="p-info-sistema fw300 m-0">Última liquidación</p>
-          <span class="span-info-sistema" style="color: var(--azul)"
-            ><strong>Sin datos {{ ultimaLiquidacion }}</strong></span
-          >
-        </div>
-      </app-base-card>
-    </div>
+    @if (admin) {
+      <div class="section-body-div-info-sistema">
+        <app-base-card title="Información del sistema" subtitle="Estado actual">
+          <div>
+            <p class="p-info-sistema fw300">Usuarios registrados</p>
+            <span class="span-info-sistema"
+              ><strong>{{ usuariosRegistrados }}</strong></span
+            >
+          </div>
+          <div>
+            <p class="p-info-sistema fw300 m-0">Última liquidación</p>
+            <span class="span-info-sistema" style="color: var(--azul)"
+              ><strong>Sin datos {{ ultimaLiquidacion }}</strong></span
+            >
+          </div>
+        </app-base-card>
+      </div>
+    }
   </section>
 </main>
