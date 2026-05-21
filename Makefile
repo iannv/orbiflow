@@ -1,47 +1,83 @@
-.PHONY: up build stop down logs tests makemigrations migrate superuser reset-db help
+.PHONY: help up-local build-local up-cloud build-cloud stop down clean logs tests makemigrations migrate superuser db-shell shell data-diagram
 
 # Ayuda: Muestra los comandos disponibles
 help:
 	@echo "Comandos disponibles en OrbiFlow:"
-	@echo "  make up               Levanta los servicios en segundo plano"
-	@echo "  make build            Reconstruye imágenes y levanta servicios"
-	@echo "  make stop             Detiene los contenedores sin eliminarlos"
+	@echo "  make build-local      Local (Docker DB)"
+	@echo "  make build-sandbox    Nube (Rama Sandbox Neon)"
+	@echo "  make build-prod       Nube (Rama Producción Neon)"
+	@echo "  make up-local         Levanta app + base de datos LOCAL (sin buildear)"
+	@echo "  make up-sandbox       Levanta app conectada a Nube (Rama Sandbox)"
+	@echo "  make up-prod          Levanta app conectada a Nube (Rama Producción)"
+	@echo "  make stop             Detiene los contenedores"
 	@echo "  make down             Baja los servicios y elimina contenedores"
-	@echo "  make clean            LIMPIEZA TOTAL: Borra contenedores y VOLÚMENES (DB)"
-	@echo "  make logs             Muestra logs del backend en tiempo real"
-	@echo "  make tests            Ejecuta las pruebas de Backend y Frontend"
-	@echo "  make makemigrations   Genera nuevos archivos de migración (orbiflow)"
-	@echo "  make migrate          Aplica las migraciones pendientes a la DB"
-	@echo "  make superuser        Crea un administrador para Django"
-	@echo "  make db-shell         Entrar a la terminal de la DB"
+	@echo "  make clean            LIMPIEZA TOTAL: Borra contenedores y VOLÚMENES"
+	@echo "  make logs             Muestra logs del backend"
+	@echo "  make tests            Ejecuta tests de Backend y Frontend"
+	@echo "  make makemigrations   Genera migraciones en el entorno activo"
+	@echo "  make migrate          Aplica migraciones en el entorno activo"
+	@echo "  make superuser        Crea administrador en el backend"
 	@echo "  make shell            Entrar al shell de Django"
 	@echo "  make data-diagram     Genera diagrama de clases"
 
-# Gestión de contenedores
-up:
-	docker compose up -d
+# Gestión de contenedores con perfiles
+up-local:
+	cp .env.local .env
+	docker compose --profile local up -d
 
-build:
-	docker compose up --build
+build-local:
+	cp .env.local .env
+	docker compose --profile local up --build -d
+
+up-sandbox:
+	cp .env.sandbox .env
+	docker compose --profile sandbox up -d
+
+up-prod:
+	cp .env.prod .env
+	docker compose --profile prod up -d
+
+build-sandbox:
+	cp .env.sandbox .env
+	docker compose --profile sandbox up --build -d
+
+build-prod:
+	cp .env.prod .env
+	docker compose --profile prod up --build -d
 
 stop:
+	docker compose --profile local stop
 	docker compose stop
 
 down:
+	docker compose --profile local down
 	docker compose down
 
 clean:
+	docker compose --profile local down -v
 	docker compose down -v
 
 logs:
 	docker compose logs -f backend
 
 # Calidad y Testing
+# Calidad y Testing
 tests:
-	@echo "--- Corriendo tests del Backend ---"
-	docker compose run --rm backend python manage.py test
-	@echo "--- Corriendo tests del Frontend ---"
+	@echo "--- 1. Preparando entorno local para tests ---"
+	cp .env.local .env
+	docker compose --profile local up -d db
+	@echo "--- 2. Limpiando datos de la base de test ---"
+	docker compose run --rm backend python manage.py flush --no-input
+	@echo "--- 3. Corriendo tests del Backend ---"
+	docker compose run --rm backend python manage.py test --keepdb
+	@echo "--- 4. Corriendo tests del Frontend ---"
 	docker compose run --rm frontend npx ng test --no-watch
+
+test-nuke:
+	@echo "--- DESTRUCCIÓN TOTAL Y RECONSTRUCCIÓN ---"
+	docker compose --profile local down -v
+	make build-local
+	make tests
 
 # Base de Datos y Modelos
 makemigrations:
@@ -52,11 +88,6 @@ migrate:
 
 superuser:
 	docker compose exec backend python manage.py createsuperuser
-
-
-# Entrar a la terminal de la DB
-db-shell:
-	docker compose exec db psql -U admin -d orbiflow_db
 
 # Entrar al shell de Django
 shell:

@@ -12,19 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create temporary .env file
+      - name: Create temporary .env files for CI
         run: |
-          echo "DB_HOST=db" >> .env
-          echo "DB_NAME=orbiflow_db" >> .env
-          echo "DB_USER=admin" >> .env
-          echo "DB_PASS=admin_pass" >> .env
-          echo "POSTGRES_DB=orbiflow_db" >> .env
-          echo "POSTGRES_USER=admin" >> .env
-          echo "POSTGRES_PASSWORD=admin_pass" >> .env
-          echo "POSTGRES_HOST=db" >> .env
-          echo "POSTGRES_PORT=5432" >> .env
-          echo "DJANGO_SECRET_KEY=ci_test_key_placeholder" >> .env
-          echo "DJANGO_DEBUG=true" >> .env
+          echo "POSTGRES_DB=orbiflow_db" >> .env.local
+          echo "POSTGRES_USER=admin" >> .env.local
+          echo "POSTGRES_PASSWORD=admin_pass" >> .env.local
+          echo "POSTGRES_HOST=db" >> .env.local
+          echo "POSTGRES_PORT=5432" >> .env.local
+          echo "DJANGO_SECRET_KEY=ci_test_key_placeholder" >> .env.local
+          echo "DJANGO_DEBUG=true" >> .env.local
+          cp .env.local .env
 
       - name: Build and Run Tests
         run: |
