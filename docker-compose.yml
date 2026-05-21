@@ -1,15 +1,15 @@
 services:
   db:
+    profiles: ["local"] 
     image: postgres:16
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,19 +19,15 @@ services:
       context: ./backend/coop
     volumes:
       - ./backend/coop:/app
+    # El comando detecta si existe 'db' (local) para esperar. Si es nube, arranca directo.
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "if [ -n \"$$(docker compose ps -q db)\" ]; then sleep 3; fi && 
+             python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-    depends_on:
-      db:
-        condition: service_healthy
 
   frontend:
     build:
