@@ -1,0 +1,28 @@
+.card {
+  padding: 1rem;
+  border: 1px solid var(--gris-claro);
+  width: 100%;
+  /* height: 100%; */
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* .card:hover {
+  background-color: red;
+} */
+
+.header h3 {
+  font-size: 20px;
+}
+
+.header p {
+  font-size: 16px;
+  font-weight: 300;
+}
+
+@media screen and (min-width: 1024px) {
+  .card {
+    padding: 1.5rem;
+  }
+}

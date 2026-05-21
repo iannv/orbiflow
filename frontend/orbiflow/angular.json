@@ -27,7 +27,8 @@
             "styles": [
               "src/styles.css",
               "src/css-globales/buttons.css",
-              "src/css-globales/inputs.css"
+              "src/css-globales/inputs.css",
+              "src/css-globales/cards.css"
             ]
           },
           "configurations": {

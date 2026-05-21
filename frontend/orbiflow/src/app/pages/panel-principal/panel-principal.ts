@@ -2,10 +2,11 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { BaseCard } from '../../components/base-card/base-card';
 import { ModulosService } from '../../services/modulos-service';
-import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RolEnum } from '../../enums/rolEnum';
+import { User } from '../../interfaces/User';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-panel-principal',
@@ -36,8 +37,8 @@ export class PanelPrincipal {
 
   constructor(
     private route: ActivatedRoute,
+    private authService: AuthService,
     private moduloService: ModulosService,
-    private associateService: AssociateService,
     private usersService: UserService,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -47,10 +48,14 @@ export class PanelPrincipal {
     this.getTotalModules();
 
     this.getTotalAssociates();
-    // this.getActiveAssociates();
+    this.getActiveAssociates();
 
     this.getTotalUsers();
     // this.getLastLiquidation();
+
+    this.isAdmin();
+    this.isTressurer();
+    this.isAssociate();
   }
 
   // Obtener modulos activos
@@ -71,16 +76,17 @@ export class PanelPrincipal {
 
   // Obtener asociados activos
   // TODO: agregar a la interfaz el atr is_active
-  // getActiveAssociates(){
-  //   this.associateService.getAssociates().subscribe((associates) => {
-  //     this.asociadosActivos = associates.filter(a => a.is_active)
-  //   })
-  // }
+  getActiveAssociates() {
+    this.usersService.getUsers().subscribe((users) => {
+      this.asociadosActivos = users.filter((u) => u.role === 'associate' && u.is_active).length;
+      this.cdr.detectChanges();
+    });
+  }
 
   // Obtener todos los asociados (activos e inactivos)
   getTotalAssociates() {
-    this.associateService.getAssociates().subscribe((associates) => {
-      this.totalAsociados = associates.length;
+    this.usersService.getUsers().subscribe((users) => {
+      this.totalAsociados = users.filter((u) => u.role === 'associate').length;
       this.cdr.detectChanges();
     });
   }
@@ -104,27 +110,15 @@ export class PanelPrincipal {
   // getLastLiquidation() {}
 
   // Roles del panel principal
-
-  getUserRole() {}
-
   isAdmin() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.admin = users.some((u) => u.role === RolEnum.ADMIN);
-      this.cdr.detectChanges();
-    });
+    return this.authService.currentUser()?.role === 'admin';
   }
 
   isTressurer() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.tressurer = users.some((u) => u.role === RolEnum.TREASURER);
-      this.cdr.detectChanges();
-    });
+    return this.authService.currentUser()?.role === 'treasurer';
   }
 
   isAssociate() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.associate = users.some((u) => u.role === RolEnum.ASSOCIATE);
-      this.cdr.detectChanges();
-    });
+    return this.authService.currentUser()?.role === 'associate';
   }
 }
