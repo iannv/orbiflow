@@ -52,13 +52,13 @@
     <div>
       <app-base-card title="Accesos rápidos" subtitle="Gestión del sistema">
         <app-base-card>
-          <a routerLink="/usuarios">
+          <a [routerLink]="['/usuarios']">
             <p>Gestión de usuarios</p>
             <p class="fw200 m-0">Crear y administrar cuentas con roles</p>
           </a>
         </app-base-card>
         <app-base-card>
-          <a routerLink="/modulos">
+          <a [routerLink]="['/modulos']">
             <p>Gestión módulos</p>
             <p class="fw200 m-0">Definir conceptos de liquidación</p>
           </a>
