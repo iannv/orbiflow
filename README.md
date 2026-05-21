@@ -77,11 +77,13 @@ Una vez que los contenedores estén corriendo, crear el superusuario para accede
 
 Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico y contraseña. Después de crear el superusuario, podrás acceder al panel de administración en `http://localhost:8000/admin` con las credenciales que acabas de crear.
 
-## Accesos Rápidos
+## 🔗 Accesos Rápidos
 
 - **Backend (Django):** `http://localhost:8000/admin`
 - **Frontend (Angular):** `http://localhost:4200`
-- **Base de Datos (PostgreSQL):** `localhost:5432` (con las credenciales definidas en el archivo `.env`)
+- **Base de Datos (PostgreSQL):** 
+  - **Local:** `localhost:5432` (usar credenciales de `.env.local`)
+  - **Nube (Neon):** [Panel de Control Sandbox/Prod](https://console.neon.tech/app/projects/mute-haze-00008903?branchId=br-gentle-sound-aci0h6ya)
 
 ## Confirmar Funcionamiento
 
