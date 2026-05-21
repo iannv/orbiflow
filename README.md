@@ -16,34 +16,60 @@ OrbiFlow es un sistema integral de gestión diseñado específicamente para las 
 git clone git@github.com:iannv/orbiflow.git
 cd orbiflow
 ```
+⚙️ Configuración de Entornos
 
-1. Crear el archivo `.env` en la raíz del proyecto con el siguiente contenido:
+Para trabajar con OrbiFlow, debes crear tres archivos de configuración en la raíz del proyecto. No subas estos archivos a GitHub (están ignorados por .gitignore).
 
-```env
-DB_HOST=db
-DB_NAME=orbiflow_db
-DB_USER=admin
-DB_PASS=************
+Crea los archivos .env.local, .env.sandbox y .env.prod con la siguiente estructura básica y completa los valores correspondientes:
+1. Entorno Local (.env.local)
 
-POSTGRES_DB=${DB_NAME}
-POSTGRES_USER=${DB_USER}
-POSTGRES_PASSWORD=${DB_PASS}
+Para desarrollo offline con base de datos en Docker.
+Fragmento de código
+```
+POSTGRES_DB=orbiflow_db
+POSTGRES_USER=admin
+POSTGRES_PASSWORD="tu_password_local"
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
-
-DJANGO_SECRET_KEY=tu_clave_secreta_aqui
+DJANGO_SECRET_KEY=dev-key
 DJANGO_DEBUG=true
 ```
 
-1. Levantar los servicios
+2. Entorno Sandbox (.env.sandbox)
 
-Desde la raíz del proyecto:
-
-```bash
-make build
+Para pruebas en la nube (Neon) en fase de desarrollo.
+Fragmento de código
 ```
+POSTGRES_DB=neondb
+POSTGRES_USER=neondb_owner
+POSTGRES_PASSWORD="tu_password_sandbox"
+POSTGRES_HOST=tu_host_sandbox.neon.tech
+POSTGRES_PORT=5432
+DJANGO_SECRET_KEY=tu_clave_secreta
+DJANGO_DEBUG=true
+```
+3. Entorno Producción (.env.prod)
 
-Esto iniciará los contenedores para la base de datos, el backend y el frontend. El backend migrará automáticamente la base de datos al iniciarse.
+Para el despliegue final en la nube (Neon).
+Fragmento de código
+```
+POSTGRES_DB=neondb
+POSTGRES_USER=neondb_owner
+POSTGRES_PASSWORD="tu_password_prod"
+POSTGRES_HOST=tu_host_prod.neon.tech
+POSTGRES_PORT=5432
+DJANGO_SECRET_KEY=tu_clave_secreta_segura
+DJANGO_DEBUG=false
+```
+🛠️ Ejecución del ProyectoEl proyecto utiliza un Makefile para automatizar la configuración. Según el entorno donde desees trabajar, utiliza uno de los siguientes comandos:
+
+| Objetivo | Comando | Descripción |
+|----------|---------|-------------|
+| Desarrollo Local | `make build-local` | Levanta el backend, frontend y una base de datos local. |
+| Desarrollo Nube (Sandbox) | `make build-sandbox` | Levanta backend y frontend conectados a Neon (Sandbox). |
+| Producción | `make build-prod` | Levanta backend y frontend conectados a Neon (Prod). |
+
+*Nota: Los comandos build reconstruyen las imágenes de Docker. Si solo necesitas levantar los servicios ya construidos, usa make up-local, make up-sandbox o make up-prod.*
 
 ## Gestión de la Aplicación
 
@@ -51,11 +77,13 @@ Una vez que los contenedores estén corriendo, crear el superusuario para accede
 
 Seguí las instrucciones para ingresar un nombre de usuario, correo electrónico y contraseña. Después de crear el superusuario, podrás acceder al panel de administración en `http://localhost:8000/admin` con las credenciales que acabas de crear.
 
-## Accesos Rápidos
+## 🔗 Accesos Rápidos
 
 - **Backend (Django):** `http://localhost:8000/admin`
 - **Frontend (Angular):** `http://localhost:4200`
-- **Base de Datos (PostgreSQL):** `localhost:5432` (con las credenciales definidas en el archivo `.env`)
+- **Base de Datos (PostgreSQL):** 
+  - **Local:** `localhost:5432` (usar credenciales de `.env.local`)
+  - **Nube (Neon):** [Panel de Control Sandbox/Prod](https://console.neon.tech/app/projects/mute-haze-00008903?branchId=br-gentle-sound-aci0h6ya)
 
 ## Confirmar Funcionamiento
 
@@ -301,7 +329,8 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
 | --------------------------------- | --------------------- |
 | **Levantar proyecto**             | `make up`             |
 | **Reconstruir y levantar**        | `make build`          |
-| **Correr todos los tests**        | `make tests`          |
+| **Correr tests (Seguro/Local)**   | `make tests`          |
+| **Resetear entorno de tests**     | `make test-nuke`      |
 | **Generar migraciones**           | `make makemigrations` |
 | **Aplicar migraciones**           | `make migrate`        |
 | **Crear administrador**           | `make superuser`      |
@@ -331,6 +360,8 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
   ```bash
    git add .
    git commit -m "feat: descripción"
+   git merge develop
+   make tests  # última verificación antes de subir
    git push origin feat/nombre-tarea
   ```
 5. **Pull Request (PR)**

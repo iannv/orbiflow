@@ -8,6 +8,7 @@ db.sqlite3
 venv/
 env/
 .env
+.env.*
 .venv/
 /bin
 myenv/
