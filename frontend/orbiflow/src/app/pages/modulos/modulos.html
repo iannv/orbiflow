@@ -20,13 +20,34 @@
   <section id="section-modulos" class="mt-4">
     @for (modulo of modulosList; track modulo.id) {
       <app-base-card class="mb-3 d-block">
-        <div class="modulo-card-content">
+        <div class="modulo-card-content d-flex justify-content-between align-items-center">
           <div class="modulo-info">
-            <h3 class="fw600 m-0">{{ modulo.name }}</h3>
+            <div class="d-flex align-items-center gap-2">
+              <h3 class="fw600 m-0">{{ modulo.name }}</h3>
+              <app-chip
+                [name]="modulo.is_active ? 'Activo' : 'Inactivo'"
+                [backgroundColor]="modulo.is_active ? 'var(--verde-bg)' : 'var(--rojo-bg)'"
+                [colorName]="modulo.is_active ? 'var(--verde-selva)' : 'var(--rojo)'"
+              >
+              </app-chip>
+            </div>
             <p class="fw300 mt-1 mb-2 text-muted">{{ modulo.description || 'Sin descripción' }}</p>
           </div>
 
-          <div class="modulo-actions">
+          <div class="modulo-actions d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 mr-3">
+              <span class="fw500 text-muted" style="font-size: 0.85rem">Activo</span>
+              <div class="form-check form-switch m-0">
+                <input
+                  class="form-check-input btn-switch"
+                  type="checkbox"
+                  role="switch"
+                  [checked]="modulo.is_active"
+                  (change)="toggleEstadoModulo($event, modulo)"
+                />
+              </div>
+            </div>
+
             <app-action btnImg="assets/editar.png" (btnClick)="editarModulo(modulo)"></app-action>
             <app-action
               btnImg="assets/eliminar.png"
@@ -47,12 +68,6 @@
                     colorName="var(--verde-azulado)"
                   >
                   </app-chip>
-                  <app-chip
-                    [name]="modulo.is_active ? 'Activo' : 'Inactivo'"
-                    [backgroundColor]="modulo.is_active ? 'var(--verde-bg)' : 'var(--rojo-bg)'"
-                    [colorName]="modulo.is_active ? 'var(--verde-selva)' : 'var(--rojo)'"
-                  >
-                  </app-chip>
                 </div>
 
                 <div class="variante-valor">
@@ -62,18 +77,6 @@
                       {{ variante.type === 'fixed_amount' ? '$' : '' }}{{ variante.value
                       }}{{ variante.type === 'percentage' ? '%' : '' }}
                     </p>
-                  </div>
-                  <div class="valor-box">
-                    <span class="fw300 text-muted" style="font-size: 0.8rem">Activado</span>
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input btn-switch"
-                        type="checkbox"
-                        role="switch"
-                        [checked]="modulo.is_active"
-                        (change)="toggleEstadoModulo($event, modulo)"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -194,7 +197,23 @@
               </div>
               <div class="app-modal-field">
                 <label>Valor</label>
-                <input type="number" formControlName="value" placeholder="0.00" />
+                <input
+                  type="number"
+                  formControlName="value"
+                  placeholder="0.00"
+                  [max]="variante.get('type')?.value === 'percentage' ? 100 : null"
+                  [ngStyle]="{
+                    'border-color': variante.get('value')?.hasError('max') ? 'var(--rojo)' : '',
+                  }"
+                />
+
+                @if (variante.get('value')?.hasError('max')) {
+                  <small
+                    style="color: var(--rojo); font-size: 0.8rem; margin-top: 4px; display: block"
+                  >
+                    No puede superar el 100%
+                  </small>
+                }
               </div>
               <div class="app-modal-field d-flex align-items-start justify-content-center pt-4">
                 <div class="form-check form-switch d-flex align-items-center gap-2">

@@ -16,27 +16,18 @@ import { Toast } from '../../components/toast/toast';
 @Component({
   selector: 'app-modulos',
   standalone: true,
-  imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    BaseCard, 
-    Primary, 
-    Action, 
-    Chip, 
-    Modal,
-    Toast 
-  ],
+  imports: [CommonModule, ReactiveFormsModule, BaseCard, Primary, Action, Chip, Modal, Toast],
   templateUrl: './modulos.html',
   styleUrl: './modulos.css',
 })
 export class Modulos implements OnInit {
   modulosList: Modulo[] = [];
   moduloForm!: FormGroup;
-  
+
   // Estados de Modales
   isModalOpen = false;
   isConfirmModalOpen = false;
-  
+
   // Variables de control
   moduloEnEdicion: Modulo | null = null;
   moduloAEliminarId: number | undefined = undefined;
@@ -63,7 +54,7 @@ export class Modulos implements OnInit {
       is_exclusive: [true],
       applies_to_cap: [false],
       is_active: [true],
-      variants: this.fb.array([])
+      variants: this.fb.array([]),
     });
   }
 
@@ -77,7 +68,7 @@ export class Modulos implements OnInit {
       name: ['', Validators.required],
       type: ['fixed_amount', Validators.required],
       value: ['', [Validators.required, Validators.min(0)]],
-      is_default: [false]
+      is_default: [false],
     });
     this.variantesFormArray.push(varianteGroup);
   }
@@ -90,9 +81,9 @@ export class Modulos implements OnInit {
     this.modulosService.getModulos().subscribe({
       next: (data) => {
         this.modulosList = data;
-        this.cdr.detectChanges(); 
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error al cargar módulos', err)
+      error: (err) => console.error('Error al cargar módulos', err),
     });
   }
 
@@ -100,18 +91,18 @@ export class Modulos implements OnInit {
 
   openModal(): void {
     this.moduloEnEdicion = null;
-    this.moduloForm.reset({ 
-      calculation_type: 'simple', 
+    this.moduloForm.reset({
+      calculation_type: 'simple',
       is_exclusive: true,
       applies_to_cap: false,
-      is_active: true 
+      is_active: true,
     });
     this.variantesFormArray.clear();
     this.isModalOpen = true;
   }
 
   editarModulo(modulo: Modulo): void {
-    this.moduloEnEdicion = modulo; 
+    this.moduloEnEdicion = modulo;
     this.moduloForm.reset();
     this.moduloForm.patchValue({
       name: modulo.name,
@@ -119,19 +110,21 @@ export class Modulos implements OnInit {
       calculation_type: modulo.calculation_type,
       is_exclusive: modulo.is_exclusive,
       applies_to_cap: modulo.applies_to_cap,
-      is_active: modulo.is_active
+      is_active: modulo.is_active,
     });
 
     this.variantesFormArray.clear();
     if (modulo.variants) {
-      modulo.variants.forEach(variante => {
-        this.variantesFormArray.push(this.fb.group({
-          id: [variante.id],
-          name: [variante.name, Validators.required],
-          type: [variante.type, Validators.required],
-          value: [variante.value, [Validators.required, Validators.min(0)]],
-          is_default: [variante.is_default]
-        }));
+      modulo.variants.forEach((variante) => {
+        this.variantesFormArray.push(
+          this.fb.group({
+            id: [variante.id],
+            name: [variante.name, Validators.required],
+            type: [variante.type, Validators.required],
+            value: [variante.value, [Validators.required, Validators.min(0)]],
+            is_default: [variante.is_default],
+          }),
+        );
       });
     }
     this.isModalOpen = true;
@@ -142,19 +135,49 @@ export class Modulos implements OnInit {
   }
 
   guardarModulo(): void {
-    console.log('Datos del formulario al hacer clic:', this.moduloForm.value);
-    if (this.moduloForm.invalid) {
-      this.moduloForm.markAllAsTouched();
-      this.lanzarToast('Formulario incompleto', 'Por favor, complete todos los campos obligatorios.');
-      return;
+    
+    // Validaciones
+    if (this.variantesFormArray.length === 0) {
+      this.lanzarToast(
+        'Atención',
+        'Debe agregar al menos una variante al módulo para realizar cálculos.',
+      );
+      return; 
     }
 
+    let errorPorcentaje = false;
+    this.variantesFormArray.controls.forEach((control) => {
+      const tipo = control.get('type')?.value;
+      const valor = control.get('value')?.value;
+
+      if (tipo === 'percentage' && valor > 100) {
+        control.get('value')?.setErrors({ max: true }); 
+        errorPorcentaje = true;
+      }
+    });
+
+    if (errorPorcentaje) {
+      this.lanzarToast(
+        'Valor incorrecto',
+        'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
+      );
+      return; 
+    }
+
+    if (this.moduloForm.invalid) {
+      this.moduloForm.markAllAsTouched();
+      this.lanzarToast(
+        'Formulario incompleto',
+        'Por favor, complete todos los campos obligatorios.',
+      );
+      return;
+    }
 
     const datosModulo = { ...this.moduloForm.value };
 
     if (datosModulo.variants && datosModulo.variants.length > 0) {
       datosModulo.variants = datosModulo.variants.map((v: any) => {
-        const variantCopy = { ...v }; 
+        const variantCopy = { ...v };
         if (variantCopy.id === null || variantCopy.id === undefined) {
           delete variantCopy.id;
         }
@@ -168,15 +191,15 @@ export class Modulos implements OnInit {
         next: () => {
           this.lanzarToast('Módulo actualizado', 'Los cambios se guardaron correctamente.');
           this.closeModal();
-          this.cargarModulos(); 
-          this.cdr.detectChanges(); 
+          this.cargarModulos();
+          this.cdr.detectChanges();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error al actualizar', err);
           const msj = this.extraerMensajeError(err);
           this.lanzarToast('Error al guardar', msj);
-          this.cdr.detectChanges(); 
-        }
+          this.cdr.detectChanges();
+        },
       });
     } else {
       // Crear nuevo
@@ -185,14 +208,14 @@ export class Modulos implements OnInit {
           this.lanzarToast('Módulo guardado', 'El nuevo concepto se registró en el sistema.');
           this.closeModal();
           this.cargarModulos();
-          this.cdr.detectChanges(); 
+          this.cdr.detectChanges();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Error al crear', err);
           const msj = this.extraerMensajeError(err);
           this.lanzarToast('Error al crear', msj);
-          this.cdr.detectChanges(); 
-        }
+          this.cdr.detectChanges();
+        },
       });
     }
   }
@@ -215,21 +238,21 @@ export class Modulos implements OnInit {
 
   eliminarModuloDefinitivo(): void {
     if (!this.moduloAEliminarId) return;
-    
+
     this.modulosService.deleteModulo(this.moduloAEliminarId).subscribe({
       next: () => {
         this.lanzarToast('Módulo eliminado', 'El registro ha sido borrado permanentemente.');
         this.isConfirmModalOpen = false;
         this.moduloAEliminarId = undefined;
         this.cargarModulos();
-        this.cdr.detectChanges(); // <-- Forzar renderizado
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al eliminar', err);
         this.lanzarToast('Error de eliminación', 'No se puede borrar un módulo que está en uso.');
         this.isConfirmModalOpen = false;
-        this.cdr.detectChanges(); // <-- Forzar renderizado
-      }
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -238,25 +261,26 @@ export class Modulos implements OnInit {
   toggleEstadoModulo(event: Event, modulo: Modulo): void {
     const checkbox = event.target as HTMLInputElement;
     const nuevoEstado = checkbox.checked;
-    
+
     if (!modulo.id) return;
 
-  
     this.modulosService.updateModulo(modulo.id, { is_active: nuevoEstado }).subscribe({
       next: () => {
-      
         modulo.is_active = nuevoEstado;
-        this.lanzarToast('Estado actualizado', `El módulo "${modulo.name}" ahora está ${nuevoEstado ? 'activo' : 'inactivo'}.`);
+        this.lanzarToast(
+          'Estado actualizado',
+          `El módulo "${modulo.name}" ahora está ${nuevoEstado ? 'activo' : 'inactivo'}.`,
+        );
         this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al cambiar el estado', err);
-  
-        checkbox.checked = !nuevoEstado; 
+
+        checkbox.checked = !nuevoEstado;
         const msj = this.extraerMensajeError(err);
         this.lanzarToast('Error al actualizar', msj);
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -264,12 +288,12 @@ export class Modulos implements OnInit {
     this.toastTitle = titulo;
     this.toastSubtitle = subtitulo;
     this.mostrarToast = true;
-    this.cdr.detectChanges(); 
-    
-    // Ocultar automáticamente 
+    this.cdr.detectChanges();
+
+    // Ocultar automáticamente
     setTimeout(() => {
       this.mostrarToast = false;
-      this.cdr.detectChanges(); 
+      this.cdr.detectChanges();
     }, 3500);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgStyle, NgClass } from "@angular/common";
 
 @Component({
@@ -11,4 +11,11 @@ export class Chip {
   @Input() name: string = '';
   @Input() backgroundColor: string = '';
   @Input() colorName: string = '';
+  @Input() badgeActive: boolean = false;
+
+  @Output() click = new EventEmitter();
+
+  onclick(){
+    this.click.emit();
+  }
 }

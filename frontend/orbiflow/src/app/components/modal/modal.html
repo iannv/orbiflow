@@ -1,8 +1,5 @@
 @if (isOpen) {
-  <div
-    class="app-modal-overlay"
-    (click)="onBackdropClick()"
-  >
+  <div class="app-modal-overlay">
     <div
       class="app-modal"
       [ngClass]="'app-modal-' + size"
@@ -14,18 +11,12 @@
     >
       <div class="app-modal-header">
         <div class="app-modal-heading">
-          <h2
-            class="app-modal-title"
-            [id]="titleId"
-          >
+          <h2 class="app-modal-title" [id]="titleId">
             {{ title }}
           </h2>
 
           @if (subtitle) {
-            <p
-              class="app-modal-subtitle"
-              [id]="subtitleId"
-            >
+            <p class="app-modal-subtitle" [id]="subtitleId">
               {{ subtitle }}
             </p>
           }
@@ -49,14 +40,18 @@
         <div
           class="app-modal-footer"
           [class.app-modal-footer-primary-left]="primaryBtnPosition === 'left'"
+          [class.app-modal-footer-center]="primaryBtnPosition === 'center'"
+          [class.app-modal-footer-full]="primaryBtnPosition === 'full'"
         >
-          <button
-            class="app-modal-btn app-modal-btn-secondary"
-            type="button"
-            (click)="onSecondaryClick()"
-          >
-            {{ secondaryBtnText }}
-          </button>
+          @if (!hideSecondaryBtn) {
+            <button
+              class="app-modal-btn app-modal-btn-secondary"
+              type="button"
+              (click)="onSecondaryClick()"
+            >
+              {{ secondaryBtnText }}
+            </button>
+          }
 
           <button
             class="app-modal-btn app-modal-btn-primary"

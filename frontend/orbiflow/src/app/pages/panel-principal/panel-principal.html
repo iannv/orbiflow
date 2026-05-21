@@ -32,7 +32,7 @@
       </div>
       <div>
         <h4>{{ liquidacionesMes }}</h4>
-        <span class="fw300">04/2026 {{ fechaLiquidaciones }}</span>
+        <span class="fw300"> {{ fechaLiquidaciones }} </span>
       </div>
     </app-base-card>
 
@@ -42,7 +42,7 @@
         <img src="assets/panel-recibos.png" alt="" />
       </div>
       <div>
-        <h4>{{recibosGenerados}}</h4>
+        <h4>{{ recibosGenerados }}</h4>
         <span class="fw300">Total histórico</span>
       </div>
     </app-base-card>
@@ -52,12 +52,16 @@
     <div>
       <app-base-card title="Accesos rápidos" subtitle="Gestión del sistema">
         <app-base-card>
-          <p>Gestión de usuarios</p>
-          <p class="fw200 m-0">Crear y administrar cuentas con roles</p>
+          <a [routerLink]="['/usuarios']">
+            <p>Gestión de usuarios</p>
+            <p class="fw200 m-0">Crear y administrar cuentas con roles</p>
+          </a>
         </app-base-card>
         <app-base-card>
-          <p>Gestión módulos</p>
-          <p class="fw200 m-0">Definir conceptos de liquidación</p>
+          <a [routerLink]="['/modulos']">
+            <p>Gestión módulos</p>
+            <p class="fw200 m-0">Definir conceptos de liquidación</p>
+          </a>
         </app-base-card>
       </app-base-card>
     </div>
@@ -67,12 +71,14 @@
       <app-base-card title="Información del sistema" subtitle="Estado actual">
         <div>
           <p class="p-info-sistema fw300">Usuarios registrados</p>
-          <span class="span-info-sistema"><strong>{{usuariosRegistrados}}</strong></span>
+          <span class="span-info-sistema"
+            ><strong>{{ usuariosRegistrados }}</strong></span
+          >
         </div>
         <div>
           <p class="p-info-sistema fw300 m-0">Última liquidación</p>
           <span class="span-info-sistema" style="color: var(--azul)"
-            ><strong>Sin datos {{ultimaLiquidacion}}</strong></span
+            ><strong>Sin datos {{ ultimaLiquidacion }}</strong></span
           >
         </div>
       </app-base-card>
