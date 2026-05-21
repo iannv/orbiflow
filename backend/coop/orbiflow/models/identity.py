@@ -38,6 +38,10 @@ class Associate(models.Model):
         verbose_name_plural = 'Asociados'
     
     @property
+    def is_active(self):
+        return self.user.is_active
+    
+    @property
     def first_name(self):
         return self.user.first_name
 
