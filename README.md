@@ -345,3 +345,14 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
    git branch -d feat/nombre-tarea
   ```
 
+
+
+## 📊 Generación Automática de Diagramas de Clases
+
+El proyecto incluye `django-extensions` y `Graphviz` preconfigurados dentro del entorno de Docker para mapear visualmente la arquitectura de la base de datos de forma automatizada.
+
+Para generar o actualizar el diagrama de entidades exclusivo de la lógica core de la cooperativa, ejecutá el siguiente comando desde la raíz del proyecto:
+
+```bash
+make data-diagram
+```
