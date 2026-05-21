@@ -1,15 +1,15 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { BaseCard } from '../../components/base-card/base-card';
-// import { RouterLink } from '@angular/router';
 import { ModulosService } from '../../services/modulos-service';
 import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
+import { ActivatedRoute, RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-panel-principal',
   standalone: true,
-  imports: [BaseCard],
+  imports: [BaseCard, RouterLink],
   templateUrl: './panel-principal.html',
   styleUrl: './panel-principal.css',
 })
@@ -29,6 +29,7 @@ export class PanelPrincipal {
   ultimaLiquidacion: string = '';
 
   constructor(
+    private route: ActivatedRoute,
     private moduloService: ModulosService,
     private associateService: AssociateService,
     private usersService: UserService,
