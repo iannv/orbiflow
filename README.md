@@ -327,7 +327,8 @@ Para facilitar el desarrollo, usamos un `Makefile`. Podés ejecutar estos comand
 | --------------------------------- | --------------------- |
 | **Levantar proyecto**             | `make up`             |
 | **Reconstruir y levantar**        | `make build`          |
-| **Correr todos los tests**        | `make tests`          |
+| **Correr tests (Seguro/Local)**   | `make tests`          |
+| **Resetear entorno de tests**     | `make test-nuke`      |
 | **Generar migraciones**           | `make makemigrations` |
 | **Aplicar migraciones**           | `make migrate`        |
 | **Crear administrador**           | `make superuser`      |
