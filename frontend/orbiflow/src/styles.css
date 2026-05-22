@@ -1,4 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
+main {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
 
 :root {
   /* Paleta de colores */

@@ -13,6 +13,7 @@ import { AssociateService, ModuleCatalog } from '../../services/associate-servic
 import { UserService } from '../../services/user-service';
 import { Associate, CreateAssociatePayload } from '../../interfaces/Associate';
 import { User } from '../../interfaces/User';
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-page-asociados',
@@ -26,6 +27,7 @@ import { User } from '../../interfaces/User';
     Primary,
     Secondary,
     Action,
+    Loader
   ],
   templateUrl: './page-asociados.html',
   styleUrls: ['../profile/profile.css', './page-asociados.css'],
@@ -210,6 +212,7 @@ export class PageAsociados implements OnInit {
         this.availableUsers = users.filter(
           (u) => (u.role as string) === 'associate' && u.id != null && !linked.has(u.id) && !u.is_deleted,
         );
+        console.log('Available users for new associate:', this.availableUsers);
         // Abre el modal solo cuando el select ya tiene opciones cargadas
         this.showModal = true;
         this.cdr.detectChanges();
