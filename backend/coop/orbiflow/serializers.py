@@ -35,6 +35,11 @@ class AssociateVariantSerializer(serializers.ModelSerializer):
     """
     variant_name = serializers.ReadOnlyField(source='variant.name')
     module_name = serializers.ReadOnlyField(source='variant.module.name')
+    module_applies_to_cap = serializers.ReadOnlyField(source='variant.module.applies_to_cap')
+    module_calculation_type = serializers.ReadOnlyField(source='variant.module.calculation_type')
+    variant_type = serializers.ReadOnlyField(source='variant.type')
+    variant_value = serializers.ReadOnlyField(source='variant.value')
+
 
     class Meta:
         model = AssociateVariant
@@ -44,6 +49,10 @@ class AssociateVariantSerializer(serializers.ModelSerializer):
             'variant',
             'variant_name',
             'module_name',
+            'module_applies_to_cap',
+            'module_calculation_type',
+            'variant_type',
+            'variant_value',
             'activation_date',
         ]
 
