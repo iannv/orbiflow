@@ -2,98 +2,62 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { BaseCard } from '../../components/base-card/base-card';
 import { ModulosService } from '../../services/modulos-service';
-import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RolEnum } from '../../enums/rolEnum';
+import { User } from '../../interfaces/User';
+import { AuthService } from '../../core/auth/auth.service';
+import { PanelAsociado } from "./panel-asociado/panel-asociado";
+import { PanelAdmin } from "./panel-admin/panel-admin";
+import { PanelTesorero } from "./panel-tesorero/panel-tesorero";
 
 @Component({
   selector: 'app-panel-principal',
   standalone: true,
-  imports: [BaseCard, RouterLink],
+  imports: [BaseCard, RouterLink, PanelAsociado, PanelAdmin, PanelTesorero],
   templateUrl: './panel-principal.html',
   styleUrl: './panel-principal.css',
 })
 export class PanelPrincipal {
-  asociadosActivos: number = 0;
-  totalAsociados: number = 0;
-
-  modulosActivos: number = 0;
-  totalModulos: number = 0;
-
-  liquidacionesMes: number = 0;
-  fechaLiquidaciones: string = 'Sin registro';
-
-  recibosGenerados: number = 0;
-
-  usuariosRegistrados: number = 0;
-  ultimaLiquidacion: string = '';
+  role = RolEnum;
+  admin: boolean = false;
+  tressurer: boolean = false;
+  associate: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
-    private moduloService: ModulosService,
-    private associateService: AssociateService,
-    private usersService: UserService,
-    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
-    this.getActiveModules();
-    this.getTotalModules();
-
-    this.getTotalAssociates();
-    // this.getActiveAssociates();
-
-    this.getTotalUsers();
-    // this.getLastLiquidation();
+    this.isAdmin();
+    this.isTressurer();
+    this.isAssociate();
   }
 
-  // Obtener modulos activos
-  getActiveModules() {
-    this.moduloService.getModulos().subscribe((modules) => {
-      this.modulosActivos = modules.filter((m) => m.is_active).length;
-      this.cdr.detectChanges();
-    });
+  // Roles del panel principal
+  isAdmin() {
+    return this.authService.currentUser()?.role === 'admin';
   }
 
-  // Obtener total de modulos (activos e inactivos)
-  getTotalModules() {
-    this.moduloService.getModulos().subscribe((modules) => {
-      this.totalModulos = modules.length;
-      this.cdr.detectChanges();
-    });
+  isTressurer() {
+    return this.authService.currentUser()?.role === 'treasurer';
   }
 
-  // Obtener asociados activos
-  // TODO: agregar a la interfaz el atr is_active
-  // getActiveAssociates(){
-  //   this.associateService.getAssociates().subscribe((associates) => {
-  //     this.asociadosActivos = associates.filter(a => a.is_active)
-  //   })
+  isAssociate() {
+    return this.authService.currentUser()?.role === 'associate';
+  }
+
+  // getPanelInfo() {
+  //   const role = this.authService.currentUser()?.role;
+
+  //   if (role === 'admin' || role === 'treasurer') {
+  //     return {
+  //       subtitle: 'Gestión completa del sistema',
+  //     };
+  //   }
+  //   return {
+  //     subtitle: 'Sistema de Gestión Cooperativa',
+  //   };
   // }
-
-  // Obtener todos los asociados (activos e inactivos)
-  getTotalAssociates() {
-    this.associateService.getAssociates().subscribe((associates) => {
-      this.totalAsociados = associates.length;
-      this.cdr.detectChanges();
-    });
-  }
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // TODO
-  // getMonthLiquidations() {}
-  // getTotalRetirements() {}
-
-  // Información del sistema
-  getTotalUsers() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.usuariosRegistrados = users.length;
-      this.cdr.detectChanges();
-    });
-  }
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // TODO
-  // getLastLiquidation() {}
 }
