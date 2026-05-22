@@ -1,7 +1,12 @@
 <main class="p-5">
     <h1 class="h1-title">Mi perfil</h1>
     <h2 class="h2-subtitle">Información personal y módulos que impactan en tu retiro mensual</h2>
-
+  <p>{{loading}}</p>
+  
+    @if (loading) {
+    <app-loader />
+  }
+  @if (!loading) {
     <section>
         <app-base-card title="Datos personales">
             <div class="name">{{ associate?.first_name }} {{ associate?.last_name }}</div>
@@ -71,4 +76,5 @@
             }
         </app-base-card>
     </section>
+  }
 </main>
