@@ -26,11 +26,8 @@ elif not SECRET_KEY:
     # En producción, si no hay clave, el sistema falla de inmediato para evitar problemas de seguridad
     raise ImproperlyConfigured("La variable DJANGO_SECRET_KEY debe estar definida en producción.")
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-    if host.strip()
-]
+# TEMPORALMENTE HARDCODEADO PARA PROBAR EL DEPLOY
+ALLOWED_HOSTS = ['orbiflow-backend-sandbox.onrender.com', 'localhost', '127.0.0.1', '*']
 
 # Permitir que Django confíe en los proxies de Render (como Cloudflare)
 USE_X_FORWARDED_HOST = True
