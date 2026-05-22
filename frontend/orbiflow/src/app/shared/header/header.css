@@ -1,6 +1,7 @@
 .navbar {
     background-color: var(--gris-blanco);
     box-shadow: 0px 0px 10px 2px var(--gris-claro);
+    height: 70px;
 }
 
 .container-fluid {
