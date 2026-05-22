@@ -12,5 +12,3 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor]))
   ]
 };
-
-export const API_BASE_URL = environment.apiUrl;
