@@ -1,0 +1,100 @@
+<main class="p-5">
+  <h1 class="h1-title">Panel Principal</h1>
+  <h2 class="h2-subtitle">Sistema de Gestión Cooperativa</h2>
+
+  <section class="section-header">
+    <app-base-card>
+      <div>
+        <h3>Último retiro</h3>
+        <img src="assets/panel-asociados.png" alt="" />
+      </div>
+      <div>
+        <h4>{{ lastWithdrawal }}</h4>
+        <span class="fw300">{{ dateLastWithdrawal }}</span>
+      </div>
+    </app-base-card>
+
+    <app-base-card>
+      <div>
+        <h3>Horas trabajadas del mes</h3>
+        <img src="assets/panel-modulo.png" alt="" />
+      </div>
+      <div>
+        <h4>{{ totalHoursWorked }}</h4>
+        <span class="fw300">Período: {{ period }}</span>
+      </div>
+    </app-base-card>
+
+    <app-base-card>
+      <div>
+        <h3>Antigüedad</h3>
+        <img src="assets/panel-liquidaciones.png" alt="" />
+      </div>
+      <div>
+        <h4>{{ seniority }}</h4>
+        <span class="fw300"> Fecha de ingreso: {{ entryDate }} </span>
+      </div>
+    </app-base-card>
+
+    <app-base-card>
+      <div>
+        <h3>Estado del período</h3>
+        <img src="assets/panel-recibos.png" alt="" />
+      </div>
+      <div>
+        <h4>{{ periodStatus }}</h4>
+        <span class="fw300">{{ period }}</span>
+      </div>
+    </app-base-card>
+  </section>
+
+  <section class="section-body">
+    <div>
+      <app-base-card title="Accesos rápidos" subtitle="Gestión del sistema">
+        <app-base-card>
+          <a [routerLink]="['/profile']">
+            <p>Mi perfil</p>
+            <p class="fw200 m-0">
+              Consulta tus datos personales, antigüedad y los módulos que impactan en tu retiro
+              mensual
+            </p>
+          </a>
+        </app-base-card>
+        <app-base-card>
+          <a [routerLink]="['/recibos']">
+            <p>Mis recibos</p>
+            <p class="fw200 m-0">
+              Accede al historial de liquidaciones y descarga tus recibos en formato PDF de periodos
+              cerrados
+            </p>
+          </a>
+        </app-base-card>
+        <app-base-card>
+          <a [routerLink]="['/profile']">
+            <p>Archivo cooperativo</p>
+            <p class="fw200 m-0">
+              Auditoría social de pares. Consulta las liquidaciones de todos los asociados para
+              garantizar equidad
+            </p>
+          </a>
+        </app-base-card>
+      </app-base-card>
+    </div>
+  </section>
+
+  <section class="section-footer">
+    <div class="card">
+      <div class="header">
+        <div>
+          <img src="assets/nota.png" />
+          <h3>Principios de la Cooperativa</h3>
+        </div>
+        <p>
+          Nuestro sistema de liquidación se basa en la <strong>transparencia, equidad</strong> y
+          <strong>democracia económica</strong>. Todos los criterios son definidos en asamblea y
+          cada asociado tiene acceso a la información colectiva.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>

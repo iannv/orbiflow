@@ -8,6 +8,9 @@ import { API_BASE_URL } from '../core/api/api.config';
   providedIn: 'root',
 })
 export class UserService {
+  isAdmin() {
+    throw new Error('Method not implemented.');
+  }
   constructor(private http: HttpClient) {}
 
   // Obtener todos los usuarios
