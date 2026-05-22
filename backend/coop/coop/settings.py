@@ -32,6 +32,11 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Permitir que Django confíe en los proxies de Render (como Cloudflare)
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 # Application definition
 INSTALLED_APPS = [
     'orbiflow',
