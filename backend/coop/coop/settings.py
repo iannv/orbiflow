@@ -2,19 +2,17 @@ from datetime import timedelta
 import os
 from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
+import dj_database_url 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
-
 def env_bool(name, default=False):
     value = os.getenv(name)
     if value is None:
         return default
     return value.lower() in {'1', 'true', 'yes', 'on'}
-
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DJANGO_DEBUG', default=True)
@@ -34,9 +32,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'orbiflow',
     'django.contrib.admin',
@@ -63,10 +59,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
+
+FRONTEND_URL = os.getenv('FRONTEND_URL')
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL.strip())
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -105,26 +104,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'coop.wsgi.application'
 
-
 # Database
-try:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ['POSTGRES_DB'],
-            'USER': os.environ['POSTGRES_USER'],
-            'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-            'HOST': os.environ.get('POSTGRES_HOST', 'db'),
-            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-        }
-    }
-except KeyError as e:
-    raise ImproperlyConfigured(f"Falta la variable de entorno necesaria: {e}")
+# ==========================================
+DATABASE_URL = os.getenv('DATABASE_URL')
 
+if DATABASE_URL:
+    # Lógica para la nube (Render + Neon)
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Fallback para Docker Compose local
+    try:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ['POSTGRES_DB'],
+                'USER': os.environ['POSTGRES_USER'],
+                'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+                'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+                'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+            }
+        }
+    except KeyError as e:
+        raise ImproperlyConfigured(f"Falta configurar la base de datos. Define DATABASE_URL o {e}")
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -140,26 +149,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'America/Argentina/Buenos_Aires'
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+# Static files
 STATIC_URL = 'static/'
-# Archivos estáticos (CSS/JS de Django Admin)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Archivos de medios
+# Media files
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
