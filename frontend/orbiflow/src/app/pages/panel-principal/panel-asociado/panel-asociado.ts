@@ -2,6 +2,8 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { BaseCard } from '../../../components/base-card/base-card';
 import { RouterLink } from '@angular/router';
 import { RolEnum } from '../../../enums/rolEnum';
+import { AssociateService } from '../../../services/associate-service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-panel-asociado',
@@ -25,9 +27,13 @@ export class PanelAsociado {
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private associateService: AssociateService,
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.getSeniority();
+  }
 
   // Obtener último retiro
   getLastWithdrawal() {}
@@ -36,8 +42,20 @@ export class PanelAsociado {
   getTotalHoursWorked() {}
 
   // Obtener antigüedad
-  getSeniority() {}
-  
+  getSeniority() {
+    console.log(this.authService.currentUser());
+    const associateId = this.authService.currentUser()?.id;
+    if (!associateId) return;
+    this.associateService.getAssociateByUser(associateId).subscribe((associate) => {
+      console.log('Antes de contar:', this.entryDate);
+      if (associate.length > 0) {
+        this.entryDate = associate[0].entry_date;
+        this.cdr.detectChanges();
+        console.log('Fecha de ingreso del asociado:', this.entryDate);
+      }
+    });
+  }
+
   // Obtener estado del período
   getPeriodStatus() {}
 }
