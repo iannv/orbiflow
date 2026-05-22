@@ -129,8 +129,8 @@
             <div>
               <span class="fw300 modules-title">Módulos asignados</span>
               <div class="modules-tags">
-                @for (v of associate.variants; track v.id) {
-                  <span class="module-tag">{{ v.module_name }}</span>
+                @for (moduleName of getUniqueModuleNames(associate); track moduleName) {
+                  <span class="module-tag">{{ moduleName }}</span>
                 } @empty {
                   <span class="fw200">Sin módulos</span>
                 }
@@ -346,24 +346,62 @@
   (primaryBtnClick)="saveModules()"
   (secondaryBtnClick)="cancelModulesModal()"
 >
-  @for (mod of modulesCatalog; track mod.id) {
-    @for (v of mod.variants; track v.id) {
-      <div class="module-item">
-        <div class="module-info">
-          <span class="module-name fw500">{{ mod.name }}</span>
-          <span class="module-value">{{ formatVariantValue(v) }}</span>
+  <div class="modules-container">
+    @for (mod of modulesCatalog; track mod.id) {
+      <div class="module-row" [class.module-inactive]="!mod.is_active">
+        <!-- Toggle del módulo -->
+        <label class="module-toggle">
+          <input
+            type="checkbox"
+            [checked]="isModuleActive(mod.id)"
+            (change)="toggleModule(mod.id)"
+            [disabled]="!mod.is_active"
+          />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+
+        <!-- Info del módulo (nombre + descripción) -->
+        <div class="module-info-block">
+          <span class="module-title">{{ mod.name }}</span>
+          @if (mod.description) {
+            <span class="module-desc">{{ mod.description }}</span>
+          }
         </div>
 
-        <input
-          type="checkbox"
-          class="module-toggle"
-          [id]="'module-' + v.id"
-          [checked]="isAssigned(v.id)"
-          (change)="toggleVariant(v.id)"
-        />
+        <!-- Variantes al costado (o debajo si no hay espacio) -->
+        @if (isModuleActive(mod.id)) {
+          <div class="module-options">
+            @if (mod.is_exclusive) {
+              @for (v of mod.variants; track v.id) {
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    [name]="'mod-' + mod.id"
+                    [checked]="isAssigned(v.id)"
+                    (change)="selectExclusiveVariant(mod.id, v.id)"
+                  />
+                  <span class="option-label">{{ v.name }} ({{ formatVariantValue(v) }})</span>
+                </label>
+              }
+            } @else {
+              @for (v of mod.variants; track v.id) {
+                <label class="option-item">
+                  <input
+                    type="checkbox"
+                    [checked]="isAssigned(v.id)"
+                    (change)="toggleVariant(v.id)"
+                  />
+                  <span class="option-label">{{ v.name }} ({{ formatVariantValue(v) }})</span>
+                </label>
+              }
+            }
+          </div>
+        }
       </div>
+    } @empty {
+      <p class="fw200">No hay módulos activos para mostrar.</p>
     }
-  } @empty {
-    <p class="fw200">No hay módulos activos para mostrar.</p>
-  }
+  </div>
 </app-modal>

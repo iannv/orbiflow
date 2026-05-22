@@ -219,72 +219,6 @@
   color: #444;
 }
 
-/* ── Modal de módulos: items con card como en el mockup ── */
-.module-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--gris-claro);
-  border-radius: 10px;
-  margin-bottom: 0.5rem;
-}
-
-.module-item:last-child {
-  margin-bottom: 0;
-}
-
-.module-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.module-name {
-  font-size: 0.95rem;
-  color: var(--verde-petroleo);
-}
-
-.module-value {
-  font-size: 0.85rem;
-  color: var(--verde-mate);
-  opacity: 0.75;
-}
-
-/* Toggle switch nativo estilizado */
-.module-toggle {
-  width: 44px;
-  height: 24px;
-  appearance: none;
-  background: var(--gris-claro);
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.module-toggle::before {
-  content: '';
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  top: 3px;
-  left: 3px;
-  transition: transform 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.module-toggle:checked {
-  background: var(--verde-mate);
-}
-
-.module-toggle:checked::before {
-  transform: translateX(20px);
-}
-
 /* ── Paginación ── */
 .pagination {
   display: flex;
@@ -362,6 +296,140 @@
   color: var(--rojo);
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+/* ── Modal CU-06: Módulos con variantes alineadas al costado ── */
+
+.modules-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Card de cada módulo */
+.module-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  background: #fff;
+}
+
+.module-row.module-inactive {
+  opacity: 0.5;
+  background: #f9fafb;
+}
+
+/* Toggle switch */
+.module-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.module-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gris-claro);
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-track:before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.module-toggle input:checked + .toggle-track {
+  background-color: var(--verde-mate);
+}
+
+.module-toggle input:checked + .toggle-track:before {
+  transform: translateX(20px);
+}
+
+.module-toggle input:disabled + .toggle-track {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Info del módulo (título + descripción) */
+.module-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.module-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--verde-petroleo);
+  line-height: 1.25;
+}
+
+.module-desc {
+  font-size: 0.75rem;
+  color: var(--verde-mate);
+  line-height: 1.25;
+}
+
+/* Variantes alineadas al costado */
+.module-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.option-item input[type='radio'],
+.option-item input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--verde-mate);
+  cursor: pointer;
+  margin: 0;
+}
+
+.option-label {
+  color: var(--verde-petroleo);
 }
 
 /* ── Responsive ── */

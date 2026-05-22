@@ -418,18 +418,63 @@ export class PageAsociados implements OnInit {
     this.showModulesModal = false;
   }
 
+  // ── Gestión de módulos agrupados ──
+
   // Devuelve true si la variante está marcada en el estado temporal
   isAssigned(variantId: number): boolean {
     return this.pendingVariantIds.has(variantId);
   }
 
-  // Alterna la variante en el Set temporal (no llama al backend todavía)
+  // Alterna la variante en el Set temporal (checkbox - módulos no exclusivos)
   toggleVariant(variantId: number): void {
     if (this.pendingVariantIds.has(variantId)) {
       this.pendingVariantIds.delete(variantId);
     } else {
       this.pendingVariantIds.add(variantId);
     }
+    this.cdr.detectChanges();
+  }
+
+  // Devuelve true si el módulo tiene al menos una variante seleccionada
+  isModuleActive(modId: number): boolean {
+    const mod = this.modulesCatalog.find((m) => m.id === modId);
+    if (!mod) return false;
+    return mod.variants.some((v) => this.pendingVariantIds.has(v.id));
+  }
+
+  // Activa/desactiva un módulo completo
+  // - Al activar: selecciona la variante por defecto (o la primera si no hay)
+  // - Al desactivar: elimina todas las variantes de ese módulo del Set
+  toggleModule(modId: number): void {
+    const mod = this.modulesCatalog.find((m) => m.id === modId);
+    if (!mod) return;
+
+    const hasAnySelected = mod.variants.some((v) => this.pendingVariantIds.has(v.id));
+
+    if (hasAnySelected) {
+      // Desactivar: eliminar todas las variantes de este módulo
+      mod.variants.forEach((v) => this.pendingVariantIds.delete(v.id));
+    } else {
+      // Activar: buscar variante por defecto, o usar la primera
+      const defaultVariant = mod.variants.find((v) => v.is_default);
+      const variantToSelect = defaultVariant ?? mod.variants[0];
+      if (variantToSelect) {
+        this.pendingVariantIds.add(variantToSelect.id);
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  // Selecciona una variante en un módulo exclusivo (radio button)
+  // Elimina cualquier otra variante del mismo módulo antes de agregar la nueva
+  selectExclusiveVariant(modId: number, variantId: number): void {
+    const mod = this.modulesCatalog.find((m) => m.id === modId);
+    if (!mod) return;
+
+    // Eliminar todas las variantes de este módulo del Set
+    mod.variants.forEach((v) => this.pendingVariantIds.delete(v.id));
+    // Agregar solo la seleccionada
+    this.pendingVariantIds.add(variantId);
     this.cdr.detectChanges();
   }
 
@@ -480,6 +525,15 @@ export class PageAsociados implements OnInit {
     return variant.type === 'fixed_amount'
       ? `$ ${num.toLocaleString('es-AR')}`
       : `${num} %`;
+  }
+
+  // Retorna los nombres de módulos únicos (sin duplicados) para mostrar en los tags
+  getUniqueModuleNames(associate: Associate): string[] {
+    if (!associate.variants || associate.variants.length === 0) {
+      return [];
+    }
+    const moduleNames = associate.variants.map((v) => v.module_name);
+    return [...new Set(moduleNames)];
   }
 
   // Retorna un formulario vacío con valores por defecto
