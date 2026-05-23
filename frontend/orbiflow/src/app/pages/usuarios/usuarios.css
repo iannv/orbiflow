@@ -8,6 +8,7 @@
 }
 
 #form-div {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -25,20 +26,21 @@
   width: 100%;
 }
 
-.form-div-checks {
+.form-div-check {
   display: flex;
-  justify-content: start;
-  align-items: last baseline;
+  align-items: center;
+  gap: .4rem;
 }
 
-.form-div-checks div {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
+.form-div-check input{
+  width: 4%;
+  margin: 0;
 }
 
-.form-div-checks div label {
-  align-self: center;
+.switch-activo {
+  position: absolute;
+  right: 10rem;
+  top: 13.1rem;
 }
 
 #section-title {
