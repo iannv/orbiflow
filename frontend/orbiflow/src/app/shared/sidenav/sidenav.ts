@@ -49,7 +49,7 @@ export class Sidenav {
       id: '5',
       name: 'Recibos',
       iconName: 'assets/recibos.png',
-      route: '#',
+      route: 'recibos',
     },
     {
       id: '6',
