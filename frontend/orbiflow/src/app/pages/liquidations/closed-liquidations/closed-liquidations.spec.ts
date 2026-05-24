@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ClosedLiquidations } from './closed-liquidations';
+import { ClosedLiquidationsComponent } from './closed-liquidations';
 
-describe('ClosedLiquidations', () => {
-  let component: ClosedLiquidations;
-  let fixture: ComponentFixture<ClosedLiquidations>;
+describe('ClosedLiquidationsComponent', () => {
+  let component: ClosedLiquidationsComponent;
+  let fixture: ComponentFixture<ClosedLiquidationsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ClosedLiquidations]
+      imports: [ClosedLiquidationsComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ClosedLiquidations);
+    fixture = TestBed.createComponent(ClosedLiquidationsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

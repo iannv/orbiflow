@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PreLiquidation } from './pre-liquidation';
+import { PreLiquidationComponent } from './pre-liquidation';
 
-describe('PreLiquidation', () => {
-  let component: PreLiquidation;
-  let fixture: ComponentFixture<PreLiquidation>;
+describe('PreLiquidationComponent', () => {
+  let component: PreLiquidationComponent;
+  let fixture: ComponentFixture<PreLiquidationComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PreLiquidation]
+      imports: [PreLiquidationComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PreLiquidation);
+    fixture = TestBed.createComponent(PreLiquidationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
