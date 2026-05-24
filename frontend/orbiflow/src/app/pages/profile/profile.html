@@ -1,12 +1,10 @@
 <main class="p-5">
     <h1 class="h1-title">Mi perfil</h1>
     <h2 class="h2-subtitle">Información personal y módulos que impactan en tu retiro mensual</h2>
-  <p>{{loading}}</p>
-  
     @if (loading) {
     <app-loader />
-  }
-  @if (!loading) {
+    }
+    @if (!loading) {
     <section>
         <app-base-card title="Datos personales">
             <div class="name">{{ associate?.first_name }} {{ associate?.last_name }}</div>
@@ -60,21 +58,45 @@
         <app-base-card title="Módulos que impactan en tu retiro"
             subtitle="Estos módulos determinan el cálculo de tu liquidación mensual según los criterios democráticos de la cooperativa.">
 
-            @for (module of modules; track $index) {
-            <section><app-base-card>
+            <section>
+                <app-base-card>
                     <div class="module-card">
                         <div class="module-info">
-                            <img src="assets/pesos.png" alt="{{module.title}}" class="module-icon">
+                            <img src="assets/pesos.png" alt="Horas trabajadas" class="module-icon">
                             <div>
-                                <span class="module-title">{{module.title}}</span>
-                                <div class="module-subtitle">{{module.subtitle}}</div>
+                                <span class="module-title">Horas trabajadas</span>
+                                <div class="module-subtitle">Registro mensual de horas</div>
                             </div>
                         </div>
-                        <div class="module-quantity">{{module.quantity}}</div>
+                        <div class="module-quantity">{{ hoursWorked }} hs/mes</div>
+
                     </div>
-                </app-base-card></section>
+                </app-base-card>
+            </section>
+            @for (module of modules; track $index) {
+            <section>
+                <app-base-card>
+                    <div class="module-card">
+                        <div class="module-info">
+                            <img src="assets/pesos.png" alt="{{module.module_name}}" class="module-icon">
+                            <div>
+                                <span class="module-title">{{module.module_name}}</span>
+                                <div class="module-subtitle">{{module.variant_name}}</div>
+                            </div>
+                        </div>
+                        <div class="module-quantity">
+                            <div class="valor-font">Valor</div>
+                            @if (module.variant_type === 'percentage') {
+                            <div class="module-quantity">+ {{module.variant_value}}% adicional</div>
+                            } @else {
+                            <div class="module-quantity">${{module.variant_value}}</div>
+                            }
+                        </div>
+                    </div>
+                </app-base-card>
+            </section>
             }
         </app-base-card>
     </section>
-  }
+    }
 </main>

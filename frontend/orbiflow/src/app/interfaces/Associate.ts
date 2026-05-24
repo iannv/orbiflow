@@ -3,8 +3,10 @@ export interface AssociateVariant {
   associate: number;
   variant: number;
   variant_name: string;
+  variant_value: number;
   module_name: string;
   activation_date: string;
+  variant_type: 'percentage' | 'fixed_amount';
 }
 
 export interface Associate {

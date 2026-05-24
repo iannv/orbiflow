@@ -75,3 +75,9 @@ section {
     font-weight: 500;
     color: var(--verde-selva);
 }
+
+.valor-font{
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--gris-azulado);
+}
