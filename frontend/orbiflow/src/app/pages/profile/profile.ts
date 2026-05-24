@@ -6,6 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { AssociateService } from '../../services/associate-service';
 import { Associate, AssociateVariant } from '../../interfaces/Associate';
 import { Loader } from '../../components/loader/loader';
+import { LiquidationService } from '../../services/liquidation-service';
 
 @Component({
   selector: 'app-profile',
@@ -18,13 +19,15 @@ export class Profile implements OnInit {
   associate: Associate | null = null;
   error: string | null = null;
   loading: boolean = true;
-  modules:AssociateVariant[] = [];
+  modules: AssociateVariant[] = [];
+  hoursWorked: number = 0;
 
   constructor(
     private readonly authService: AuthService,
     private readonly associateService: AssociateService,
+    private readonly liquidationService: LiquidationService,
     private readonly cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loading = true;
@@ -56,7 +59,42 @@ export class Profile implements OnInit {
 
       },
     });
-  }
 
- 
+    this.liquidationService.getPeriods('reviewed').subscribe({
+      next: (res) => {
+        console.log('Periodos en revisión:', res);
+
+        // Buscar el período con el mes más alto
+        const latestPeriod = res.reduce((prev, current) =>
+          current.month > prev.month ? current : prev
+        );
+
+        const selectedPeriodId = latestPeriod?.id;
+
+        console.log('Último período:', latestPeriod);
+        if (selectedPeriodId) {
+
+          this.liquidationService.calculate(selectedPeriodId, true).subscribe({
+            next: (result) => {
+              console.log(result);
+
+              const currentUserRetirement = result.retirements.find(
+                (retirement: any) => retirement.associate_id === this.associate?.id
+              );
+
+              console.log('Retirement usuario actual:', currentUserRetirement);
+
+              this.hoursWorked = currentUserRetirement?.hours_worked || 0;
+
+              console.log('Horas trabajadas:', this.hoursWorked);
+
+              this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error al calcular liquidación', err)
+          });
+        }
+      },
+      error: (err) => console.error('Error al cargar periodos en revisión', err)
+    });
+  }
 }
