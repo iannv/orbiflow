@@ -43,7 +43,7 @@ export class Sidenav {
       id: '4',
       name: 'Liquidaciones',
       iconName: 'assets/liquidaciones.png',
-      route: '#',
+      route: '/liquidaciones',
     },
     {
       id: '5',
