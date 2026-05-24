@@ -11,11 +11,31 @@ a {
   margin: 0;
 }
 .section-div-card {
-    display: flex;
-    flex-direction: row;
-    gap: .5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem;
 }
 
+::ng-deep .card[_ngcontent-ng-c4037116894] {
+  padding: 0.3rem 0.4rem 0.3rem 0.5rem !important;
+}
+
+.collapsed-div-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 2rem;
+  row-gap: .6rem;
+}
+.collapsed-div-card .fw300 {
+  color: var(--gris-oscuro);
+  font-size: 0.88rem;
+}
+.collapsed-div-card span {
+  color: var(--verde-selva);
+  font-size: 1rem;
+}
 
 /* Nota al pie de página*/
 .card {
@@ -42,4 +62,13 @@ a {
 }
 .section-footer .header p {
   margin: 0.5rem 0 0 0;
+}
+
+/* ______________________________________________________ */
+/* ______________________________________________________ */
+/* QUERIES */
+@media (min-width: 768px) {
+  .collapsed-div-card {
+    justify-content: space-between;
+  }
 }
