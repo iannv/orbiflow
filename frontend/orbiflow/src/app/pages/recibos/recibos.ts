@@ -1,24 +1,43 @@
-import { Component } from '@angular/core';
-import { BaseCard } from "../../components/base-card/base-card";
+import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { BaseCard } from '../../components/base-card/base-card';
+import { Primary } from '../../components/button/primary/primary';
 
 @Component({
   selector: 'app-recibos',
-  imports: [BaseCard],
+  imports: [BaseCard, Primary],
   templateUrl: './recibos.html',
   styleUrl: './recibos.css',
 })
 export class Recibos {
+  arrow: string = 'assets/flecha-derecha.png';
   year: string = '';
-  arrow: string = 'assets/flecha-abajo.png'; // Si collapse false la flecha es hacia la derecha
+  amount: number = 0;
 
-  collapse: boolean = false;
+  @ViewChild('collapseElement') collapseElement: any;
 
-  // ngOnInit(){
-  //   this.isCollapse();
-  // }
+  constructor(private cdr: ChangeDetectorRef) {}
 
-  // isCollapse() {
-  //   this.collapse = this.collapse != this.collapse;
-  //   this.arrow = 'assets/flecha-derecha.png';
-  // }
+  ngOnInit() {}
+
+  ngAfterViewInit() {
+    this.isCollapse();
+  }
+
+  // Colapsar card
+  isCollapse() {
+    const element = this.collapseElement.nativeElement;
+    element.addEventListener('shown.bs.collapse', () => {
+      this.arrow = 'assets/flecha-abajo.png';
+      this.cdr.detectChanges();
+    });
+    element.addEventListener('hidden.bs.collapse', () => {
+      this.arrow = 'assets/flecha-derecha.png';
+      this.cdr.detectChanges();
+    });
+  }
+
+
+  // Obtener recibos por año
+  // getRetirements(){}
+
 }

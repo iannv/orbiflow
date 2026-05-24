@@ -20,9 +20,20 @@
         </app-base-card>
       </a>
     </p>
-    <div class="collapse" id="collapse-retiros">
+    <div class="collapse" id="collapse-retiros" #collapseElement>
       <app-base-card>
-        <p>Mes {{ year }}</p>
+        <div class="collapsed-div-card">
+          <p class="fw400">Septiembre 2026 {{ year }}</p>
+          <p class="fw300">
+            Importe: <span class="fw700">${{ amount }}</span>
+          </p>
+          <app-primary
+            name="Descargar PDF"
+            height="30px"
+            padding=".2rem 1rem .2rem .5rem"
+            btnImg="assets/descargar.png"
+          ></app-primary>
+        </div>
       </app-base-card>
     </div>
   </section>
