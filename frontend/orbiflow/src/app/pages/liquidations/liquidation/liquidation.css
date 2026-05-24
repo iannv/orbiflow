@@ -1,0 +1,4 @@
+.table td:last-child button {
+    display: inline-block !important; 
+    margin: 0 auto !important;        
+}
