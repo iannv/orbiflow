@@ -105,6 +105,14 @@
     @if (modalMode === 'delete') {}
     @if (modalMode === 'create' || modalMode === 'edit') {
       <form [formGroup]="userForm">
+        <div class="switch-activo">
+          <app-switch
+            name="Activo"
+            [checked]="userForm.get('is_active')?.value"
+            (checkedChange)="userForm.get('is_active')?.setValue($event)"
+          ></app-switch>
+        </div>
+
         <div id="form-div">
           <div class="form-div">
             <div>
@@ -156,27 +164,22 @@
             }
           </div>
 
-          <div class="form-div-checks form-div">
-            <div>
-              <label for="is_active"> Activo </label>
-              <input type="checkbox" name="is_active" formControlName="is_active" />
-            </div>
-            <div>
-              <label for="is_staff"> Staff </label>
-              <input type="checkbox" name="is_staff" formControlName="is_staff" />
-            </div>
-            <div>
-              <label for="is_superuser"> Superusuario </label>
-              <input type="checkbox" name="is_superuser" formControlName="is_superuser" />
-            </div>
-          </div>
-
           <label for="rol"> Rol </label>
-          <app-select name="rol" formControlName="roleControl" required>
+          <app-select
+            name="rol"
+            formControlName="roleControl"
+            (change)="validateIsStaff()"
+            required
+          >
             @for (role of roles; track $index) {
               <option [value]="role.value">{{ role.label }}</option>
             }
           </app-select>
+
+          <div class="form-div-check">
+            <input type="checkbox" id="is_staff" formControlName="is_staff" />
+            <label for="is_staff"> Es miembro de la cooperativa </label>
+          </div>
         </div>
 
         <!-- Validaciones -->

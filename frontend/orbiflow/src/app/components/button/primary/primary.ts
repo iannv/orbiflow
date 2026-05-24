@@ -9,6 +9,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class Primary {
   @Input() name: string = '';
   @Input() btnImg: string = '';
+  @Input() height: string = '';
+  @Input() padding: string = '';
   @Output() btnClick = new EventEmitter();
 
   click() {

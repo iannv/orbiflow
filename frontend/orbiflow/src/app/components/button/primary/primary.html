@@ -7,7 +7,8 @@
   type="button"
   class="btn btn-green"
   (click)="click()"
-  style="--bs-btn-padding-y: 0.6rem; --bs-btn-padding-x: 1rem; --bs-btn-font-size: 1rem"
+  style="--bs-btn-padding-y: 0.6rem; --bs-btn-padding-x: 1rem; --bs-btn-font-size: 1rem;"
+  [style.height]="height" [style.padding]="padding"
 >
   <img [src]="btnImg" class="btn-img" />
   {{ name }}

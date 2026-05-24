@@ -20,6 +20,7 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { Toast } from '../../components/toast/toast';
+import { Switch } from "../../components/button/switch/switch";
 
 @Component({
   selector: 'app-usuarios',
@@ -34,7 +35,8 @@ import { Toast } from '../../components/toast/toast';
     Modal,
     Select,
     Toast,
-  ],
+    Switch
+],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
@@ -86,7 +88,6 @@ export class Usuarios implements OnInit {
         roleControl: ['', Validators.required],
         is_staff: [false],
         is_active: [true],
-        is_superuser: [false],
         date_joined: [''],
       },
       {
@@ -128,13 +129,26 @@ export class Usuarios implements OnInit {
     });
   }
 
+  // Is_staff es obligatorio (true) si es asociado y tesorero
+  validateIsStaff(): void {
+    const role = this.userForm.get('roleControl')?.value;
+
+    if (role === RolEnum.ASSOCIATE || role === RolEnum.TREASURER) {
+      this.userForm.get('is_staff')?.setValue(true);
+      this.userForm.get('is_staff')?.disable();
+    } else {
+      this.userForm.get('is_staff')?.enable();
+      this.userForm.get('is_staff')?.setValue(false);
+    }
+  }
+
   // Crear nuevo usuario
   createUser() {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       return;
     }
-    const formValue = this.userForm.value;
+    const formValue = this.userForm.getRawValue();
     const newUser = {
       first_name: formValue.first_name,
       last_name: formValue.last_name,
@@ -144,7 +158,6 @@ export class Usuarios implements OnInit {
       role: formValue.roleControl,
       is_staff: formValue.is_staff,
       is_active: formValue.is_active,
-      is_superuser: formValue.is_superuser,
       date_joined: new Date().toISOString().split('T')[0],
     };
     this.userService.createUser(newUser).subscribe({
@@ -168,7 +181,7 @@ export class Usuarios implements OnInit {
     }
     if (!user.id) return;
     if (!this.selectedUser?.id) return;
-    const formValue = this.userForm.value;
+    const formValue = this.userForm.getRawValue();
     const updateData: Partial<User> = {
       first_name: formValue.first_name,
       last_name: formValue.last_name,
@@ -177,7 +190,6 @@ export class Usuarios implements OnInit {
       role: formValue.roleControl,
       is_staff: formValue.is_staff,
       is_active: formValue.is_active,
-      is_superuser: formValue.is_superuser,
     };
     if (formValue.password) {
       updateData.password = formValue.password;
@@ -250,7 +262,6 @@ export class Usuarios implements OnInit {
       roleControl: user.role,
       is_staff: user.is_staff,
       is_active: user.is_active,
-      is_superuser: user.is_superuser,
       password: '',
       repeatPassword: '',
     });
@@ -286,7 +297,6 @@ export class Usuarios implements OnInit {
     this.userForm.reset({
       is_staff: false,
       is_active: true,
-      is_superuser: false,
       first_name: '',
       last_name: '',
       username: '',

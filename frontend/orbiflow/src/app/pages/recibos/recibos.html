@@ -1,1 +1,54 @@
-<p>recibos works!</p>
+<main class="p-5">
+  <h1 class="h1-title">Mis Recibos</h1>
+  <h2 class="h2-subtitle">Historial de liquidaciones de retiro</h2>
+
+  <!-- SECTION HISTORIAL DE RETIROS -->
+  <section class="section-retiros">
+    <p class="gap-1">
+      <a
+        data-bs-toggle="collapse"
+        href="#collapse-retiros"
+        role="button"
+        aria-expanded="false"
+        aria-controls="collapse-retiros"
+      >
+        <app-base-card>
+          <div class="section-div-card">
+            <img [src]="arrow" />
+            <p class="fw600">Año {{ year }}</p>
+          </div>
+        </app-base-card>
+      </a>
+    </p>
+    <div class="collapse" id="collapse-retiros" #collapseElement>
+      <app-base-card>
+        <div class="collapsed-div-card">
+          <p class="fw400">Septiembre 2026 {{ year }}</p>
+          <p class="fw300">
+            Importe: <span class="fw700">${{ amount }}</span>
+          </p>
+          <app-primary
+            name="Descargar PDF"
+            height="30px"
+            padding=".2rem 1rem .2rem .5rem"
+            btnImg="assets/descargar.png"
+          ></app-primary>
+        </div>
+      </app-base-card>
+    </div>
+  </section>
+
+  <!-- SECTION NOTA-->
+  <section class="section-footer">
+    <div class="card">
+      <div class="header">
+        <h3 class="fw600">Nota</h3>
+        <p class="fw200">
+          Los recibos solo están disponibles para períodos en estado
+          <strong class="fw600">"Cerrado"</strong>. Una vez cerrado un período, el documento PDF
+          queda disponible permanentemente para consulta y descarga.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,74 @@
+/* Section retiros anuales */
+a {
+  text-decoration: none;
+  color: var(--verde-azulado);
+}
+.section-retiros img {
+  width: 25px;
+  height: 25px;
+}
+.section-retiros p {
+  margin: 0;
+}
+.section-div-card {
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem;
+}
+
+::ng-deep .card[_ngcontent-ng-c4037116894] {
+  padding: 0.3rem 0.4rem 0.3rem 0.5rem !important;
+}
+
+.collapsed-div-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 2rem;
+  row-gap: .6rem;
+}
+.collapsed-div-card .fw300 {
+  color: var(--gris-oscuro);
+  font-size: 0.88rem;
+}
+.collapsed-div-card span {
+  color: var(--verde-selva);
+  font-size: 1rem;
+}
+
+/* Nota al pie de página*/
+.card {
+  padding: 1rem;
+  border: 1px solid var(--azul);
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--azul-bg);
+}
+.section-footer {
+  margin-top: 3rem;
+}
+.section-footer .header div {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.section-footer .header h3 {
+  color: var(--azul);
+  font-size: 1rem;
+  display: flex;
+  margin: 0;
+}
+.section-footer .header p {
+  margin: 0.5rem 0 0 0;
+}
+
+/* ______________________________________________________ */
+/* ______________________________________________________ */
+/* QUERIES */
+@media (min-width: 768px) {
+  .collapsed-div-card {
+    justify-content: space-between;
+  }
+}
