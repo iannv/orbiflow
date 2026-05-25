@@ -22,27 +22,27 @@ help:
 
 # Gestión de contenedores con perfiles
 up-local:
-	copy .env.local .env
+	cp .env.local .env
 	docker compose --profile local up -d
 
 build-local:
-	copy .env.local .env
+	cp .env.local .env
 	docker compose --profile local up --build -d
 
 up-sandbox:
-	copy .env.sandbox .env
+	cp .env.sandbox .env
 	docker compose --profile sandbox up -d
 
 up-prod:
-	copy .env.prod .env
+	cp .env.prod .env
 	docker compose --profile prod up -d
 
 build-sandbox:
-	copy .env.sandbox .env
+	cp .env.sandbox .env
 	docker compose --profile sandbox up --build -d
 
 build-prod:
-	copy .env.prod .env
+	cp .env.prod .env
 	docker compose --profile prod up --build -d
 
 stop:
