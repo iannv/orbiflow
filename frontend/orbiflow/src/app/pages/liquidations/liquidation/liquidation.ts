@@ -128,23 +128,26 @@ export class LiquidationComponent implements OnInit {
     this.selectedDetail = null;
   }
 
-  onConfirmClose() {
+onConfirmClose() {
     if (!this.selectedPeriodId) return;
     
     this.liquidationService.calculate(this.selectedPeriodId, false).subscribe({
       next: () => {
         this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'closed').subscribe({
           next: () => {
-            this.lanzarToast('Cierre Exitoso', 'La liquidación se consolidó de manera inmutable.');
+
             this.isConfirmModalOpen = false;
             this.summary = null;
             this.associatesCalculations = [];
             this.selectedPeriodId = null;
+            
+            this.lanzarToast('Cierre Exitoso', 'La liquidación se consolidó de manera inmutable.');
+            
             this.loadReviewedPeriods(); 
 
             setTimeout(() => {
-    this.router.navigate(['/liquidaciones']); 
-  }, 3500);
+              this.router.navigate(['/liquidaciones']); 
+            }, 3500);
           },
           error: (err) => {
             console.error('Error al actualizar estado del periodo', err);
