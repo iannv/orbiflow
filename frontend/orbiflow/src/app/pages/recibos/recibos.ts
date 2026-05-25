@@ -44,6 +44,7 @@ export class Recibos {
   // Colapsar card
   isCollapse() {
     const element = this.collapseElement.nativeElement;
+    if (!this.collapseElement) return;
     element.addEventListener('shown.bs.collapse', () => {
       this.arrow = 'assets/flecha-abajo.png';
       this.cdr.detectChanges();
