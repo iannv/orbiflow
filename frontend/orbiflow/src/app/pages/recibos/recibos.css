@@ -16,10 +16,6 @@ a {
   gap: 0.2rem;
 }
 
-/* ::ng-deep .card[_ngcontent-ng-c4037116894] {
-  padding: .5rem 0.4rem .5rem 0.5rem !important;
-} */
-
 .collapsed-div-card {
   display: flex;
   justify-content: center;
@@ -37,32 +33,17 @@ a {
   font-size: 1rem;
 }
 
-/* Nota al pie de página*/
-.card {
-  padding: 1rem;
+::ng-deep .card[_ngcontent-ng-c4037116894] {
+  padding: .5rem 1rem .5rem 1rem !important;
+}
+
+/* .card {
   border: 1px solid var(--azul);
   box-sizing: border-box;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   background-color: var(--azul-bg);
-}
-.section-footer {
-  margin-top: 3rem;
-}
-.section-footer .header div {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-.section-footer .header h3 {
-  color: var(--azul);
-  font-size: 1rem;
-  display: flex;
-  margin: 0;
-}
-.section-footer .header p {
-  margin: 0.5rem 0 0 0;
-}
+} */
+
 
 /* ______________________________________________________ */
 /* ______________________________________________________ */

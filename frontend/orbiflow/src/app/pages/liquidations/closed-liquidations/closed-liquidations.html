@@ -15,7 +15,7 @@
       @for (year of years; track year; let first = $first) {
         <div class="accordion-item mb-3 border rounded shadow-sm">
           <h2 class="accordion-header" [id]="'heading' + year">
-            <button class="accordion-button fw-bold text-dark" [class.collapsed]="!first" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse' + year" [attr.aria-expanded]="first" [attr.aria-controls]="'collapse' + year">
+            <button class="accordion-button fw600" [class.collapsed]="!first" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#collapse' + year" [attr.aria-expanded]="first" [attr.aria-controls]="'collapse' + year">
               Año {{ year }}
             </button>
           </h2>
@@ -40,7 +40,7 @@
                       </div>
                       
                       <div class="text-end" >
-                        <button class="btn text-white px-4 py-2" style="background-color: #4b7b6b; border-radius: 6px; font-weight: 500;" (click)="openDetailsModal(period.id)">
+                        <button class="btn text-white px-4 py-2" style="background-color: var(--verde-mate); border-radius: 6px; font-weight: 500;" (click)="openDetailsModal(period.id)">
                           Ver Detalles
                         </button>
                       </div>
@@ -57,9 +57,9 @@
     </div>
 
     <div class="alert mt-4" style="background-color: #eef2fa; border: 1px solid #b3c7ee; border-radius: 8px;">
-      <strong style="color: #0b57d0; font-size: 0.95rem;">Nota</strong>
-      <p class="mb-0 mt-1" style="color: #4a5568; font-size: 0.9rem;">
-        Esta vista de auditoría solo está disponible para períodos en estado <strong>"Cerrado"</strong>. Una vez cerrado un período, la información queda inmutable y disponible permanentemente para su consulta.
+      <strong style="color: var(--azul); font-size: 0.95rem;">Nota</strong>
+      <p class="mb-0 mt-1 fw300" style="color: var(--gris-oscuro); font-size: 0.9rem;">
+        Esta vista de auditoría solo está disponible para períodos en estado <strong class="fw600">"Cerrado"</strong>. Una vez cerrado un período, la información queda inmutable y disponible permanentemente para su consulta.
       </p>
     </div>
   }

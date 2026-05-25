@@ -15,15 +15,9 @@ import { LiquidationPeriod } from '../../interfaces/Liquidation';
   styleUrl: './recibos.css',
 })
 export class Recibos {
-  arrow: string = 'assets/flecha-derecha.png';
-  month: number = 0;
-  amount: number = 0;
-
   retirementsList: Retirement[] = [];
   periodsList: LiquidationPeriod[] = [];
   yearList: number[] = [];
-
-  @ViewChild('collapseElement') collapseElement: any;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -37,24 +31,6 @@ export class Recibos {
     this.getRetirements();
   }
 
-  ngAfterViewInit() {
-    this.isCollapse();
-  }
-
-  // Colapsar card
-  isCollapse() {
-    const element = this.collapseElement.nativeElement;
-    if (!this.collapseElement) return;
-    element.addEventListener('shown.bs.collapse', () => {
-      this.arrow = 'assets/flecha-abajo.png';
-      this.cdr.detectChanges();
-    });
-    element.addEventListener('hidden.bs.collapse', () => {
-      this.arrow = 'assets/flecha-derecha.png';
-      this.cdr.detectChanges();
-    });
-  }
-
   // Obtener recibos de un asociado
   getRetirements() {
     const user = this.authService.currentUser();
@@ -62,12 +38,9 @@ export class Recibos {
 
     this.associateService.getAssociateByUser(user.id).subscribe((associate) => {
       if (associate.length === 0) return;
-
       const associateId = associate[0].id;
-
       this.retirementService.getRetirementsByAssociate(associateId).subscribe((retirements) => {
         this.retirementsList = retirements;
-
         this.liquidationService.getPeriods().subscribe((periods) => {
           this.periodsList = periods;
           this.getYears();
@@ -105,15 +78,21 @@ export class Recibos {
   // Obtener solo los años en un array
   getYears() {
     const years = this.periodsList.map((p) => p.year);
-    this.yearList = [...new Set(years)];
+    this.yearList = [...new Set(years)].sort((a, b) => b - a);
   }
 
-  // Obtener los recibos de cada año
+  // Obtener los recibos de cada mes y año, ordenados por mes descendiente
   getRetirementsByYear(year: number): Retirement[] {
-    return this.retirementsList.filter((retirement) => {
-      // TODO: MODIFICAR PARA QUE SEAN SOLOS LOS DE ESTADO CERRADO
-      const period = this.periodsList.find((p) => p.id === retirement.liquidation);
-      return period?.year === year;
-    });
+    return this.retirementsList
+      .filter((retirement) => {
+        const period = this.periodsList.find((p) => p.id === retirement.liquidation);
+        if (period?.status !== 'closed') return false;
+        return period?.year === year;
+      })
+      .sort((a, b) => {
+        const periodA = this.periodsList.find((p) => p.id === a.liquidation);
+        const periodB = this.periodsList.find((p) => p.id === b.liquidation);
+        return (periodB?.month ?? 0) - (periodA?.month ?? 0);
+      });
   }
 }
