@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { AssociateService } from '../../../services/associate-service';
 import { LiquidationPeriod, LiquidationSummary } from '../../../interfaces/Liquidation';
+import { PdfGeneratorService } from '../../../services/pdf-service';
 import { Modal } from '../../../components/modal/modal';
+import { buildLiquidacionConsolidadaTemplate } from '../../../shared/pdf-templates/closedLiquidations-template';
 
 @Component({
   selector: 'app-closed-liquidations',
@@ -27,6 +29,7 @@ export class ClosedLiquidationsComponent implements OnInit {
   private liquidationService = inject(LiquidationService);
   private associateService = inject(AssociateService);
   private cdr = inject(ChangeDetectorRef);
+  private pdfService = inject(PdfGeneratorService);
 
   ngOnInit() {
     this.cargarMapaAsociados();
@@ -140,5 +143,21 @@ export class ClosedLiquidationsComponent implements OnInit {
   closeDetailsModal() {
     this.isDetailsModalOpen = false;
     this.selectedSummary = null;
+  }
+
+  descargarPDF() {
+    if (!this.selectedSummary) return;
+
+    const monthName = this.getMonthName(this.selectedSummary.period.month);
+
+    const documentoEstructura = buildLiquidacionConsolidadaTemplate(
+      this.selectedSummary,
+      this.associatesMap,
+      monthName,
+    );
+
+    const nombreArchivo = `Liquidacion_${monthName}_${this.selectedSummary.period.year}.pdf`;
+
+    this.pdfService.descargar(documentoEstructura, nombreArchivo);
   }
 }

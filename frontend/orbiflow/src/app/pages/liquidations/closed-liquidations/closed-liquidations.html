@@ -70,9 +70,10 @@
   title="Detalles de la Liquidación"
   size="lg"
   primaryBtnText="Cerrar"
-  [hideSecondaryBtn]="true"
-  primaryBtnPosition="full"
+  secondaryBtnText="Descargar PDF"
+  [hideSecondaryBtn]="false"
   (primaryBtnClick)="closeDetailsModal()"
+  (secondaryBtnClick)="descargarPDF()"
   (close)="closeDetailsModal()"
 >
   @if (isLoadingDetails) {
