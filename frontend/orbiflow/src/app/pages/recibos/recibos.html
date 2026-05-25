@@ -4,45 +4,42 @@
 
   <!-- SECTION HISTORIAL DE RETIROS -->
   <section class="section-retiros">
-    <p class="gap-1">
-      <a
-        data-bs-toggle="collapse"
-        href="#collapse-retiros"
-        role="button"
-        aria-expanded="false"
-        aria-controls="collapse-retiros"
-      >
-        <app-base-card>
-          <div class="section-div-card">
-            <img [src]="arrow" />
-            <p class="fw600">Año {{ year }}</p>
-          </div>
-        </app-base-card>
-      </a>
-    </p>
-    <div class="collapse" id="collapse-retiros" #collapseElement>
-      @for (retirement of retirementsList; track $index) {
+    @for (year of yearList; track $index) {
+      <p class="gap-1">
+        <a
+          data-bs-toggle="collapse"
+          href="#collapse-retiros"
+          role="button"
+          aria-expanded="false"
+          aria-controls="collapse-retiros"
+        >
+          <app-base-card>
+            <div class="section-div-card">
+              <img [src]="arrow" />
+              <p class="fw600">Año {{ year }}</p>
+            </div>
+          </app-base-card>
+        </a>
+      </p>
+
+      <div class="collapse" id="collapse-retiros" #collapseElement>
         @if (retirementsList.length < 1) {
           <app-base-card> <p class="fw200">No se han generado recibos</p> </app-base-card>
         } @else {
-          <app-base-card>
-            <div class="collapsed-div-card">
-              <!-- <p class="fw400">Septiembre 2026 {{ year }}</p> -->
-              <p class="fw400">{{ retirement }}</p>
-              <p class="fw300">
-                <!-- Importe: <span class="fw700">${{ amount }}</span> -->
-              </p>
-              <app-primary
-                name="Descargar PDF"
-                height="30px"
-                padding=".2rem 1rem .2rem .5rem"
-                btnImg="assets/descargar.png"
-              ></app-primary>
-            </div>
-          </app-base-card>
+          @for (retirement of getRetirementsByYear(year); track $index) {
+            <app-base-card>
+              <div class="collapsed-div-card">
+                <p class="fw400">{{ getPeriod(retirement) }}</p>
+                <p class="fw300">
+                  Importe: <span class="fw700">${{ retirement.total_amount }}</span>
+                </p>
+                <app-primary name="Descargar PDF" btnImg="assets/descargar.png"></app-primary>
+              </div>
+            </app-base-card>
+          }
         }
-      }
-    </div>
+      </div>
+    }
   </section>
 
   <!-- SECTION NOTA-->

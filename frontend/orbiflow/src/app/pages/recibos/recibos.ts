@@ -5,6 +5,8 @@ import { RetirementService } from '../../services/retirement-service';
 import { Retirement } from '../../interfaces/Retirement';
 import { AuthService } from '../../core/auth/auth.service';
 import { AssociateService } from '../../services/associate-service';
+import { LiquidationService } from '../../services/liquidation-service';
+import { LiquidationPeriod } from '../../interfaces/Liquidation';
 
 @Component({
   selector: 'app-recibos',
@@ -14,10 +16,12 @@ import { AssociateService } from '../../services/associate-service';
 })
 export class Recibos {
   arrow: string = 'assets/flecha-derecha.png';
-  year: string = '';
+  month: number = 0;
   amount: number = 0;
 
   retirementsList: Retirement[] = [];
+  periodsList: LiquidationPeriod[] = [];
+  yearList: number[] = [];
 
   @ViewChild('collapseElement') collapseElement: any;
 
@@ -25,7 +29,8 @@ export class Recibos {
     private cdr: ChangeDetectorRef,
     private retirementService: RetirementService,
     private authService: AuthService,
-    private associateService: AssociateService
+    private associateService: AssociateService,
+    private liquidationService: LiquidationService,
   ) {}
 
   ngOnInit() {
@@ -61,9 +66,53 @@ export class Recibos {
 
       this.retirementService.getRetirementsByAssociate(associateId).subscribe((retirements) => {
         this.retirementsList = retirements;
-        this.cdr.detectChanges();
-        console.log('RECIBOS ', retirements)
-      })
-    })
+
+        this.liquidationService.getPeriods().subscribe((periods) => {
+          this.periodsList = periods;
+          this.getYears();
+          this.cdr.detectChanges();
+        });
+      });
+    });
+  }
+
+  // Obtener período completo de mes y año de la liquidación
+  getPeriod(retirement: Retirement): string {
+    const months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    const period = this.periodsList.find((p) => p.id === retirement.liquidation);
+    if (!period || period.month == null || period.year == null) {
+      return '';
+    }
+    const monthIndex = period.month - 1;
+    const monthName = months[monthIndex] ?? '';
+    return monthName ? `${monthName} ${period.year}` : '';
+  }
+
+  // Obtener solo los años en un array
+  getYears() {
+    const years = this.periodsList.map((p) => p.year);
+    this.yearList = [...new Set(years)];
+  }
+
+  // Obtener los recibos de cada año
+  getRetirementsByYear(year: number): Retirement[] {
+    return this.retirementsList.filter((retirement) => {
+      // TODO: MODIFICAR PARA QUE SEAN SOLOS LOS DE ESTADO CERRADO
+      const period = this.periodsList.find((p) => p.id === retirement.liquidation);
+      return period?.year === year;
+    });
   }
 }

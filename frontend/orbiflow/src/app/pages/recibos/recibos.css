@@ -16,9 +16,9 @@ a {
   gap: 0.2rem;
 }
 
-::ng-deep .card[_ngcontent-ng-c4037116894] {
-  padding: 0.3rem 0.4rem 0.3rem 0.5rem !important;
-}
+/* ::ng-deep .card[_ngcontent-ng-c4037116894] {
+  padding: .5rem 0.4rem .5rem 0.5rem !important;
+} */
 
 .collapsed-div-card {
   display: flex;

@@ -1,5 +1,4 @@
-import { Associate } from './Associate';
-import { LiquidationItem, LiquidationPeriod } from './Liquidation';
+import { LiquidationItem } from './Liquidation';
 
 export interface Retirement {
   id: number;
