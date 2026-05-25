@@ -387,3 +387,9 @@ Para generar o actualizar el diagrama de entidades exclusivo de la lógica core 
 ```bash
 make data-diagram
 ```
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia **GNU Affero General Public License v3.0 (AGPLv3)**. Esto garantiza que el código sea siempre libre, abierto y protegido contra la privatización, incluso si se ofrece como un servicio a través de la nube. 
+
+Para más información, podés consultar el archivo [LICENSE](LICENSE) completo en la raíz de este repositorio.

@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# Copyright (C) 2026 OrbiCoop Cooperativa de Trabajo Ltda.
+# 
+# OrbiFlow es software libre: podés redistribuirlo y/o modificarlo 
+# bajo los términos de la Licencia Pública General Affero de GNU tal 
+# como fue publicada por la Free Software Foundation.
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
