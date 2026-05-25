@@ -22,5 +22,11 @@ export interface LiquidationSummary {
   period: LiquidationPeriod;
   retirements_count: number;
   totals: LiquidationTotals;
-  retirements: any[]; 
+  retirements: any[];
+}
+
+export interface LiquidationItem {
+  id: number,
+  module_name: string,
+  calculated_value: string,
 }
