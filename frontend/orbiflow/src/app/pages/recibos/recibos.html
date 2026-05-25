@@ -21,20 +21,27 @@
       </a>
     </p>
     <div class="collapse" id="collapse-retiros" #collapseElement>
-      <app-base-card>
-        <div class="collapsed-div-card">
-          <p class="fw400">Septiembre 2026 {{ year }}</p>
-          <p class="fw300">
-            Importe: <span class="fw700">${{ amount }}</span>
-          </p>
-          <app-primary
-            name="Descargar PDF"
-            height="30px"
-            padding=".2rem 1rem .2rem .5rem"
-            btnImg="assets/descargar.png"
-          ></app-primary>
-        </div>
-      </app-base-card>
+      @for (retirement of retirementsList; track $index) {
+        @if (retirementsList.length < 1) {
+          <app-base-card> <p class="fw200">No se han generado recibos</p> </app-base-card>
+        } @else {
+          <app-base-card>
+            <div class="collapsed-div-card">
+              <!-- <p class="fw400">Septiembre 2026 {{ year }}</p> -->
+              <p class="fw400">{{ retirement }}</p>
+              <p class="fw300">
+                <!-- Importe: <span class="fw700">${{ amount }}</span> -->
+              </p>
+              <app-primary
+                name="Descargar PDF"
+                height="30px"
+                padding=".2rem 1rem .2rem .5rem"
+                btnImg="assets/descargar.png"
+              ></app-primary>
+            </div>
+          </app-base-card>
+        }
+      }
     </div>
   </section>
 

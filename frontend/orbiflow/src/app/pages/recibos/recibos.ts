@@ -1,6 +1,10 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { BaseCard } from '../../components/base-card/base-card';
 import { Primary } from '../../components/button/primary/primary';
+import { RetirementService } from '../../services/retirement-service';
+import { Retirement } from '../../interfaces/Retirement';
+import { AuthService } from '../../core/auth/auth.service';
+import { AssociateService } from '../../services/associate-service';
 
 @Component({
   selector: 'app-recibos',
@@ -13,11 +17,20 @@ export class Recibos {
   year: string = '';
   amount: number = 0;
 
+  retirementsList: Retirement[] = [];
+
   @ViewChild('collapseElement') collapseElement: any;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private retirementService: RetirementService,
+    private authService: AuthService,
+    private associateService: AssociateService
+  ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.getRetirements();
+  }
 
   ngAfterViewInit() {
     this.isCollapse();
@@ -36,8 +49,21 @@ export class Recibos {
     });
   }
 
+  // Obtener recibos de un asociado
+  getRetirements() {
+    const user = this.authService.currentUser();
+    if (!user) return;
 
-  // Obtener recibos por año
-  // getRetirements(){}
+    this.associateService.getAssociateByUser(user.id).subscribe((associate) => {
+      if (associate.length === 0) return;
 
+      const associateId = associate[0].id;
+
+      this.retirementService.getRetirementsByAssociate(associateId).subscribe((retirements) => {
+        this.retirementsList = retirements;
+        this.cdr.detectChanges();
+        console.log('RECIBOS ', retirements)
+      })
+    })
+  }
 }
