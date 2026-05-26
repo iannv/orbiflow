@@ -113,6 +113,52 @@ OrbiFlow desacopla la **definición de las reglas** (módulos y variantes) de la
 **ejecución del cálculo** (motor de liquidación). El flujo completo, desde la
 configuración hasta la obtención del recibo, es el siguiente:
 
+# OrbiFlow: Estructura de Roles y Autorizaciones
+
+Este documento define la jerarquía de accesos para garantizar la seguridad y operatividad del sistema OrbiFlow.
+
+## Definición de Roles
+
+Los roles que utiliza OrbiFlow en el código son: `admin`, `treasurer` y `associate`.
+
+1. **Admin (`admin`)**
+  - **Perfil:** Personal técnico o responsable de IT.
+  - **Alcance:** Acceso total al sistema. Puede crear, leer, actualizar y eliminar cualquier recurso.
+
+2. **Tesorero (`treasurer`)**
+  - **Perfil:** Miembro de la cooperativa encargado de la administración financiera.
+  - **Alcance:** Acceso operativo amplio: puede gestionar liquidaciones, asociados, módulos, variantes y configuración global.
+  - **Limitación importante:** No puede eliminar usuarios con rol `admin`.
+
+3. **Asociado (`associate`)**
+  - **Perfil:** Miembro de la cooperativa.
+  - **Alcance (solo lectura):**
+    - Listar y consultar periodos de liquidación y recibos de toda la cooperativa (`/api/liquidations/`, `/api/retirements/`).
+    - Listar el directorio completo de usuarios y asociados (`GET /api/users/`, `GET /api/associates/`).
+    - Ver el detalle **solo de su propia cuenta** (`GET /api/users/{su_id}/`) y **solo de su propio legajo** (`GET /api/associates/{su_legajo_id}/`).
+  - **Exclusión:** No puede acceder a módulos, variantes ni configuración global. No puede crear, editar ni eliminar usuarios ni asociados (`POST`, `PUT`, `PATCH`, `DELETE`), ni ver el detalle de otros usuarios o legajos ajenos.
+
+## Membresía vs. Rol vs. Flags de Django
+
+OrbiFlow separa tres conceptos que es importante no mezclar:
+
+| Campo                         | Significado                                                                                                         | ¿Define permisos en la API? |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `role`                        | Rol funcional en OrbiFlow: `admin`, `treasurer` o `associate`.                                                      | **Sí** (única fuente).      |
+| `is_coop_member`              | Indica si el usuario es **socio de la cooperativa**. Es información de negocio, no de autorización. Nos sirve para indicar si necesita un legajo de asociado.                | No.                         |
+| `is_staff` (Django)           | Flag estándar de Django que habilita el ingreso al **panel admin** (`/admin/`).                                     | No.                         |
+| `is_superuser` (Django)       | Flag estándar de Django que otorga todos los permisos en el panel admin.        | Solo como `admin` equivalente. |
+| `is_active`                   | Habilita/deshabilita la cuenta para iniciar sesión.                                                                 | Indirectamente (sin login, sin acceso). |
+
+Reglas de membresía aplicadas por la API:
+
+- Si `role = associate` -> `is_coop_member` **debe** ser `true`.
+- Si `role = treasurer` -> `is_coop_member` **debe** ser `true` . 
+- El frontend permite crear el usuario primero y luego completar el legajo, mostrando un aviso.
+- Si `role = admin` -> `is_coop_member` queda libre (puede ser personal técnico externo).
+
+> Nota: `is_staff` **no** representa membresía cooperativa; sólo el acceso al panel `/admin/` de Django. 
+
 ### 1. Modelo de datos (resumen)
 
 
