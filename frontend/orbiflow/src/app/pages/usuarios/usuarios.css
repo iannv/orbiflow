@@ -2,6 +2,16 @@
   color: var(--rojo);
 }
 
+.warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #d9a300;
+  background: #fff7e0;
+  color: #6b5300;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
 .optional {
   font-size: 12px;
   color: var(--gris-oscuro);
@@ -35,6 +45,15 @@
 .form-div-check input{
   width: 4%;
   margin: 0;
+}
+
+.form-div-check--locked {
+  opacity: 0.85;
+}
+
+.checkbox-locked {
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .switch-activo {
