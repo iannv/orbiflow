@@ -74,6 +74,33 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('is_coop_member', response.data)
 
+    def test_create_associate_without_is_coop_member_defaults_to_true(self):
+        """Si el cliente omite el campo, associate/treasurer deben quedar como miembros."""
+        data = {
+            "username": "socio_sin_flag",
+            "password": "Secreto123",
+            "email": "socio_sin_flag@orbiflow.coop",
+            "role": "associate",
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['is_coop_member'])
+
+        user = User.objects.get(username='socio_sin_flag')
+        self.assertTrue(user.is_coop_member)
+
+    def test_create_associate_with_null_is_coop_member_does_not_break_db(self):
+        data = {
+            "username": "socio_null_flag",
+            "password": "Secreto123",
+            "email": "socio_null_flag@orbiflow.coop",
+            "role": "associate",
+            "is_coop_member": None,
+        }
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.get(username='socio_null_flag').is_coop_member)
+
     def test_create_admin_can_be_non_member(self):
         """Un usuario `admin` puede no ser miembro de la cooperativa."""
         data = {

@@ -10,6 +10,9 @@ class UserManager(BaseUserManager):
         if not username:
             raise ValueError('The given username must be set')
         email = self.normalize_email(email)
+        # Ensure boolean flags are not None to avoid passing NULL to the DB
+        if extra_fields.get('is_coop_member') is None:
+            extra_fields['is_coop_member'] = False
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -18,6 +21,9 @@ class UserManager(BaseUserManager):
     def create_user(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
+        if extra_fields.get('is_coop_member') is None:
+            role = extra_fields.get('role', 'associate')
+            extra_fields['is_coop_member'] = role in ('associate', 'treasurer')
         return self._create_user(username, email, password, **extra_fields)
 
     def create_superuser(self, username, email=None, password=None, **extra_fields):
