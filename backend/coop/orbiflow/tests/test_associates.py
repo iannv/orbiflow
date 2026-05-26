@@ -23,7 +23,9 @@ class AssociateTests(APITestCase):
             username='socio1',
             first_name='Gonzalo',
             last_name='Villalba',
-            email='gonzalo@orbiflow.coop'
+            email='gonzalo@orbiflow.coop',
+            role='associate',
+            is_coop_member=True,
         )
         
         self.url = reverse('associate-list')
@@ -59,6 +61,8 @@ class AssociateTests(APITestCase):
         other_user = User.objects.create_user(
             username='otro',
             email='otro@test.com',
+            role='associate',
+            is_coop_member=True,
         )
         r_match = self.client.get(self.url, {'user': self.assoc_user.id})
         self.assertEqual(r_match.status_code, status.HTTP_200_OK)

@@ -16,7 +16,8 @@ class UserTests(APITestCase):
             "username": "nuevo_socio",
             "password": "secreto_total",
             "email": "nuevo@orbiflow.coop",
-            "role": "associate"
+            "role": "associate",
+            "is_coop_member": True,
         }
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -33,6 +34,56 @@ class UserTests(APITestCase):
     def test_list_users_filter_by_role(self):
         User.objects.create_user(
             username='socio', password='x', email='s@s.com', role='associate',
+            is_coop_member=True,
         )
         admins = self.client.get(self.url, {'role': 'admin'})
         self.assertTrue(all(u['role'] == 'admin' for u in admins.data))
+
+    def test_user_payload_exposes_is_coop_member_not_is_staff(self):
+        """El contrato API debe exponer `is_coop_member` y NO `is_staff`."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.data), 0)
+        sample = response.data[0]
+        self.assertIn('is_coop_member', sample)
+        self.assertNotIn('is_staff', sample)
+
+    def test_create_associate_requires_is_coop_member_true(self):
+        """Un usuario `associate` debe ser miembro de la cooperativa."""
+        data = {
+            "username": "socio_no_miembro",
+            "password": "Secreto123",
+            "email": "socio_no_miembro@orbiflow.coop",
+            "role": "associate",
+            "is_coop_member": False,
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('is_coop_member', response.data)
+
+    def test_create_treasurer_requires_is_coop_member_true(self):
+        """Un usuario `treasurer` debe ser miembro de la cooperativa."""
+        data = {
+            "username": "tesorero_no_miembro",
+            "password": "Secreto123",
+            "email": "tesorero_no_miembro@orbiflow.coop",
+            "role": "treasurer",
+            "is_coop_member": False,
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('is_coop_member', response.data)
+
+    def test_create_admin_can_be_non_member(self):
+        """Un usuario `admin` puede no ser miembro de la cooperativa."""
+        data = {
+            "username": "admin_externo",
+            "password": "Secreto123",
+            "email": "admin_externo@orbiflow.coop",
+            "role": "admin",
+            "is_coop_member": False,
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertFalse(response.data['is_coop_member'])
+        self.assertEqual(response.data['role'], 'admin')

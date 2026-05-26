@@ -4,6 +4,8 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from .permissions import IsElevatedRoleOrReadOnly, CanManageUsersAndProtectAdmin, IsAdminOrTreasurer
 from .models.identity import User, Associate
 from .models.audit import GlobalConfiguration, AuditLog
 from .models.core import LiquidationPeriod, RetirementDetail
@@ -37,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.filter(is_deleted=False)
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanManageUsersAndProtectAdmin]
     filterset_fields = ['id', 'role', 'username', 'email']
 
 
@@ -48,7 +50,7 @@ class AssociateViewSet(viewsets.ModelViewSet):
     """
     queryset = Associate.objects.filter(is_deleted=False).select_related('user')
     serializer_class = AssociateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanManageUsersAndProtectAdmin]
     filterset_fields = ['user', 'dni', 'cbu']
 
 
@@ -59,7 +61,8 @@ class AssociateVariantViewSet(viewsets.ModelViewSet):
     """
     queryset = AssociateVariant.objects.all()
     serializer_class = AssociateVariantSerializer
-    permission_classes = [IsAuthenticated]
+    # Only admin/treasurer can manage associate variants
+    permission_classes = [IsAuthenticated, IsAdminOrTreasurer]
     filterset_fields = ['associate', 'variant']
 
     def create(self, request, *args, **kwargs):
@@ -92,6 +95,8 @@ class GlobalConfigurationViewSet(mixins.ListModelMixin,
     queryset = GlobalConfiguration.objects.all().order_by('-change_date')
     serializer_class = GlobalConfigurationSerializer
     filterset_fields = ['user']
+    # Only admin/treasurer can list/create global configuration entries
+    permission_classes = [IsAuthenticated, IsAdminOrTreasurer]
 
     def perform_create(self, serializer):
         previous_config = GlobalConfiguration.objects.order_by('-change_date').first()
@@ -119,6 +124,8 @@ class ModuleViewSet(viewsets.ModelViewSet):
     """
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
+    # Only admin/treasurer can manage modules
+    permission_classes = [IsAuthenticated, IsAdminOrTreasurer]
     filterset_fields = ['is_active', 'calculation_type', 'is_exclusive']
 
     @action(detail=False, methods=['post'], url_path='bulk')
@@ -150,6 +157,8 @@ class VariantViewSet(viewsets.ModelViewSet):
     queryset = Variant.objects.all()
     serializer_class = VariantSerializer
     filterset_fields = ['module', 'type', 'is_default']
+    # Only admin/treasurer can manage variants
+    permission_classes = [IsAuthenticated, IsAdminOrTreasurer]
 
 
 class LiquidationPeriodViewSet(viewsets.ModelViewSet):
@@ -164,7 +173,7 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     """
     queryset = LiquidationPeriod.objects.all().order_by('-year', '-month')
     serializer_class = LiquidationPeriodSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['year', 'month', 'status']
 
     @action(detail=True, methods=['post'], url_path='upload-hours')
@@ -318,5 +327,5 @@ class RetirementDetailViewSet(mixins.ListModelMixin,
         .prefetch_related('items')
     )
     serializer_class = RetirementDetailSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['liquidation', 'associate']
