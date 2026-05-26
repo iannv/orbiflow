@@ -10,9 +10,10 @@ class UserManager(BaseUserManager):
         if not username:
             raise ValueError('The given username must be set')
         email = self.normalize_email(email)
-        # Ensure boolean flags are not None to avoid passing NULL to the DB
+        # Nunca persistir NULL: si falta, inferir por rol.
         if extra_fields.get('is_coop_member') is None:
-            extra_fields['is_coop_member'] = False
+            role = extra_fields.get('role', 'associate')
+            extra_fields['is_coop_member'] = role in ('associate', 'treasurer')
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

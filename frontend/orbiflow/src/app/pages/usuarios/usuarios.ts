@@ -86,7 +86,7 @@ export class Usuarios implements OnInit {
         repeatPassword: [''],
         email: ['', [Validators.required, Validators.email]],
         roleControl: ['', Validators.required],
-        is_staff: [false],
+        is_coop_member: [false],
         is_active: [true],
         date_joined: [''],
       },
@@ -129,17 +129,39 @@ export class Usuarios implements OnInit {
     });
   }
 
-  // Is_staff es obligatorio (true) si es asociado y tesorero
-  validateIsStaff(): void {
+  /** Asociado/tesorero siempre son miembros; admin puede elegir. */
+  get isCoopMemberLocked(): boolean {
+    const role = this.userForm?.get('roleControl')?.value;
+    return role === RolEnum.ASSOCIATE || role === RolEnum.TREASURER;
+  }
+
+  /**
+   * Valor enviado al backend. No usamos `disable()` en el checkbox porque
+   * algunos flujos dejan de serializar el campo aunque esté tildado en pantalla.
+   */
+  private resolveIsCoopMember(role: RolEnum | string, checkboxValue: unknown): boolean {
+    if (role === RolEnum.ASSOCIATE || role === RolEnum.TREASURER) {
+      return true;
+    }
+    return Boolean(checkboxValue);
+  }
+
+  // La membresía es obligatoria (true) para asociados y tesoreros.
+  validateIsCoopMember(): void {
     const role = this.userForm.get('roleControl')?.value;
 
     if (role === RolEnum.ASSOCIATE || role === RolEnum.TREASURER) {
-      this.userForm.get('is_staff')?.setValue(true);
-      this.userForm.get('is_staff')?.disable();
-    } else {
-      this.userForm.get('is_staff')?.enable();
-      this.userForm.get('is_staff')?.setValue(false);
+      this.userForm.get('is_coop_member')?.setValue(true, { emitEvent: false });
+    } else if (!this.userForm.get('is_coop_member')?.value) {
+      this.userForm.get('is_coop_member')?.setValue(false, { emitEvent: false });
     }
+  }
+
+  // Aviso (no bloqueante) cuando el rol requiere legajo de asociado.
+  // El legajo se crea en una pantalla aparte luego de dar de alta al usuario.
+  get needsLegajoWarning(): boolean {
+    const role = this.userForm?.get('roleControl')?.value;
+    return role === RolEnum.ASSOCIATE || role === RolEnum.TREASURER;
   }
 
   // Crear nuevo usuario
@@ -149,20 +171,25 @@ export class Usuarios implements OnInit {
       return;
     }
     const formValue = this.userForm.getRawValue();
+    const role = formValue.roleControl as RolEnum;
     const newUser = {
       first_name: formValue.first_name,
       last_name: formValue.last_name,
       username: formValue.username,
       password: formValue.password,
       email: formValue.email,
-      role: formValue.roleControl,
-      is_staff: formValue.is_staff,
+      role,
+      is_coop_member: this.resolveIsCoopMember(role, formValue.is_coop_member),
       is_active: formValue.is_active,
       date_joined: new Date().toISOString().split('T')[0],
     };
+    const roleRequiresLegajo = this.needsLegajoWarning;
     this.userService.createUser(newUser).subscribe({
       next: () => {
-        this.lanzarToast('Usuario creado', 'El usuario ha sido creado exitosamente');
+        const subtitle = roleRequiresLegajo
+          ? 'Usuario creado. Recordá crear su legajo en la sección de Asociados.'
+          : 'El usuario ha sido creado exitosamente';
+        this.lanzarToast('Usuario creado', subtitle);
         this.closeModal();
         this.getUsers();
       },
@@ -182,13 +209,14 @@ export class Usuarios implements OnInit {
     if (!user.id) return;
     if (!this.selectedUser?.id) return;
     const formValue = this.userForm.getRawValue();
+    const role = formValue.roleControl as RolEnum;
     const updateData: Partial<User> = {
       first_name: formValue.first_name,
       last_name: formValue.last_name,
       username: formValue.username,
       email: formValue.email,
-      role: formValue.roleControl,
-      is_staff: formValue.is_staff,
+      role,
+      is_coop_member: this.resolveIsCoopMember(role, formValue.is_coop_member),
       is_active: formValue.is_active,
     };
     if (formValue.password) {
@@ -260,11 +288,12 @@ export class Usuarios implements OnInit {
       username: user.username,
       email: user.email,
       roleControl: user.role,
-      is_staff: user.is_staff,
+      is_coop_member: user.is_coop_member,
       is_active: user.is_active,
       password: '',
       repeatPassword: '',
     });
+    this.validateIsCoopMember();
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('repeatPassword')?.clearValidators();
 
@@ -295,7 +324,7 @@ export class Usuarios implements OnInit {
   closeModal() {
     this.isModalOpen = false;
     this.userForm.reset({
-      is_staff: false,
+      is_coop_member: false,
       is_active: true,
       first_name: '',
       last_name: '',
