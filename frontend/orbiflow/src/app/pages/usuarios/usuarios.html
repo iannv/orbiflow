@@ -168,7 +168,7 @@
           <app-select
             name="rol"
             formControlName="roleControl"
-            (change)="validateIsStaff()"
+            (change)="validateIsCoopMember()"
             required
           >
             @for (role of roles; track $index) {
@@ -176,10 +176,23 @@
             }
           </app-select>
 
-          <div class="form-div-check">
-            <input type="checkbox" id="is_staff" formControlName="is_staff" />
-            <label for="is_staff"> Es miembro de la cooperativa </label>
+          <div class="form-div-check" [class.form-div-check--locked]="isCoopMemberLocked">
+            <input
+              type="checkbox"
+              id="is_coop_member"
+              formControlName="is_coop_member"
+              [class.checkbox-locked]="isCoopMemberLocked"
+            />
+            <label for="is_coop_member"> Es miembro de la cooperativa </label>
           </div>
+
+          @if (needsLegajoWarning && modalMode === 'create') {
+            <p class="warning">
+              Atención: los usuarios con rol "Asociado" o "Tesorero" requieren un
+              legajo asociado. Podés crear el usuario ahora y completar el legajo
+              luego desde la sección de Asociados.
+            </p>
+          }
         </div>
 
         <!-- Validaciones -->

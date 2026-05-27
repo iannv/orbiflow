@@ -8,7 +8,7 @@ export interface User {
   last_name: string;
   email: string;
   role: RolEnum;
-  is_staff: boolean;
+  is_coop_member: boolean;
   is_active: boolean;
   is_superuser?: boolean;
   is_deleted?: boolean;

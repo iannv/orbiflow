@@ -7,7 +7,7 @@ export interface AuthUser {
   first_name: string;
   last_name: string;
   role: UserRole;
-  is_staff: boolean;
+  is_coop_member: boolean;
 }
 
 export interface LoginResponse {

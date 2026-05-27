@@ -11,19 +11,71 @@ from .services.defaults import (
 from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Contrato de API para el modelo `User`.
+
+    Campos relevantes:
+      * `role`         -> Autorización en la API (admin | treasurer | associate).
+      * `is_coop_member` -> Pertenencia a la cooperativa (dato de negocio,
+                            no otorga permisos por sí solo).
+
+    El flag de Django `is_staff` no se expone aquí: corresponde únicamente
+    al acceso al panel administrativo de Django (/admin/).
+    """
+
+    # Sin default en el campo: si no viene en el JSON, se infiere en validate() según el rol.
+    is_coop_member = serializers.BooleanField(required=False, allow_null=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'first_name', 'last_name', 'role', 'is_staff', 'is_active', 'is_superuser']
+        fields = [
+            'id', 'username', 'email', 'password',
+            'first_name', 'last_name',
+            'role', 'is_coop_member',
+            'is_active', 'is_superuser',
+        ]
         extra_kwargs = {
-            'password': {'write_only': True} # La contraseña no se muestra al consultar
+            'password': {'write_only': True},
+            'is_superuser': {'read_only': True},
         }
 
+    def _resolve_is_coop_member(self, attrs):
+        """Normaliza membresía: nunca devuelve None hacia la base de datos."""
+        if attrs.get('is_coop_member') is not None:
+            return bool(attrs['is_coop_member'])
+
+        # Compatibilidad con clientes que aún envían `is_staff` como membresía.
+        if hasattr(self, 'initial_data') and self.initial_data is not None:
+            legacy = self.initial_data.get('is_staff')
+            if legacy is not None:
+                return bool(legacy)
+
+        role = attrs.get('role', getattr(self.instance, 'role', None))
+        if role in ('associate', 'treasurer'):
+            return True
+        return bool(getattr(self.instance, 'is_coop_member', False))
+
+    def validate(self, attrs):
+        role = attrs.get('role', getattr(self.instance, 'role', None))
+        is_coop_member = self._resolve_is_coop_member(attrs)
+        attrs['is_coop_member'] = is_coop_member
+
+        if role in ('associate', 'treasurer') and not is_coop_member:
+            raise serializers.ValidationError({
+                'is_coop_member': (
+                    'Los usuarios con rol `associate` o `treasurer` deben ser '
+                    'miembros de la cooperativa.'
+                )
+            })
+
+        return attrs
+
     def create(self, validated_data):
-        # Usamos create_user para que Django encripte la contraseña automáticamente
+        if validated_data.get('is_coop_member') is None:
+            validated_data['is_coop_member'] = self._resolve_is_coop_member(validated_data)
         return User.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
-        # Si se actualiza la contraseña, la encriptamos antes de guardar
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)
