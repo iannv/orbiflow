@@ -7,6 +7,9 @@ import { AuthService } from '../../core/auth/auth.service';
 import { AssociateService } from '../../services/associate-service';
 import { LiquidationService } from '../../services/liquidation-service';
 import { LiquidationPeriod } from '../../interfaces/Liquidation';
+import { Router } from '@angular/router';
+import { PdfGeneratorService } from '../../services/pdf-service';
+import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
 
 @Component({
   selector: 'app-recibos',
@@ -21,10 +24,12 @@ export class Recibos {
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private router: Router,
     private retirementService: RetirementService,
     private authService: AuthService,
     private associateService: AssociateService,
     private liquidationService: LiquidationService,
+    private pdfService: PdfGeneratorService,
   ) {}
 
   ngOnInit() {
@@ -95,4 +100,16 @@ export class Recibos {
         return (periodB?.month ?? 0) - (periodA?.month ?? 0);
       });
   }
+
+  // Abrir y visualizar recibo
+  viewPDF(){
+    this.pdfService.abrirEnPestania(retirementPDF);
+  }
+
+
+
+  // Descargar recibo en PDF
+  downloadPDF(){}
+
+
 }

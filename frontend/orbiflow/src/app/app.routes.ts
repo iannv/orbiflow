@@ -54,40 +54,40 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
-{
+  {
     path: 'liquidaciones',
-    canActivate: [authGuard], 
+    canActivate: [authGuard],
     children: [
       {
-        path: '', 
+        path: '',
         loadComponent: () =>
           import('./pages/liquidations/liquidations-hub/liquidations-hub').then(
-            (m) => m.LiquidationsHub
+            (m) => m.LiquidationsHub,
           ),
       },
       {
         path: 'pre-liquidation',
         loadComponent: () =>
           import('./pages/liquidations/pre-liquidation/pre-liquidation').then(
-            (m) => m.PreLiquidationComponent
+            (m) => m.PreLiquidationComponent,
           ),
       },
       {
         path: 'liquidation',
         loadComponent: () =>
           import('./pages/liquidations/liquidation/liquidation').then(
-            (m) => m.LiquidationComponent
+            (m) => m.LiquidationComponent,
           ),
       },
-         
+
       {
-        path: 'closed-liquidations', 
+        path: 'closed-liquidations',
         loadComponent: () =>
           import('./pages/liquidations/closed-liquidations/closed-liquidations').then(
-            (m) => m.ClosedLiquidationsComponent
+            (m) => m.ClosedLiquidationsComponent,
           ),
       },
-    ]
+    ],
   },
 
   {
