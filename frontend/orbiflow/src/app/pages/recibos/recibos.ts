@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { BaseCard } from '../../components/base-card/base-card';
 import { Primary } from '../../components/button/primary/primary';
 import { RetirementService } from '../../services/retirement-service';
@@ -10,6 +10,8 @@ import { LiquidationPeriod } from '../../interfaces/Liquidation';
 import { Router } from '@angular/router';
 import { PdfGeneratorService } from '../../services/pdf-service';
 import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
+import { UserService } from '../../services/user-service';
+import { numeroALetras } from '../../shared/utils/numeroALetras';
 
 @Component({
   selector: 'app-recibos',
@@ -28,6 +30,7 @@ export class Recibos {
     private retirementService: RetirementService,
     private authService: AuthService,
     private associateService: AssociateService,
+    private userService: UserService,
     private liquidationService: LiquidationService,
     private pdfService: PdfGeneratorService,
   ) {}
@@ -101,15 +104,60 @@ export class Recibos {
       });
   }
 
-  // Abrir y visualizar recibo
-  viewPDF(){
-    this.pdfService.abrirEnPestania(retirementPDF);
+  // ABRIR Y VISUALIZAR RECIBO
+  viewPDF(retirement: Retirement) {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    // Datos del asociado
+    this.associateService.getAssociateByUser(currentUser.id).subscribe({
+      next: (associate) => {
+        const associateData = associate[0];
+
+        // Usuario para obtener el rol
+        this.userService.getUserById(associateData.user).subscribe({
+          next: (user) => {
+            const userData = user;
+
+            // Mes y año de la liquidación
+            this.liquidationService.getPeriods().subscribe({
+              next: (liquidation) => {
+                const liquidationData = liquidation.find((p) => p.id === retirement.liquidation);
+
+                // Conceptos
+                this.liquidationService
+                  .getRetirementsByLiquidation(retirement.liquidation)
+                  .subscribe({
+                    next: (retirementsByLiquidation) => {
+                      const retirementsByLiquidationData = retirementsByLiquidation.find(
+                        (r) => r.id === retirement.id,
+                      );
+
+                      const totalToStringData = numeroALetras(Number(retirement.total_amount));
+
+                      // Enviar data al retiremetsPDF
+                      const data = {
+                        associate: associateData,
+                        retirement: retirement,
+                        user: userData,
+                        liquidation: liquidationData,
+                        retirementsByLiquidation: retirementsByLiquidationData,
+                        totalToString: totalToStringData,
+                      };
+                      const pdf = retirementPDF(data);
+                      this.pdfService.abrirEnPestania(pdf);
+                    },
+                  });
+              },
+            });
+          },
+        });
+      },
+    });
   }
 
-
-
   // Descargar recibo en PDF
-  downloadPDF(){}
+  // downloadPDF() {}
 
 
 }

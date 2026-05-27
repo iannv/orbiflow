@@ -39,8 +39,13 @@
                         Importe:
                         <span class="fw700"> ${{ retirement.total_amount }} </span>
                       </p>
-
-                      <app-primary name="Descargar PDF" btnImg="assets/descargar.png" (btnClick)="viewPDF()"></app-primary>
+                      
+                      <a id="ver-recibo-link" (click)="viewPDF(retirement)">Ver recibo</a>
+                      <app-primary
+                        name="Descargar PDF"
+                        btnImg="assets/descargar.png"
+                        (btnClick)="viewPDF(retirement)"
+                      ></app-primary>
                     </div>
                   </app-base-card>
                 }

@@ -33,6 +33,15 @@ a {
   font-size: 1rem;
 }
 
+#ver-recibo-link {
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--verde-azulado);
+}
+#ver-recibo-link:hover {
+  color: var(--gris-oscuro);
+}
+
 ::ng-deep .card[_ngcontent-ng-c4037116894] {
   padding: .5rem 1rem .5rem 1rem !important;
 }
