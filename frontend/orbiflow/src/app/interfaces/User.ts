@@ -10,6 +10,7 @@ export interface User {
   role: RolEnum;
   is_coop_member: boolean;
   is_active: boolean;
+  is_staff?: boolean;
   is_superuser?: boolean;
   is_deleted?: boolean;
   date_joined: string;
