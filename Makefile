@@ -69,7 +69,7 @@ tests:
 	@echo "--- 2. Corriendo tests del Backend ---"
 	docker compose run --rm backend python manage.py test --keepdb
 	@echo "--- 3. Corriendo tests del Frontend ---"
-	docker compose run --rm frontend npx ng test --no-watch --browsers=ChromeHeadless
+	docker compose run --rm frontend npx ng test
 
 test-nuke:
 	@echo "--- DESTRUCCIÓN TOTAL Y RECONSTRUCCIÓN ---"
