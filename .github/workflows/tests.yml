@@ -25,7 +25,22 @@ jobs:
 
       - name: Build and Run Tests
         run: |
-          # Primero construimos para asegurar que todo esté listo
-          docker compose build
-          # Corremos los tests usando el Makefile
+          # Use the --profile flag to include the db service
+          docker compose --profile local build
+          docker compose --profile local up -d db
+          
+          # Add a robust wait for the DB to be ready
+          echo "Waiting for DB to be healthy..."
+          # This loop waits for the specific healthcheck to pass
+          for i in {1..10}; do
+            status=$(docker inspect -f '{{.State.Health.Status}}' orbiflow-db-1 2>/dev/null || echo "starting")
+            if [ "$status" == "healthy" ]; then
+              echo "Database is healthy!"
+              break
+            fi
+            echo "Waiting... (current status: $status)"
+            sleep 5
+          done
+
+          # Now run the tests
           make tests

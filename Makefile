@@ -61,17 +61,15 @@ logs:
 	docker compose logs -f backend
 
 # Calidad y Testing
-# Calidad y Testing
 tests:
 	@echo "--- 1. Preparando entorno local para tests ---"
 	cp .env.local .env
+	# Aseguramos que la base de datos esté levantada
 	docker compose --profile local up -d db
-	@echo "--- 2. Limpiando datos de la base de test ---"
-	docker compose run --rm backend python manage.py flush --no-input
-	@echo "--- 3. Corriendo tests del Backend ---"
+	@echo "--- 2. Corriendo tests del Backend ---"
 	docker compose run --rm backend python manage.py test --keepdb
-	@echo "--- 4. Corriendo tests del Frontend ---"
-	docker compose run --rm frontend npx ng test --no-watch
+	@echo "--- 3. Corriendo tests del Frontend ---"
+	docker compose run --rm frontend npx ng test
 
 test-nuke:
 	@echo "--- DESTRUCCIÓN TOTAL Y RECONSTRUCCIÓN ---"
