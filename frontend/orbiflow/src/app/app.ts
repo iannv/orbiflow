@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { NgClass } from '@angular/common';
 
@@ -13,7 +13,7 @@ import { Sidenav } from './shared/sidenav/sidenav';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('orbiflow');
 
   sidebarExpanded = true;
@@ -22,6 +22,19 @@ export class App {
     private readonly router: Router,
     private readonly authService: AuthService,
   ) {}
+
+  ngOnInit(): void {
+    // Si hay token guardado, verificar que sea válido con el backend
+    if (this.authService.isAuthenticated()) {
+      this.authService.loadCurrentUser().subscribe({
+        error: () => {
+          // Token inválido o expirado, redirigir a login
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        },
+      });
+    }
+  }
 
   showShell(): boolean {
     return (
