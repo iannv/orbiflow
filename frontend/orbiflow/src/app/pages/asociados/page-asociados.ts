@@ -14,6 +14,7 @@ import { UserService } from '../../services/user-service';
 import { Associate, CreateAssociatePayload } from '../../interfaces/Associate';
 import { User } from '../../interfaces/User';
 import { Loader } from '../../components/loader/loader';
+import { Toast } from '../../components/toast/toast';
 
 @Component({
   selector: 'app-page-asociados',
@@ -27,7 +28,8 @@ import { Loader } from '../../components/loader/loader';
     Primary,
     Secondary,
     Action,
-    Loader
+    Loader,
+    Toast
   ],
   templateUrl: './page-asociados.html',
   styleUrls: ['../profile/profile.css', './page-asociados.css'],
@@ -41,6 +43,11 @@ export class PageAsociados implements OnInit {
   loading = true;
   error: string | null = null;
   modalError: string | null = null;
+
+  // ── Toast de notificación ──
+  mostrarToast = false;
+  toastTitle = '';
+  toastSubtitle = '';
 
   // ── Búsqueda, ordenamiento y paginación ──
   searchQuery = '';
@@ -204,13 +211,13 @@ export class PageAsociados implements OnInit {
 
     this.userService.getUsers().subscribe({
       next: (users) => {
-        // Excluye usuarios ya vinculados a un legajo, eliminados, o sin rol 'associate'
+        // Excluye usuarios ya vinculados a un legajo, eliminados, o que no sean coop members
         const linked = new Set<number>(
           this.associateList.map((a) => a.user).filter((v): v is number => typeof v === 'number'),
         );
-        // El backend devuelve role='associate' (ver ROLE_CHOICES en identity.py)
+        // Permitir usuarios que sean coop members (necesitan legajo, independientemente del rol)
         this.availableUsers = users.filter(
-          (u) => (u.role as string) === 'associate' && u.id != null && !linked.has(u.id) && !u.is_deleted,
+          (u) => u.is_coop_member && u.id != null && !linked.has(u.id) && !u.is_deleted,
         );
         console.log('Available users for new associate:', this.availableUsers);
         // Abre el modal solo cuando el select ya tiene opciones cargadas
@@ -296,6 +303,11 @@ export class PageAsociados implements OnInit {
       next: () => {
         this.closeModal();
         this.loadAssociates();
+        // Mostrar toast de éxito
+        this.toastTitle = this.modalMode === 'create' ? 'Legajo creado' : 'Legajo actualizado';
+        this.toastSubtitle = this.modalMode === 'create' ? 'El legajo se creó correctamente' : 'Los cambios se guardaron correctamente';
+        this.mostrarToast = true;
+        setTimeout(() => this.mostrarToast = false, 3000);
       },
       error: (err) => {
         // Mapea los errores del backend a mensajes legibles en español

@@ -1,0 +1,34 @@
+.table-light{
+    background-color: var(--verde-petroleo); 
+    color: #fff;
+    font-weight:normal;
+}
+
+.period-label {
+    margin-top: 1rem;
+    font-size: 16px;
+}
+
+.period-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.period-controls-inner {
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-direction: column;
+    max-width: 30%;
+}
+
+.small-table {
+    font-size: 0.95rem;
+}
+
+.total-value {
+    color: var(--verde-petroleo);
+}

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { roleGuard } from './core/auth/role.guard';
 
 export const routes: Routes = [
   {
@@ -12,19 +13,22 @@ export const routes: Routes = [
     path: 'panel',
     loadComponent: () =>
       import('./pages/panel-principal/panel-principal').then((m) => m.PanelPrincipal),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer', 'associate'] },
   },
 
   {
     path: 'usuarios',
     loadComponent: () => import('./pages/usuarios/usuarios').then((m) => m.Usuarios),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] },
   },
 
   {
     path: 'modulos',
     loadComponent: () => import('./pages/modulos/modulos').then((m) => m.Modulos),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] },
   },
 
   {
@@ -33,30 +37,35 @@ export const routes: Routes = [
       import('./pages/configuracion-general/configuracion-general').then(
         (m) => m.ConfiguracionGeneral,
       ),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer'] },
   },
 
   {
-    path: 'profile',
+    path: 'perfil',
     loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer', 'associate'] },
   },
 
   {
     path: 'recibos',
     loadComponent: () => import('./pages/recibos/recibos').then((m) => m.Recibos),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer', 'associate'] },
   },
 
   {
     path: 'asociados',
     loadComponent: () => import('./pages/asociados/page-asociados').then((m) => m.PageAsociados),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer'] },
   },
 
   {
     path: 'liquidaciones',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer'] },
     children: [
       {
         path: '',
@@ -89,6 +98,12 @@ export const routes: Routes = [
       },
     ],
   },
+
+  { path: 'archivo-cooperativo', 
+    loadComponent: () => import('./pages/archivo-cooperativo/archivo-cooperativo')
+    .then(m => m.ArchivoCooperativo), 
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'treasurer', 'associate'] } },
 
   {
     path: '',

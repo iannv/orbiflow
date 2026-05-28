@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  background: #fff;
+  background: var(--blanco);
   border: 1px solid var(--gris-claro);
   border-radius: 12px;
   padding: 0 0.85rem;
@@ -42,7 +42,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   padding: 0;
   margin: 0;
   line-height: 1;
@@ -71,6 +71,19 @@
   gap: 0.75rem;
 }
 
+.filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--gris-oscuro);
+}
+
+.filter-label img {
+  width: 16px;
+  height: 16px;
+}
+
 .btn-filter {
   display: inline-flex;
   align-items: center;
@@ -78,7 +91,7 @@
   padding: 0.45rem 0.85rem;
   border: 1px solid var(--gris-claro);
   border-radius: 8px;
-  background: #fff;
+  background: var(--blanco);
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--verde-mate);
@@ -128,7 +141,7 @@
 .card-head-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
@@ -136,7 +149,7 @@
 .card-body {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
   margin-top: 0.15rem;
 }
 
@@ -151,7 +164,7 @@
 .card-datum {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-size: 0.88rem;
   color: var(--gris-oscuro);
   white-space: nowrap;
@@ -212,11 +225,11 @@
 }
 
 .module-tag {
-  background: #f3f4f6;
+  background: var(--gris-blanco);
   border-radius: 8px;
   padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
-  color: #444;
+  font-size: 0.85rem;
+  color: var(--gris-oscuro);
 }
 
 /* ── Paginación ── */
@@ -235,14 +248,14 @@
   min-width: 36px;
   height: 36px;
   border: 1px solid var(--gris-claro);
-  background: #fff;
+  background: var(--blanco);
   border-radius: 8px;
   cursor: pointer;
 }
 
 .page-btn.active {
   background: var(--verde-mate);
-  color: #fff;
+  color: var(--blanco);
   border-color: var(--verde-mate);
 }
 
@@ -280,7 +293,7 @@
 .modal-fields-group {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.75rem;
   margin-top: 0.25rem;
 }
 
@@ -317,12 +330,12 @@
   border: 1px solid var(--gris-claro);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  background: #fff;
+  background: var(--blanco);
 }
 
 .module-row.module-inactive {
   opacity: 0.5;
-  background: #f9fafb;
+  background: var(--gris-blanco);
 }
 
 /* Toggle switch */
@@ -382,7 +395,7 @@
 .module-info-block {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.25rem;
   width: 180px;
   flex-shrink: 0;
 }
