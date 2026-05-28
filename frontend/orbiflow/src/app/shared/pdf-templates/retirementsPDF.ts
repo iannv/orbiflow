@@ -80,7 +80,7 @@ export function retirementPDF(data: any) {
           body: [
             [
               {
-                text: 'RECIBO DE HABERES',
+                text: 'DETALLE DE RETIRO',
                 bold: true,
                 fontSize: 14,
                 fillColor: '#bec4cb',
