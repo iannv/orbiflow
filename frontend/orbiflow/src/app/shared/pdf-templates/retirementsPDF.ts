@@ -2,421 +2,399 @@ import { LOGO_ORBIFLOW } from '../../../assets/logo-orbiflow';
 
 // CAMBIAR LOGO ORBIFLOW POR ORBICOOP
 
-export const retirementPDF = {
-  content: [
-    // HEADER
+function getRoleLabel(role: string): string {
+  const roles: Record<string, string> = {
+    admin: 'Administrador',
+    treasurer: 'Tesorero',
+    associate: 'Asociado',
+  };
+
+  return roles[role.toLowerCase()] || role;
+}
+
+// TODO: FORMATEAR FECHA DE INGRESO A dd/mm/yyyy
+
+export function retirementPDF(data: any) {
+  const liquidationItems = data.retirement.items || [];
+
+  const itemsRows = liquidationItems.map((item: any) => [
     {
-      columns: [
-        {
-          image: LOGO_ORBIFLOW,
-          width: 80,
-          alignment: 'left',
-        },
-
-        {
-          stack: [
-            {
-              text: 'Cooperativa de Trabajo OrbiCoop Ltda.',
-              fontSize: 16,
-              bold: true,
-            },
-
-            {
-              text: 'CUIT: 00-00000000-0',
-              fontSize: 12,
-              color: '#4b5563',
-            },
-
-            {
-              text: 'Mitre 900 - CABA',
-              fontSize: 12,
-              color: '#4b5563',
-            },
-          ],
-
-          alignment: 'right',
-          margin: [0, 10, 0, 0],
-        },
-      ],
+      text: item.module_name,
     },
 
-    // TITULO
     {
-      margin: [0, 20, 0, 0],
+      text: `$${item.calculated_value}`,
+      alignment: 'right',
+    },
 
-      table: {
-        widths: ['*', 'auto'],
+    {
+      text: '',
+    },
+  ]);
 
-        body: [
-          [
-            {
-              text: 'RECIBO DE HABERES',
-              bold: true,
-              fontSize: 14,
-              fillColor: '#e5e7eb',
-            },
+  return {
+    content: [
+      // HEADER
+      {
+        columns: [
+          {
+            image: LOGO_ORBIFLOW,
+            width: 80,
+            alignment: 'left',
+          },
 
-            {
-              text: '25/05/2026',
-              bold: true,
-              fillColor: '#e5e7eb',
-            },
-          ],
+          {
+            stack: [
+              {
+                text: 'Cooperativa de Trabajo OrbiCoop Ltda.',
+                fontSize: 16,
+                bold: true,
+              },
+
+              {
+                text: 'CUIT: 00-00000000-0',
+                fontSize: 12,
+                color: '#575f66',
+              },
+
+              {
+                text: 'Mitre 900 - CABA',
+                fontSize: 12,
+                color: '#575f66',
+              },
+            ],
+
+            alignment: 'right',
+            margin: [0, 10, 0, 0],
+          },
         ],
       },
 
-      layout: {
-        hLineWidth: function () {
-          return 1;
+      // TITULO
+      {
+        margin: [0, 20, 0, 0],
+
+        table: {
+          widths: ['*', 'auto'],
+
+          body: [
+            [
+              {
+                text: 'RECIBO DE HABERES',
+                bold: true,
+                fontSize: 14,
+                fillColor: '#bec4cb',
+              },
+
+              {
+                text: `${data.liquidation.month}/${data.liquidation.year}`,
+                bold: true,
+                fillColor: '#bec4cb',
+              },
+            ],
+          ],
         },
 
-        vLineWidth: function (i: any, node: any) {
-          // borde izquierdo
-          if (i === 0) {
+        layout: {
+          hLineWidth: function () {
             return 1;
-          }
+          },
 
-          // borde derecho
-          if (i === node.table.widths.length) {
-            return 1;
-          }
+          vLineWidth: function (i: any, node: any) {
+            if (i === 0) {
+              return 1;
+            }
 
-          // ocultar línea del medio
-          return 0;
-        },
+            if (i === node.table.widths.length) {
+              return 1;
+            }
 
-        paddingLeft: function () {
-          return 8;
-        },
+            return 0;
+          },
 
-        paddingRight: function () {
-          return 8;
-        },
+          paddingLeft: function () {
+            return 8;
+          },
 
-        paddingTop: function () {
-          return 6;
-        },
+          paddingRight: function () {
+            return 8;
+          },
 
-        paddingBottom: function () {
-          return 6;
+          paddingTop: function () {
+            return 6;
+          },
+
+          paddingBottom: function () {
+            return 6;
+          },
         },
       },
-    },
 
-    // DATOS ASOCIADO
-    {
-      table: {
-        widths: ['*', '*'],
+      // DATOS ASOCIADO
+      {
+        table: {
+          widths: ['*', '*'],
 
-        body: [
-          [
-            {
-              stack: [
-                {
-                  text: [
-                    {
-                      text: 'Apellido y nombre: ',
-                      color: '#6b7280',
-                    },
+          body: [
+            [
+              {
+                stack: [
+                  {
+                    text: [
+                      {
+                        text: 'Nombre y apellido: ',
+                        color: '#575f66',
+                      },
 
-                    {
-                      text: 'Gimenez Susana',
-                    },
-                  ],
+                      {
+                        text: data.associate.full_name,
+                      },
+                    ],
 
-                  fontSize: 12,
+                    fontSize: 12,
+                    margin: [0, 0, 0, 8],
+                  },
 
-                  // separación
-                  margin: [0, 0, 0, 8],
-                },
+                  {
+                    text: [
+                      {
+                        text: 'DNI: ',
+                        color: '#575f66',
+                      },
 
-                {
-                  text: [
-                    {
-                      text: 'CUIL: ',
-                      color: '#6b7280',
-                    },
+                      {
+                        text: data.associate.dni,
+                      },
+                    ],
 
-                    {
-                      text: '27-00000000-1',
-                    },
-                  ],
+                    fontSize: 12,
+                  },
+                ],
+              },
 
-                  fontSize: 12,
-                },
-              ],
-            },
+              {
+                stack: [
+                  {
+                    text: [
+                      {
+                        text: 'Fecha ingreso: ',
+                        color: '#575f66',
+                      },
 
-            {
-              stack: [
-                {
-                  text: [
-                    {
-                      text: 'Fecha ingreso: ',
-                      color: '#6b7280',
-                    },
+                      {
+                        text: data.associate.entry_date,
+                      },
+                    ],
 
-                    {
-                      text: '01/01/2025',
-                    },
-                  ],
+                    fontSize: 12,
+                    margin: [0, 0, 0, 8],
+                  },
 
-                  fontSize: 12,
+                  {
+                    text: [
+                      {
+                        text: 'Cargo: ',
+                        color: '#575f66',
+                      },
 
-                  // separación
-                  margin: [0, 0, 0, 8],
-                },
+                      {
+                        text: getRoleLabel(data.user.role),
+                      },
+                    ],
 
-                {
-                  text: [
-                    {
-                      text: 'Cargo: ',
-                      color: '#6b7280',
-                    },
+                    fontSize: 12,
+                  },
+                ],
 
-                    {
-                      text: 'Asociado',
-                    },
-                  ],
-
-                  fontSize: 12,
-                },
-              ],
-
-              alignment: 'left',
-            },
+                alignment: 'left',
+              },
+            ],
           ],
-        ],
+        },
+
+        layout: {
+          hLineWidth: function () {
+            return 1;
+          },
+
+          vLineWidth: function (i: any, node: any) {
+            if (i === 0) {
+              return 1;
+            }
+
+            if (i === node.table.widths.length) {
+              return 1;
+            }
+
+            return 0;
+          },
+
+          paddingLeft: function () {
+            return 8;
+          },
+
+          paddingRight: function () {
+            return 8;
+          },
+
+          paddingTop: function () {
+            return 6;
+          },
+
+          paddingBottom: function () {
+            return 6;
+          },
+        },
       },
 
-      layout: {
-        hLineWidth: function () {
-          return 1;
+      // TABLA LIQUIDACION
+      {
+        table: {
+          headerRows: 1,
+
+          widths: ['*', 'auto', 'auto'],
+
+          body: [
+            // HEADER
+            [
+              {
+                text: 'CONCEPTO',
+                bold: true,
+                fillColor: '#bec4cb',
+              },
+
+              {
+                text: 'HABERES',
+                bold: true,
+                alignment: 'right',
+                fillColor: '#bec4cb',
+              },
+
+              {
+                text: 'DESCUENTOS',
+                bold: true,
+                alignment: 'right',
+                fillColor: '#bec4cb',
+              },
+            ],
+
+            // ITEMS DINAMICOS
+            ...itemsRows,
+
+            // SUBTOTAL
+            [
+              {
+                text: 'SUBTOTAL',
+                bold: true,
+                fillColor: '#bec4cb',
+              },
+
+              {
+                text: `$${data.retirement.total_amount}`,
+                bold: true,
+                alignment: 'right',
+                fillColor: '#bec4cb',
+              },
+
+              {
+                text: '$0',
+                bold: true,
+                alignment: 'right',
+                fillColor: '#bec4cb',
+              },
+            ],
+          ],
         },
 
-        vLineWidth: function (i: any, node: any) {
-          // borde izquierdo
-          if (i === 0) {
+        layout: {
+          hLineWidth: function (i: any, node: any) {
+            // Línea superior
+            if (i === 0) {
+              return 1;
+            }
+
+            // Línea debajo del header
+            if (i === 1) {
+              return 1;
+            }
+
+            // Línea arriba de SUBTOTAL
+            if (i === node.table.body.length - 1) {
+              return 1;
+            }
+
+            // Línea final
+            if (i === node.table.body.length) {
+              return 1;
+            }
+
+            return 0;
+          },
+
+          vLineWidth: function () {
             return 1;
-          }
+          },
 
-          // borde derecho
-          if (i === node.table.widths.length) {
-            return 1;
-          }
+          paddingLeft: function () {
+            return 8;
+          },
 
-          // ocultar línea del medio
-          return 0;
-        },
+          paddingRight: function () {
+            return 8;
+          },
 
-        paddingLeft: function () {
-          return 8;
-        },
+          paddingTop: function () {
+            return 6;
+          },
 
-        paddingRight: function () {
-          return 8;
-        },
-
-        paddingTop: function () {
-          return 6;
-        },
-
-        paddingBottom: function () {
-          return 6;
+          paddingBottom: function () {
+            return 6;
+          },
         },
       },
-    },
 
-    // TABLA LIQUIDACION
-    {
-      table: {
-        headerRows: 1,
+      // NETO A COBRAR
+      {
+        table: {
+          widths: ['*', 164],
 
-        widths: ['*', 'auto', 'auto'],
+          body: [
+            [
+              {
+                text: `SON PESOS: ${data.totalToString.toUpperCase()} `,
+                italics: true,
+                fontSize: 11,
+              },
 
-        body: [
-          // HEADER
-          [
-            {
-              text: 'CONCEPTO',
-              bold: true,
-              fillColor: '#e5e7eb',
-            },
-
-            {
-              text: 'HABERES',
-              bold: true,
-              alignment: 'right',
-              fillColor: '#e5e7eb',
-            },
-
-            {
-              text: 'DESCUENTOS',
-              bold: true,
-              alignment: 'right',
-              fillColor: '#e5e7eb',
-            },
+              {
+                text: `SUELDO NETO: $${data.retirement.total_amount}`,
+                bold: true,
+                fontSize: 12,
+                alignment: 'left',
+                // fillColor: '#a8adb3',
+              },
+            ],
           ],
-
-          // ITEMS
-          [
-            {
-              text: 'Sueldo básico',
-            },
-
-            {
-              text: '$200.000',
-              alignment: 'right',
-            },
-
-            {
-              text: '',
-            },
-          ],
-
-          [
-            {
-              text: 'Presentismo',
-            },
-
-            {
-              text: '$20.000',
-              alignment: 'right',
-            },
-
-            {
-              text: '',
-            },
-          ],
-
-          [
-            {
-              text: 'Jubilación',
-            },
-
-            {
-              text: '',
-            },
-
-            {
-              text: '$15.000',
-              alignment: 'right',
-            },
-          ],
-
-          // SUBTOTAL
-          [
-            {
-              text: 'SUBTOTAL',
-              bold: true,
-              fillColor: '#f3f4f6',
-            },
-
-            {
-              text: '$220.000',
-              bold: true,
-              alignment: 'right',
-              fillColor: '#f3f4f6',
-            },
-
-            {
-              text: '$15.000',
-              bold: true,
-              alignment: 'right',
-              fillColor: '#f3f4f6',
-            },
-          ],
-        ],
-      },
-
-      layout: {
-        hLineWidth: function (i: any, node: any) {
-          // Línea superior
-          if (i === 0) {
-            return 1;
-          }
-
-          // Línea debajo del header
-          if (i === 1) {
-            return 1;
-          }
-
-          // Línea arriba de SUBTOTAL
-          if (i === node.table.body.length - 1) {
-            return 1;
-          }
-
-          // Línea final
-          if (i === node.table.body.length) {
-            return 1;
-          }
-
-          return 0;
         },
 
-        vLineWidth: function () {
-          return 1;
-        },
+        layout: {
+          paddingLeft: function () {
+            return 8;
+          },
 
-        paddingLeft: function () {
-          return 8;
-        },
+          paddingRight: function () {
+            return 8;
+          },
 
-        paddingRight: function () {
-          return 8;
-        },
+          paddingTop: function () {
+            return 8;
+          },
 
-        paddingTop: function () {
-          return 6;
-        },
-
-        paddingBottom: function () {
-          return 6;
+          paddingBottom: function () {
+            return 8;
+          },
         },
       },
-    },
-
-    // NETO A COBRAR
-    {
-      table: {
-        widths: ['*', 145],
-
-        body: [
-          [
-            {
-              text: 'SON PESOS: CIEN MIL QUINIENTOS CON 55/100',
-              italics: true,
-              fontSize: 11,
-            },
-
-            {
-              text: 'SUELDO NETO: $2000000.00',
-              bold: true,
-              fontSize: 11,
-              alignment: 'left',
-              fillColor: '#d1fae5',
-            },
-          ],
-        ],
-      },
-
-      layout: {
-        paddingLeft: function () {
-          return 8;
-        },
-
-        paddingRight: function () {
-          return 8;
-        },
-
-        paddingTop: function () {
-          return 8;
-        },
-
-        paddingBottom: function () {
-          return 8;
-        },
-      },
-    },
-  ],
-};
+    ],
+  };
+}

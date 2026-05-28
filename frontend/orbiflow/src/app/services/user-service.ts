@@ -18,6 +18,11 @@ export class UserService {
     return this.http.get<User[]>(`${API_BASE_URL}/users/`);
   }
 
+  // Obtener un usuario por id
+  public getUserById(id: number): Observable<User[]> {
+    return this.http.get<User[]>(`${API_BASE_URL}/users/${id}/`);
+  }
+
   // Crear un nuevo usuario
   public createUser(user: User): Observable<User> {
     return this.http.post<User>(`${API_BASE_URL}/users/`, user);
