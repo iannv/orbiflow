@@ -24,13 +24,14 @@ export class App implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Si hay token guardado, verificar que sea válido con el backend
+    // Verificar token al iniciar: si es inválido (401) o hay error de red (0), redirigir a login
     if (this.authService.isAuthenticated()) {
       this.authService.loadCurrentUser().subscribe({
-        error: () => {
-          // Token inválido o expirado, redirigir a login
-          this.authService.logout();
-          this.router.navigate(['/login']);
+        error: (err) => {
+          if (err.status === 401 || err.status === 0) {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }
         },
       });
     }
