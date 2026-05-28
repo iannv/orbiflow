@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import * as pdfMakeLib from 'pdfmake/build/pdfmake';
-import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
+
+declare const require: any;
+const pdfMakeLib = require('pdfmake/build/pdfmake');
+const pdfFontsLib = require('pdfmake/build/vfs_fonts');
 
 const pdfMake = (pdfMakeLib as any).default || pdfMakeLib;
 const pdfFonts = (pdfFontsLib as any).default || pdfFontsLib;
