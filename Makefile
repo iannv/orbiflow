@@ -62,16 +62,14 @@ logs:
 
 # Calidad y Testing
 tests:
-    @echo "--- 1. Preparando entorno local para tests ---"
-    cp .env.local .env
-    # Aseguramos que la base de datos esté levantada
-    docker compose --profile local up -d db
-    
-    @echo "--- 2. Corriendo tests del Backend ---"
-    docker compose run --rm backend python manage.py test --keepdb
-    
-    @echo "--- 3. Corriendo tests del Frontend ---"
-    docker compose run --rm frontend npx ng test --no-watch --browsers=ChromeHeadless
+	@echo "--- 1. Preparando entorno local para tests ---"
+	cp .env.local .env
+	# Aseguramos que la base de datos esté levantada
+	docker compose --profile local up -d db
+	@echo "--- 2. Corriendo tests del Backend ---"
+	docker compose run --rm backend python manage.py test --keepdb
+	@echo "--- 3. Corriendo tests del Frontend ---"
+	docker compose run --rm frontend npx ng test --no-watch --browsers=ChromeHeadless
 
 test-nuke:
 	@echo "--- DESTRUCCIÓN TOTAL Y RECONSTRUCCIÓN ---"
