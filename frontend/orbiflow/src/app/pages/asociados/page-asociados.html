@@ -1,3 +1,7 @@
+@if (mostrarToast) {
+  <app-toast [title]="toastTitle" [subtitle]="toastSubtitle"></app-toast>
+}
+
 <main class="p-5">
   <section id="section-title">
     <div>
@@ -31,18 +35,26 @@
     </div>
 
     <div class="filter-row">
-      <button type="button" class="btn-filter">
+      <div class="filter-label">
         <img src="assets/filtro.png" alt="" />
-        Filtrar
-      </button>
-      <button type="button" class="btn-sort" (click)="setSort('first_name')">
-        Nombre
-        <img src="assets/ordenar.png" alt="" />
-      </button>
-      <button type="button" class="btn-sort" (click)="setSort('last_name')">
-        Apellido
-        <img src="assets/ordenar.png" alt="" />
-      </button>
+        <span class="fw600">Ordenar por</span>
+      </div>
+      <app-chip
+        class="btn-sort-chip"
+        name="Nombre"
+        backgroundColor="var(--gris-blanco)"
+        colorName="var(--verde-azulado)"
+        (click)="setSort('first_name')"
+        [badgeActive]="sortField === 'first_name'"
+      ></app-chip>
+      <app-chip
+        class="btn-sort-chip"
+        name="Apellido"
+        backgroundColor="var(--gris-blanco)"
+        colorName="var(--verde-azulado)"
+        (click)="setSort('last_name')"
+        [badgeActive]="sortField === 'last_name'"
+      ></app-chip>
     </div>
   </section>
 
