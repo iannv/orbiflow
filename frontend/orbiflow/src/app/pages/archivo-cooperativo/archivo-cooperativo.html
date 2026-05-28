@@ -1,0 +1,52 @@
+<main class="p-5">
+    <h1 class="h1-title">Archivo cooperativo</h1>
+    <h2 class="h2-subtitle">Auditoría social de pares. Consulta la información colectiva para asegurar la equidad
+        democrática.</h2>
+    <section>
+        <p class="period-label">Período a consultar</p>
+        <div class="period-controls">
+            <div class="period-controls-inner">
+                <app-select name="periodo" [(ngModel)]="selectedRangeIndex" (ngModelChange)="onSelectRange($event)">
+                    @for (r of savedRanges; let i = $index; track i) {
+                    <option [value]="i">{{ r.label }}</option>
+                    }
+                </app-select>
+                <app-calendar [selectedStartDate]="selectedStartDate" [selectedEndDate]="selectedEndDate"
+                    (dateRangeSelected)="onDateRangeSelected($event)"></app-calendar>
+            </div>
+            <app-primary btnImg="assets/recibos.png" name="Confirmar" (btnClick)="confirmPeriod()"></app-primary>
+        </div>
+
+        <section style="margin-top:1rem;">
+            @if (isLoadingTable) {
+            <div class="text-center my-3">
+                <app-loader />
+            </div>
+            }
+            @if (!isLoadingTable && tableRows.length === 0) {
+            <div class="text-muted mt-2">No hay retiros para el periodo seleccionado.</div>
+            }
+            @if (!isLoadingTable && tableRows.length > 0) {
+            <div class="table-responsive border rounded mb-4 mt-3">
+                <p class="period-label">Período: {{ selectedStartDate | date:'dd-MM-yyyy' }} al {{ selectedEndDate | date:'dd-MM-yyyy' }}</p>
+                <table class="table table-hover align-middle mb-0 small-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="table-light">Asociado</th>
+                            <th class="table-light">Retiro total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (row of tableRows; track $index) {
+                        <tr>
+                            <td>{{ row.associate }}</td>
+                            <td class="total-value">${{ row.total }}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </section>
+    </section>
+</main>

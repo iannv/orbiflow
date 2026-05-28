@@ -37,7 +37,7 @@ export const routes: Routes = [
   },
 
   {
-    path: 'profile',
+    path: 'perfil',
     loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
     canActivate: [authGuard],
   },
@@ -89,6 +89,11 @@ export const routes: Routes = [
       },
     ],
   },
+
+  { path: 'archivo-cooperativo', 
+    loadComponent: () => import('./pages/archivo-cooperativo/archivo-cooperativo')
+    .then(m => m.ArchivoCooperativo), 
+    canActivate: [authGuard] },
 
   {
     path: '',

@@ -61,13 +61,13 @@ export class Sidenav {
       id: '7',
       name: 'Mi perfil',
       iconName: 'assets/mi-perfil.png',
-      route: '/profile',
+      route: '/perfil',
     },
     {
       id: '8',
       name: 'Archivo cooperativo',
       iconName: 'assets/archivo-coop.png',
-      route: '#',
+      route: '/archivo-cooperativo',
     },
   ]
 }
