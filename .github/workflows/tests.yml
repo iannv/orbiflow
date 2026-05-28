@@ -21,7 +21,7 @@ jobs:
           echo "POSTGRES_PORT=5432" >> .env.local
           echo "DJANGO_SECRET_KEY=ci_test_key_placeholder" >> .env.local
           echo "DJANGO_DEBUG=true" >> .env.local
-          copy .env.local .env
+          cp .env.local .env
 
       - name: Build and Run Tests
         run: |
