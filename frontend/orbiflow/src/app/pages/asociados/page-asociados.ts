@@ -204,13 +204,13 @@ export class PageAsociados implements OnInit {
 
     this.userService.getUsers().subscribe({
       next: (users) => {
-        // Excluye usuarios ya vinculados a un legajo, eliminados, o sin rol 'associate'
+        // Excluye usuarios ya vinculados a un legajo, eliminados, o que no sean coop members
         const linked = new Set<number>(
           this.associateList.map((a) => a.user).filter((v): v is number => typeof v === 'number'),
         );
-        // El backend devuelve role='associate' (ver ROLE_CHOICES en identity.py)
+        // Permitir usuarios que sean coop members (necesitan legajo, independientemente del rol)
         this.availableUsers = users.filter(
-          (u) => (u.role as string) === 'associate' && u.id != null && !linked.has(u.id) && !u.is_deleted,
+          (u) => u.is_coop_member && u.id != null && !linked.has(u.id) && !u.is_deleted,
         );
         console.log('Available users for new associate:', this.availableUsers);
         // Abre el modal solo cuando el select ya tiene opciones cargadas
