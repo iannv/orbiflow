@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass } from "@angular/common";
 import { RouterLink, RouterLinkActive } from "@angular/router";
+import { AuthService } from '../../core/auth/auth.service';
+import { UserRole } from '../../core/auth/auth.models';
 
 @Component({
   selector: 'app-sidenav',
@@ -12,9 +14,11 @@ export class Sidenav {
   @Input() isExpanded: boolean = false;
   @Output() toggleSidebar: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  constructor(private readonly authService: AuthService) {}
+
   handleSidebarToggle = () => this.toggleSidebar.emit(!this.isExpanded);
 
-    menu = [
+  menu = [
     {
       id: '0',
       name: 'Panel principal',
@@ -70,4 +74,17 @@ export class Sidenav {
       route: '/archivo-cooperativo',
     },
   ]
+
+  get filteredMenu() {
+    const role = this.authService.currentUser()?.role as UserRole | undefined;
+
+    if (role === 'admin') return this.menu;
+
+    const treasurerAllowed = ['0', '2', '4', '5', '6', '7', '8'];
+    const associateAllowed = ['0', '5', '7', '8'];
+
+    const allowed = role === 'treasurer' ? treasurerAllowed : role === 'associate' ? associateAllowed : [];
+
+    return this.menu.filter(item => allowed.includes(item.id));
+  }
 }

@@ -10,7 +10,7 @@
   }
 
   <div class="div-content">
-    @for (item of menu; track $index) {
+    @for (item of filteredMenu; track $index) {
       <a [routerLink]="item.route" class="link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <div class="content">
           <div class="icon">
