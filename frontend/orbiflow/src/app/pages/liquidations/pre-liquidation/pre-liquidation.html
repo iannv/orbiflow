@@ -225,23 +225,82 @@
   (close)="closeRevisionModal()"
 >
   <div *ngIf="selectedSimulationDetail" class="mt-3">
+
+<div class="p-2 mb-3 bg-light rounded text-center">
+      <span class="text-muted small">Asociado:</span>
+      <strong class="d-block fs-5" style="color: var(--verde-petroleo)">
+        {{ selectedSimulationDetail.associate_full_name || getAssociateName(selectedSimulationDetail.associate_id) }}
+      </strong>
+    </div>
+
     <ul class="list-group list-group-flush border rounded">
       <li class="list-group-item d-flex justify-content-between p-3">
-        <span>Retiro Base:</span> <strong>${{ selectedSimulationDetail.base_amount }}</strong>
+        <span>Retiro de Base Líquido:</span>
+        <strong>${{ selectedSimulationDetail.base_amount }}</strong>
       </li>
-      <li class="list-group-item d-flex justify-content-between p-3">
-        <span>Adicionales:</span> <strong>${{ selectedSimulationDetail.additional_amount }}</strong>
+
+      <li class="list-group-item p-3 bg-light">
+        <span class="fw-bold text-muted small text-uppercase">Conceptos Adicionales</span>
       </li>
+      <ng-container *ngIf="selectedSimulationDetail.items?.length; else noItems">
+        <li
+          class="list-group-item d-flex justify-content-between p-2 px-3 border-0"
+          *ngFor="let item of selectedSimulationDetail.items"
+        >
+          <span class="text-muted" style="font-size: 0.9rem">
+            {{ item.module_name }} <span *ngIf="item.variant_name">- {{ item.variant_name }}</span>
+          </span>
+          <strong style="color: var(--verde-petroleo)">+${{ item.calculated_value }}</strong>
+        </li>
+      </ng-container>
+      <ng-template #noItems>
+        <li class="list-group-item p-2 px-3 text-muted border-0" style="font-size: 0.9rem">
+          Sin conceptos adicionales
+        </li>
+      </ng-template>
+
       <li
-        class="list-group-item d-flex justify-content-between text-danger p-3"
-        *ngIf="+selectedSimulationDetail.cap_adjustment > 0"
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
       >
-        <span>Recorte por Tope (30%):</span>
-        <strong>-${{ selectedSimulationDetail.cap_adjustment }}</strong>
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Adicionales:</span>
+        <strong style="color: var(--verde-petroleo)"
+          >+${{ selectedSimulationDetail.additional_amount }}</strong
+        >
       </li>
-      <li class="list-group-item d-flex justify-content-between bg-light p-3 mt-1">
-        <span><strong>Total Estimado:</strong></span>
-        <strong>${{ selectedSimulationDetail.total_amount }}</strong>
+
+      <li class="list-group-item p-3 bg-light mt-1">
+        <span class="fw-bold text-muted small text-uppercase">Descuentos</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between p-2 px-3 border-0">
+        <span class="text-muted" style="font-size: 0.9rem">Ajuste por Exceso de Tope</span>
+        <strong
+          [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
+        >
+          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
+      >
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Descuentos:</span>
+        <strong
+          [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
+        >
+          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-3 mt-2"
+        style="background-color: var(--verde-bg)"
+      >
+        <span><strong style="color: var(--verde-petroleo)">Monto Final a Percibir:</strong></span>
+        <strong style="color: var(--verde-petroleo); font-size: 1.1rem"
+          >${{ selectedSimulationDetail.total_amount }}</strong
+        >
       </li>
     </ul>
   </div>
