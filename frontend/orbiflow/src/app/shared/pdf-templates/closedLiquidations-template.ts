@@ -18,6 +18,7 @@ export function buildLiquidacionConsolidadaTemplate(
 ) {
   const tableBody = [];
 
+  // Encabezado de la tabla principal
   tableBody.push([
     { text: 'Asociado', bold: true, fillColor: '#f3f4f6' },
     { text: 'Retiro Base', bold: true, alignment: 'right', fillColor: '#f3f4f6' },
@@ -26,19 +27,53 @@ export function buildLiquidacionConsolidadaTemplate(
     { text: 'Total Pagado', bold: true, alignment: 'right', fillColor: '#f3f4f6' },
   ]);
 
+  // Cargar los asociados
   summary.retirements.forEach((item) => {
     const name = getAssociateName(item.associate || item.associate_id, associatesMap);
     const capAdj = +item.cap_adjustment > 0 ? `-$${item.cap_adjustment}` : '$0.00';
 
     tableBody.push([
-      name,
-      { text: `$${item.base_amount}`, alignment: 'right' },
-      { text: `$${item.additional_amount}`, alignment: 'right' },
-      { text: capAdj, alignment: 'right', color: +item.cap_adjustment > 0 ? 'red' : 'black' },
-      { text: `$${item.total_amount}`, alignment: 'right', bold: true, color: '#0f766e' },
+      { text: name, margin: [0, 5, 0, 0] },
+      { text: `$${item.base_amount}`, alignment: 'right', margin: [0, 5, 0, 0] },
+      { text: `$${item.additional_amount}`, alignment: 'right', margin: [0, 5, 0, 0] },
+      { text: capAdj, alignment: 'right', color: +item.cap_adjustment > 0 ? 'red' : 'black', margin: [0, 5, 0, 0] },
+      { text: `$${item.total_amount}`, alignment: 'right', bold: true, color: '#0f766e', margin: [0, 5, 0, 0] },
+    ]);
+
+    let conceptosText = item.items && item.items.length > 0 
+      ? item.items.map((d: any) => `${d.module_name}: +$${d.calculated_value}`).join('\n')
+      : 'Sin conceptos aplicados';
+
+    tableBody.push([
+      {
+        colSpan: 5,
+        fillColor: '#fafafa', 
+        margin: [10, 5, 10, 10], 
+        columns: [
+
+          {
+            width: '*',
+            text: [
+              { text: 'Conceptos Aplicados:\n', fontSize: 9, bold: true, color: '#4b5563' },
+              { text: conceptosText, fontSize: 9, color: '#6b7280' }
+            ]
+          },
+
+          {
+            width: '*',
+            text: [
+              { text: 'Descuentos:\n', fontSize: 9, bold: true, color: '#4b5563' },
+              { text: `Ajuste por Tope: ${capAdj}`, fontSize: 9, color: +item.cap_adjustment > 0 ? 'red' : '#6b7280' }
+            ]
+          }
+        ]
+      },
+
+      '', '', '', '' 
     ]);
   });
 
+  // Estructura general del pdf
   return {
     content: [
       {
@@ -48,11 +83,12 @@ export function buildLiquidacionConsolidadaTemplate(
             width: 120,
             margin: [0, 0, 0, 20],
           },
-
           {
             text: [
               { text: 'Auditoría de Retiros\n', style: 'header' },
-              { text: 'Cooperativa de Trabajo OrbiFlow Ltda.\n', fontSize: 12, color: '#4b5563' },
+              { text: 'Cooperativa de Trabajo OrbiCoop Ltda.\n', fontSize: 12, color: '#4b5563' },
+              { text: 'CUIT: 00-00000000-0\n', fontSize: 12, color: '#4b5563' },
+              { text: 'Mitre 900 - CABA\n', fontSize: 12, color: '#4b5563' },
               { text: `Periodo Fiscal: ${monthName} ${summary.period.year}\n`, style: 'subheader' },
               {
                 text: `Fecha de Emisión: ${new Date().toLocaleDateString()}`,
@@ -65,7 +101,6 @@ export function buildLiquidacionConsolidadaTemplate(
           },
         ],
       },
-
       {
         table: {
           headerRows: 1,
@@ -74,7 +109,6 @@ export function buildLiquidacionConsolidadaTemplate(
         },
         layout: 'lightHorizontalLines',
       },
-
       { text: 'Resumen Global', style: 'subheader', margin: [0, 20, 0, 5] },
       {
         columns: [

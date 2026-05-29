@@ -32,6 +32,33 @@
               </app-chip>
             </div>
             <p class="fw300 mt-1 mb-2 text-muted">{{ modulo.description || 'Sin descripción' }}</p>
+
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              @if (modulo.applies_to_cap) {
+                <span
+                  class="badge rounded-pill text-bg-light border text-secondary fw-normal"
+                  style="font-size: 0.75rem"
+                >
+                  Aplica Tope
+                </span>
+              }
+
+              @if (modulo.is_exclusive) {
+                <span
+                  class="badge rounded-pill text-bg-light border text-secondary fw-normal"
+                  style="font-size: 0.75rem"
+                >
+                  Variante única
+                </span>
+              } @else {
+                <span
+                  class="badge rounded-pill text-bg-light border text-secondary fw-normal"
+                  style="font-size: 0.75rem"
+                >
+                  Variante múltiple
+                </span>
+              }
+            </div>
           </div>
 
           <div class="modulo-actions d-flex align-items-center gap-3">
@@ -60,7 +87,7 @@
           <div class="variantes-container mt-3">
             @for (variante of modulo.variants; track variante.id) {
               <div class="variante-row">
-                <div class="variante-detalles">
+                <div class="variante-detalles d-flex align-items-center gap-2">
                   <span class="fw500">{{ variante.name }}</span>
                   <app-chip
                     [name]="variante.type === 'fixed_amount' ? 'Monto fijo' : 'Porcentaje'"
@@ -68,6 +95,15 @@
                     colorName="var(--verde-azulado)"
                   >
                   </app-chip>
+
+                  @if (variante.is_default) {
+                    <app-chip
+                      name="Por defecto"
+                      backgroundColor="var(--verde-bg)"
+                      colorName="var(--verde-selva)"
+                    >
+                    </app-chip>
+                  }
                 </div>
 
                 <div class="variante-valor">
