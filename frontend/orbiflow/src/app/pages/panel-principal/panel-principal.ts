@@ -9,12 +9,11 @@ import { User } from '../../interfaces/User';
 import { AuthService } from '../../core/auth/auth.service';
 import { PanelAsociado } from "./panel-asociado/panel-asociado";
 import { PanelAdmin } from "./panel-admin/panel-admin";
-import { PanelTesorero } from "./panel-tesorero/panel-tesorero";
 
 @Component({
   selector: 'app-panel-principal',
   standalone: true,
-  imports: [BaseCard, RouterLink, PanelAsociado, PanelAdmin, PanelTesorero],
+  imports: [BaseCard, RouterLink, PanelAsociado, PanelAdmin],
   templateUrl: './panel-principal.html',
   styleUrl: './panel-principal.css',
 })

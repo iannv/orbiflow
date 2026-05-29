@@ -41,6 +41,7 @@ export class PanelAdmin {
   associate: boolean = false;
 
   constructor(
+    private authService: AuthService,
     private moduloService: ModulosService,
     private usersService: UserService,
     private liquidationService: LiquidationService,
@@ -48,6 +49,9 @@ export class PanelAdmin {
   ) {}
 
   ngOnInit() {
+    this.isAdmin();
+    this.isTressurer();
+
     this.getActiveModules();
     this.getTotalModules();
 
@@ -58,6 +62,14 @@ export class PanelAdmin {
 
     this.getTotalUsers();
     this.getLastLiquidation();
+  }
+
+  isAdmin() {
+    return this.authService.currentUser()?.role === 'admin';
+  }
+
+  isTressurer() {
+    return this.authService.currentUser()?.role === 'treasurer';
   }
 
   // Obtener modulos activos

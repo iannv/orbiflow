@@ -61,7 +61,7 @@ h4 {
 }
 
 .section-body app-base-card app-base-card:last-child {
-  padding: 2rem !important;
+  /* padding: 2rem !important; */
 }
 
 .section-body .p-info-sistema {
