@@ -198,6 +198,11 @@ export class PreLiquidationComponent implements OnInit {
     return this.simulationResults.find(r => r.associate_id === associateId);
   }
 
+  getAssociateName(associateId: number): string {
+    const associate = this.associates.find(a => a.id === associateId);
+    return associate ? associate.full_name : `Socio #${associateId}`;
+  }
+
   onMarkAsReviewed() {
     this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe(() => {
       this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
