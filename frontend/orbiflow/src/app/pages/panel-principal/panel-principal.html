@@ -1,7 +1,7 @@
 @if (isAdmin()) {
   <app-panel-admin></app-panel-admin>
 } @else if (isTressurer()) {
-  <app-panel-tesorero></app-panel-tesorero>
+  <app-panel-admin></app-panel-admin>
 } @else if (isAssociate()) {
   <app-panel-asociado></app-panel-asociado>
 }
