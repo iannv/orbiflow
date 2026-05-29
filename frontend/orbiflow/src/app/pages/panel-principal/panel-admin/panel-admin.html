@@ -10,7 +10,7 @@
       </div>
       <div>
         <h4>{{ asociadosActivos }}</h4>
-        <span class="fw300">Total: {{ totalAsociados }}</span>
+        <span class="fw300">Total registrados: {{ totalAsociados }}</span>
       </div>
     </app-base-card>
 
@@ -21,29 +21,39 @@
       </div>
       <div>
         <h4>{{ modulosActivos }}</h4>
-        <span class="fw300">Total: {{ totalModulos }}</span>
+        <span class="fw300">Total configurados: {{ totalModulos }}</span>
       </div>
     </app-base-card>
 
     <app-base-card>
       <div>
-        <h3>Liquidaciones del mes</h3>
+        <h3>Liquidación actual</h3>
         <img src="assets/panel-liquidaciones.png" alt="" />
       </div>
       <div>
-        <h4>{{ liquidacionesMes }}</h4>
-        <span class="fw300"> {{ fechaLiquidaciones }} </span>
+        @if (liquidacionActual?.month && liquidacionActual?.year) {
+          <h4>{{ liquidacionActual?.month }}/{{ liquidacionActual?.year }}</h4>
+        } @else {
+          <h4>Sin período</h4>
+        }
+        <app-chip [name]="estadoLiquidacion" [backgroundColor]="liquidacionChipColorBg" [colorName]="liquidacionChipColorName"></app-chip>
       </div>
     </app-base-card>
 
     <app-base-card>
       <div>
-        <h3>Recibos generados</h3>
+        <h3>Total liquidado del mes</h3>
         <img src="assets/panel-recibos.png" alt="" />
       </div>
       <div>
-        <h4>{{ recibosGenerados }}</h4>
-        <span class="fw300">Total histórico</span>
+        <h4>$ {{  totalLiquidado }}</h4>
+        @if (liquidacionActual?.month && liquidacionActual?.year) {
+          <span class="fw300"
+            >Período: {{ liquidacionActual?.month }}/{{ liquidacionActual?.year }}</span
+          >
+        } @else {
+          <span class="fw300">Sin período</span>
+        }
       </div>
     </app-base-card>
   </section>
@@ -67,7 +77,6 @@
       </app-base-card>
     </div>
 
-
     <!-- INFORMACION DEL SISTEMA DEL ADMIN -->
     <div class="section-body-div-info-sistema">
       <app-base-card title="Información del sistema" subtitle="Estado actual">
@@ -79,9 +88,21 @@
         </div>
         <div>
           <p class="p-info-sistema fw300 m-0">Última liquidación</p>
-          <span class="span-info-sistema" style="color: var(--azul)"
-            ><strong>Sin datos {{ ultimaLiquidacion }}</strong></span
-          >
+          @if (ultimaLiquidacion) {
+            <span class="span-info-sistema"
+              ><strong
+                >{{ ultimaLiquidacion.month }}/{{ ultimaLiquidacion.year }}
+                <app-chip
+                  [name]="`${recibosGenerados} recibos gerados`"
+                  backgroundColor="var(--azul-bg)"
+                  colorName="var(--azul)"
+                ></app-chip></strong
+            ></span>
+          } @else {
+            <span class="span-info-sistema" style="color: var(--azul)"
+              >No se realizaron liquidaciones aún</span
+            >
+          }
         </div>
       </app-base-card>
     </div>

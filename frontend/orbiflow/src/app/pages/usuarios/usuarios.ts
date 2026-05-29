@@ -398,10 +398,3 @@ export class Usuarios implements OnInit {
     this.applyFilters();
   }
 }
-
-// result.sort((a, b) => {
-//   const cmp = String(a[this.sortField] ?? '')
-//     .toLowerCase()
-//     .localeCompare(String(b[this.sortField] ?? '').toLowerCase(), 'es');
-//   return this.sortAsc ? cmp : -cmp;
-// });
