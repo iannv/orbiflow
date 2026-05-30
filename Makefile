@@ -84,4 +84,4 @@ tests: ENV_FILE=.env.local
 tests:
 	docker compose --profile local up -d db
 	docker compose run --rm backend python manage.py test --keepdb
-	docker compose run --rm frontend npx ng test
+	docker compose run --rm frontend npx ng test --watch=false
