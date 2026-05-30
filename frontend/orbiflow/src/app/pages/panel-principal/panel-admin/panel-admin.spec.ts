@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { PanelAdmin } from './panel-admin';
 
@@ -9,7 +11,7 @@ describe('PanelAdmin', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PanelAdmin],
-      providers: [provideRouter([])],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PanelAdmin);

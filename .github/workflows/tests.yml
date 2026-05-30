@@ -31,7 +31,7 @@ jobs:
           
           # Add a robust wait for the DB to be ready
           echo "Waiting for DB to be healthy..."
-          # This loop waits for the specific healthcheck to pass
+          status="starting"
           for i in {1..10}; do
             status=$(docker inspect -f '{{.State.Health.Status}}' orbiflow-db-1 2>/dev/null || echo "starting")
             if [ "$status" == "healthy" ]; then
@@ -41,6 +41,13 @@ jobs:
             echo "Waiting... (current status: $status)"
             sleep 5
           done
+
+          # Fail explicitly if the DB never became healthy (the loop above completes silently otherwise).
+          if [ "$status" != "healthy" ]; then
+            echo "::error::Database did not become healthy after 50s (last status: $status)"
+            docker compose --profile local logs db
+            exit 1
+          fi
 
           # Now run the tests
           make tests
