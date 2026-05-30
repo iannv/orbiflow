@@ -117,6 +117,8 @@ En desarrollo local todo corre en Docker (backend + frontend + Postgres), y un s
 
 Necesitás Docker, docker compose y make.
 
+> **¿Windows?** Antes de seguir, leé las [Notas para usuarios de Windows](#notas-para-usuarios-de-windows) más abajo — `make` no viene instalado y hay un detalle con los saltos de línea que conviene resolver primero.
+
 ```bash
 git clone git@github.com:iannv/orbiflow.git
 cd orbiflow
@@ -141,6 +143,31 @@ make build-prod      # apunta a Neon Producción
 ```
 
 Todos los comandos disponibles: `make help`.
+
+### Notas para usuarios de Windows
+
+Antes de levantar el proyecto desde Windows, dos cosas a resolver:
+
+**1. Instalar `make` (opcional, pero recomendado).**
+
+`make` no viene con Windows. Hay varias opciones, dejamos una que nos funcionó:
+
+- En **PowerShell como administrador** correr `winget install ezwinports.make`, reiniciar la consola y usar los comandos con normalidad.
+- **Sin instalar nada**: usar `docker compose` directo. Por ejemplo, `docker compose --profile local up --build -d` equivale a `make build-local`. Los equivalentes de cada comando del Makefile están en [`docs/TECHNICAL.md`](./docs/TECHNICAL.md#3-comandos-del-makefile).
+
+**2. Saltos de línea CRLF en archivos `.sh`.**
+
+Por defecto, git en Windows convierte los archivos shell a CRLF (`\r\n`) y bash dentro del contenedor Linux no los entiende. Vas a ver un error parecido a:
+
+```
+exec /docker-entrypoint.sh: no such file or directory
+# o bien
+/bin/sh^M: bad interpreter: No such file or directory
+```
+
+Para evitarlo agregamos un `.gitattributes` que fuerza a git a mantener los saltos de línea como LF (`\n`) en los archivos `.sh`:
+
+Si el archivo `backend/coop/docker-entrypoint.sh` **ya** te quedó con CRLF, abrilo en VS Code / Cursor → click en `CRLF` (esquina inferior derecha de la barra de estado) → elegir `LF` → guardar → `docker compose down` → volver a intentar el build.
 
 ---
 
