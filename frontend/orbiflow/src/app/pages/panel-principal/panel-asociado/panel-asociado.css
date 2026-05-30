@@ -60,9 +60,9 @@ h4 {
   padding: 0 !important;
 }
 
-.section-body app-base-card app-base-card:last-child {
+/* .section-body app-base-card app-base-card:last-child {
   padding: 2rem !important;
-}
+} */
 
 .section-body .p-info-sistema {
   color: var(--gris-oscuro);

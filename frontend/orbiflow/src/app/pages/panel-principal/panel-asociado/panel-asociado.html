@@ -20,7 +20,7 @@
         <img src="assets/panel-modulo.png" alt="" />
       </div>
       <div>
-        <h4>{{ totalHoursWorked }}</h4>
+        <h4>{{ lastRetirement?.hours_worked }} hs</h4>
         <span class="fw300">Período: {{ period }}</span>
       </div>
     </app-base-card>
@@ -52,7 +52,7 @@
     <div>
       <app-base-card title="Accesos rápidos" subtitle="Gestión del sistema">
         <app-base-card>
-          <a [routerLink]="['/profile']">
+          <a [routerLink]="['/perfil']">
             <p>Mi perfil</p>
             <p class="fw200 m-0">
               Consulta tus datos personales, antigüedad y los módulos que impactan en tu retiro
@@ -70,7 +70,7 @@
           </a>
         </app-base-card>
         <app-base-card>
-          <a [routerLink]="['/profile']">
+          <a [routerLink]="['/archivo-cooperativo']">
             <p>Archivo cooperativo</p>
             <p class="fw200 m-0">
               Auditoría social de pares. Consulta las liquidaciones de todos los asociados para
