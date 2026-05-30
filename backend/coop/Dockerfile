@@ -15,6 +15,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
+RUN chmod +x /app/docker-entrypoint.sh || true
+
 EXPOSE 8000
+
+ENTRYPOINT ["/bin/sh", "/app/docker-entrypoint.sh"]
 
 CMD ["gunicorn", "coop.wsgi:application", "--bind", "0.0.0.0:8000"]
