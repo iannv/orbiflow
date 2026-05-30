@@ -1,0 +1,233 @@
+<div class="container mt-4" style="max-width: 900px">
+  <h1 class="h1-title mb-1" style="color: #1f2937">Periodos de Liquidación Cerrados</h1>
+  <p class="text-muted mb-4">Historial de liquidaciones de retiro</p>
+
+  @if (isLoading) {
+    <div class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  } @else if (years.length === 0) {
+    <div class="alert alert-info mt-4">No se registran periodos cerrados en el sistema.</div>
+  } @else {
+    <div class="accordion mb-5" id="accordionYears">
+      @for (year of years; track year; let first = $first) {
+        <div class="accordion-item mb-3 border rounded shadow-sm">
+          <h2 class="accordion-header" [id]="'heading' + year">
+            <button
+              class="accordion-button fw600"
+              [class.collapsed]="!first"
+              type="button"
+              data-bs-toggle="collapse"
+              [attr.data-bs-target]="'#collapse' + year"
+              [attr.aria-expanded]="first"
+              [attr.aria-controls]="'collapse' + year"
+            >
+              Año {{ year }}
+            </button>
+          </h2>
+
+          <div
+            [id]="'collapse' + year"
+            class="accordion-collapse collapse"
+            [class.show]="first"
+            [attr.aria-labelledby]="'heading' + year"
+          >
+            <div class="accordion-body p-0">
+              <div class="list-group list-group-flush">
+                @for (period of periodsByYear[year]; track period.id; let last = $last) {
+                  <div
+                    class="list-group-item border-0"
+                    [class.border-bottom]="!last"
+                    style="padding: 20px 24px"
+                  >
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div style="flex: 1">
+                        <span class="fw-medium text-dark"
+                          >{{ getMonthName(period.month) }} {{ period.year }}</span
+                        >
+                      </div>
+
+                      <div class="text-muted text-center" style="flex: 1; font-size: 0.95rem">
+                        Total Liquidado:
+                        <strong style="color: var(--verde-petroleo)">
+                          {{ periodTotals[period.id!] ? '$' + periodTotals[period.id!] : '...' }}
+                        </strong>
+                      </div>
+
+                      <div class="text-end">
+                        <button
+                          class="btn text-white px-4 py-2"
+                          style="
+                            background-color: var(--verde-mate);
+                            border-radius: 6px;
+                            font-weight: 500;
+                          "
+                          (click)="openDetailsModal(period.id)"
+                        >
+                          Ver Detalles
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div
+      class="alert mt-4"
+      style="background-color: #eef2fa; border: 1px solid #b3c7ee; border-radius: 8px"
+    >
+      <strong style="color: var(--azul); font-size: 0.95rem">Nota</strong>
+      <p class="mb-0 mt-1 fw300" style="color: var(--gris-oscuro); font-size: 0.9rem">
+        Esta vista de auditoría solo está disponible para períodos en estado
+        <strong class="fw600">"Cerrado"</strong>. Una vez cerrado un período, la información queda
+        inmutable y disponible permanentemente para su consulta.
+      </p>
+    </div>
+  }
+</div>
+
+<app-modal
+  [isOpen]="isDetailsModalOpen"
+  title="Detalles de la Liquidación"
+  size="lg"
+  primaryBtnText="Cerrar"
+  secondaryBtnText="Descargar PDF"
+  [hideSecondaryBtn]="false"
+  (primaryBtnClick)="closeDetailsModal()"
+  (secondaryBtnClick)="descargarPDF()"
+  (close)="closeDetailsModal()"
+>
+  @if (isLoadingDetails) {
+    <div class="text-center my-4">
+      <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+      <p class="text-muted mt-2">Cargando detalles...</p>
+    </div>
+  } @else if (selectedSummary) {
+    <div class="mt-2">
+      <div
+        class="d-flex justify-content-between align-items-center p-3 mb-4 rounded"
+        style="background-color: #f8f9fa"
+      >
+        <div>
+          <span class="text-muted small">Periodo Fiscal:</span>
+          <strong class="d-block fs-5" style="color: var(--verde-petroleo)"
+            >{{ getMonthName(selectedSummary.period.month) }}
+            {{ selectedSummary.period.year }}</strong
+          >
+        </div>
+        <div class="text-end">
+          <span class="text-muted small">Total Liquidado:</span>
+          <strong class="d-block fs-4" style="color: var(--verde-petroleo)"
+            >${{ selectedSummary.totals.total_amount }}</strong
+          >
+        </div>
+      </div>
+
+      <h6 class="fw-bold mb-3 text-muted">Desglose de Retiros por Asociado</h6>
+      <div class="table-responsive border rounded mb-4">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.95rem">
+          <thead class="table-light">
+            <tr>
+              <th>Asociado</th>
+              <th class="text-end">Retiro Base</th>
+              <th class="text-end">Adicionales</th>
+              <th class="text-center">Estado</th>
+              <th class="text-end">Total Pagado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of selectedSummary.retirements">
+              <tr>
+                <td>
+                  <strong>{{ getAssociateName(item.associate || item.associate_id) }}</strong>
+                </td>
+                <td class="text-end">${{ item.base_amount }}</td>
+                <td class="text-end">${{ item.additional_amount }}</td>
+                <td class="text-center">
+                  <span
+                    class="badge"
+                    [ngClass]="+item.cap_adjustment > 0 ? 'bg-danger' : 'bg-success'"
+                  >
+                    {{ +item.cap_adjustment > 0 ? 'Alerta Tope' : 'OK' }}
+                  </span>
+                </td>
+                <td class="text-end fw-bold" style="color: var(--verde-petroleo)">
+                  ${{ item.total_amount }}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" class="p-0 border-0">
+                  <details class="bg-light p-2 px-3 mb-2 rounded border" style="font-size: 0.85rem">
+                    <summary class="fw-bold text-muted" style="cursor: pointer; outline: none">
+                      Ver desglose completo de
+                      {{ getAssociateName(item.associate || item.associate_id) }}
+                    </summary>
+                    <div class="row mt-2">
+                      <div class="col-6">
+                        <span
+                          class="d-block fw-bold text-muted mb-1 text-uppercase"
+                          style="font-size: 0.75rem"
+                          >Conceptos Aplicados</span
+                        >
+                        <div
+                          *ngFor="let detail of item.items"
+                          class="d-flex justify-content-between border-bottom pb-1 mb-1"
+                        >
+                          <span>{{ detail.module_name }}</span>
+                          <span class="fw-bold" style="color: var(--verde-petroleo)"
+                            >+${{ detail.calculated_value }}</span
+                          >
+                        </div>
+                        <div *ngIf="!item.items?.length" class="text-muted fst-italic">
+                          Sin conceptos aplicados
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <span
+                          class="d-block fw-bold text-muted mb-1 text-uppercase"
+                          style="font-size: 0.75rem"
+                          >Descuentos</span
+                        >
+                        <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                          <span>Ajuste por Tope</span>
+                          <span
+                            class="fw-bold"
+                            [ngClass]="+item.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
+                          >
+                            -${{ item.cap_adjustment || '0.00' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="row text-center text-muted" style="font-size: 0.85rem">
+        <div class="col">
+          Total Adicionales Aprobados:
+          <strong class="text-dark">${{ selectedSummary.totals.additional_amount }}</strong>
+        </div>
+        <div class="col" *ngIf="+selectedSummary.totals.cap_adjustment > 0">
+          Total Ajustado por Topes:
+          <strong class="text-danger">-${{ selectedSummary.totals.cap_adjustment }}</strong>
+        </div>
+        <div class="col">
+          Recibos Emitidos:
+          <strong class="text-dark">{{ selectedSummary.retirements_count }}</strong>
+        </div>
+      </div>
+    </div>
+  }
+</app-modal>

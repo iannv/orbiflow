@@ -1,0 +1,27 @@
+{
+	"id": "c09d41ed-629c-449b-96b7-717c1c2c95e4",
+	"name": "Orbiflow - local",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-05-10T13:55:36.169Z",
+	"_postman_exported_using": "Postman/10.24.27"
+}

@@ -1,0 +1,307 @@
+@if (mostrarToast) {
+  <app-toast [title]="toastTitle" [subtitle]="toastSubtitle"></app-toast>
+}
+
+<div class="container mt-4">
+  <h1 class="h1-title mb-4">Informe Pre-Liquidación</h1>
+  <p class="text-muted">Revisión y carga de liquidaciones</p>
+
+  <div class="d-flex justify-content-end mb-3">
+    <app-primary
+      (btnClick)="openCreateModal()"
+      name="Crear Nuevo Periodo"
+      btnImg="assets/nuevo-legajo.png"
+    ></app-primary>
+  </div>
+
+  <div class="card p-4 mb-4 shadow-sm border-0">
+    <div class="row align-items-end pb-2">
+      <div class="col-md-4 mb-3 mb-md-0 position-relative">
+        <label class="form-label fw-bold">Elija un periodo:</label>
+        <select class="form-select form-select-bg" [(ngModel)]="selectedPeriodId">
+          <option [ngValue]="null" disabled>Seleccione...</option>
+          <option *ngFor="let p of periods" [value]="p.id">{{ p.month }}/{{ p.year }}</option>
+        </select>
+
+        <small
+          class="text-danger position-absolute"
+          *ngIf="periods.length === 0"
+          style="bottom: -20px; left: 12px"
+        >
+          No hay periodos abiertos.
+        </small>
+
+        <div
+          *ngIf="selectedPeriodId && getSelectedPeriodParams() as currentPeriod"
+          class="text-muted small position-absolute"
+          style="bottom: -22px; left: 12px; white-space: nowrap"
+        >
+          <strong>Valor Hora Aplicado:</strong> ${{ currentPeriod.applied_hour_value }} |
+          <strong>Tope:</strong> {{ currentPeriod.applied_cap_pct }}%
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-3 mb-md-0">
+        <label class="form-label fw-bold">Días Hábiles (20 = Default):</label>
+        <input
+          type="number"
+          class="form-control m-0"
+          style="margin: 0 !important"
+          [(ngModel)]="diasHabiles"
+          placeholder="Total del mes"
+        />
+      </div>
+
+      <div class="col-md-5 d-flex gap-2">
+        <button
+          class="btn btn-outline-primary"
+          (click)="onLoadData()"
+          [disabled]="!selectedPeriodId"
+        >
+          Cargar Datos
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 p-3 mb-4" *ngIf="dataLoaded">
+    <h5 class="mb-3">Validación de carga:</h5>
+
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Asociado</th>
+          <th>Jornada</th>
+          <th>Horas mes</th>
+          <th>Adicionales</th>
+          <th>Estado</th>
+          <th>Revisión</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let assoc of associates; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ assoc.full_name }}</td>
+          <td>{{ assoc.base_hours }} hs</td>
+          <td>
+            <input
+              type="number"
+              class="form-control"
+              style="width: 100px"
+              [(ngModel)]="hoursData[assoc.id]"
+            />
+          </td>
+
+          <ng-container *ngIf="getSimulationForAssociate(assoc.id) as sim; else noSim">
+            <td>${{ sim.additional_amount }}</td>
+            <td>
+              <span
+                class="badge"
+                [ngClass]="
+                  +sim.cap_adjustment > 0 || hoursData[assoc.id] === 0 ? 'bg-danger' : 'bg-success'
+                "
+              >
+                {{
+                  hoursData[assoc.id] === 0
+                    ? '0 Horas'
+                    : +sim.cap_adjustment > 0
+                      ? 'Alerta Tope'
+                      : 'OK'
+                }}
+              </span>
+            </td>
+            <td>
+              <button
+                class="btn btn-sm btn-link text-decoration-none"
+                (click)="openRevisionModal(assoc.id)"
+              >
+                Revisar
+              </button>
+            </td>
+          </ng-container>
+
+          <ng-template #noSim>
+            <td class="text-muted">--</td>
+            <td class="text-muted">--</td>
+            <td><button class="btn btn-sm btn-link text-muted" disabled>Revisar</button></td>
+          </ng-template>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end gap-3 mt-3">
+      <button class="btn btn-outline-secondary" (click)="autoCompleteHours()">
+        Autocompletar Horas
+      </button>
+      <button class="btn btn-primary" (click)="onSimulate()">Validar y Simular</button>
+      <button
+        class="btn btn-success"
+        (click)="onMarkAsReviewed()"
+        [disabled]="simulationResults.length === 0"
+      >
+        Aprobar Revisión
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-modal
+  [isOpen]="isCreateModalOpen"
+  title="Nuevo Periodo de Liquidación"
+  subtitle="Configure los parámetros del mes y año"
+  size="lg"
+  (close)="closeCreateModal()"
+  (primaryBtnClick)="onCreatePeriod()"
+  (secondaryBtnClick)="closeCreateModal()"
+>
+  <div *ngIf="isCreateModalOpen" class="app-modal-form mt-2">
+    <div class="app-modal-grid-2 mb-4">
+      <div class="app-modal-field">
+        <label>Mes</label>
+        <select class="form-select-bg" [(ngModel)]="newPeriodMonth">
+          <option *ngFor="let m of mesesDisponibles" [value]="m.valor">
+            {{ m.nombre }}
+          </option>
+        </select>
+      </div>
+      <div class="app-modal-field">
+        <label>Año</label>
+        <input
+          type="number"
+          class="m-0"
+          [ngClass]="{ 'border-danger': !isYearValid() }"
+          [(ngModel)]="newPeriodYear"
+          placeholder="Ej: 2026"
+          min="2000"
+          max="2100"
+          style="margin: 0 !important"
+        />
+        <small
+          *ngIf="!isYearValid()"
+          style="color: var(--rojo); font-size: 0.8rem; margin-top: 4px"
+        >
+          Ingrese un año válido de 4 cifras.
+        </small>
+      </div>
+    </div>
+
+    <div class="bg-light border rounded p-3 mb-2">
+      <h6
+        class="text-muted mb-3"
+        style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px"
+      >
+        Parámetros Globales (Solo Lectura)
+      </h6>
+      <div class="row">
+        <div class="col-6">
+          <small class="text-muted d-block">Valor por Hora Actual</small>
+          <span class="fw-bold fs-5" style="color: var(--verde-petroleo)">
+            ${{ globalHourValue }}
+          </span>
+        </div>
+        <div class="col-6">
+          <small class="text-muted d-block">Tope Máx. de Ajuste</small>
+          <span class="fw-bold fs-5" style="color: var(--verde-petroleo)">
+            {{ globalCapPct }}%
+          </span>
+        </div>
+      </div>
+      <small class="text-muted d-block mt-3" style="font-size: 0.8rem">
+        * Estos valores se capturan automáticamente de la configuración del sistema.
+      </small>
+    </div>
+  </div>
+</app-modal>
+
+<app-modal
+  [isOpen]="isRevisionModalOpen"
+  title="Detalle de Liquidación Simulado"
+  size="md"
+  primaryBtnText="Cerrar"
+  [hideSecondaryBtn]="true"
+  primaryBtnPosition="full"
+  (primaryBtnClick)="closeRevisionModal()"
+  (close)="closeRevisionModal()"
+>
+  <div *ngIf="selectedSimulationDetail" class="mt-3">
+
+<div class="p-2 mb-3 bg-light rounded text-center">
+      <span class="text-muted small">Asociado:</span>
+      <strong class="d-block fs-5" style="color: var(--verde-petroleo)">
+        {{ selectedSimulationDetail.associate_full_name || getAssociateName(selectedSimulationDetail.associate_id) }}
+      </strong>
+    </div>
+
+    <ul class="list-group list-group-flush border rounded">
+      <li class="list-group-item d-flex justify-content-between p-3">
+        <span>Retiro de Base Líquido:</span>
+        <strong>${{ selectedSimulationDetail.base_amount }}</strong>
+      </li>
+
+      <li class="list-group-item p-3 bg-light">
+        <span class="fw-bold text-muted small text-uppercase">Conceptos Adicionales</span>
+      </li>
+      <ng-container *ngIf="selectedSimulationDetail.items?.length; else noItems">
+        <li
+          class="list-group-item d-flex justify-content-between p-2 px-3 border-0"
+          *ngFor="let item of selectedSimulationDetail.items"
+        >
+          <span class="text-muted" style="font-size: 0.9rem">
+            {{ item.module_name }} <span *ngIf="item.variant_name">- {{ item.variant_name }}</span>
+          </span>
+          <strong style="color: var(--verde-petroleo)">+${{ item.calculated_value }}</strong>
+        </li>
+      </ng-container>
+      <ng-template #noItems>
+        <li class="list-group-item p-2 px-3 text-muted border-0" style="font-size: 0.9rem">
+          Sin conceptos adicionales
+        </li>
+      </ng-template>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
+      >
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Adicionales:</span>
+        <strong style="color: var(--verde-petroleo)"
+          >+${{ selectedSimulationDetail.additional_amount }}</strong
+        >
+      </li>
+
+      <li class="list-group-item p-3 bg-light mt-1">
+        <span class="fw-bold text-muted small text-uppercase">Descuentos</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between p-2 px-3 border-0">
+        <span class="text-muted" style="font-size: 0.9rem">Ajuste por Exceso de Tope</span>
+        <strong
+          [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
+        >
+          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
+      >
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Descuentos:</span>
+        <strong
+          [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
+        >
+          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-3 mt-2"
+        style="background-color: var(--verde-bg)"
+      >
+        <span><strong style="color: var(--verde-petroleo)">Monto Final a Percibir:</strong></span>
+        <strong style="color: var(--verde-petroleo); font-size: 1.1rem"
+          >${{ selectedSimulationDetail.total_amount }}</strong
+        >
+      </li>
+    </ul>
+  </div>
+</app-modal>

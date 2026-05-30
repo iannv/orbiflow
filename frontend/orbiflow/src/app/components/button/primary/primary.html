@@ -1,0 +1,15 @@
+<!-- Usar en otros componentes:
+ name -> nombre del btn
+ btnImg -> imagen del btn
+ click -> pasarle evento
+-->
+<button
+  type="button"
+  class="btn btn-green"
+  (click)="click()"
+  style="--bs-btn-padding-y: 0.6rem; --bs-btn-padding-x: 1rem; --bs-btn-font-size: 1rem;"
+  [style.height]="height" [style.padding]="padding"
+>
+  <img [src]="btnImg" class="btn-img" />
+  {{ name }}
+</button>

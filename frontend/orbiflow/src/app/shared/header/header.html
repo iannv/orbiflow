@@ -1,0 +1,11 @@
+<nav class="navbar">
+  <div class="container-fluid">
+    <span class="navbar-brand mb-0 h1">{{ roleLabel }}</span>
+    <app-secondary
+      name="Salir"
+      newColor="#1f2933"
+      [btnImg]="btnImg"
+      (click)="logout()"
+    ></app-secondary>
+  </div>
+</nav>

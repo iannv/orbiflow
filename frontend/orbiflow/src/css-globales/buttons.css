@@ -1,0 +1,69 @@
+/* BUTTONS */
+.btn {
+  font-weight: 500;
+  display: flex;
+  align-items: end;
+  gap: 0.4rem;
+  /* padding: .4rem .8rem; */
+}
+
+/* Primary */
+.btn-green {
+  background-color: var(--verde-mate);
+  color: var(--gris-blanco);
+}
+.btn-green:hover {
+  background-color: var(--verde-bosque);
+  color: var(--gris-blanco);
+}
+
+/* Secondary */
+/* Usar la propiedad COLOR en los componentes para cambiar color outline y texto */
+.btn-outline-green {
+  border: 1px solid var(--verde-mate);
+  color: var(--verde-mate);
+}
+.btn-outline-green:hover {
+  border: 1px solid var(--verde-petroleo);
+  color: var(--verde-petroleo);
+}
+
+/* Botones con iconos */
+/* Usar la propiedad BtnImg en los componentes: 'assets/nombreImg' */
+.btn-img {
+  width: 25px;
+}
+
+/* Botones de acción: editar/eliminar */
+.btn-action {
+  background-color: transparent;
+  border: 1px solid var(--gris-claro);
+}
+.btn-action:hover {
+  border: 1px solid var(--gris-oscuro);
+}
+
+/* ############################################################################# */
+/* ACCORDION */
+/* ############################################################################# */
+.accordion-item .accordion-header button {
+  box-shadow: none;
+}
+
+.accordion-button.collapsed {
+  background-color: white !important;
+  color: var(--verde-azulado) !important;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: var(--verde-mate);
+  color: var(--gris-blanco);
+}
+
+.accordion-button::after {
+  filter: brightness(0);
+}
+
+.accordion-button:not(.collapsed)::after {
+  filter: brightness(0) invert(1);
+}

@@ -1,0 +1,34 @@
+label {
+  font-size: 14px;
+  text-align: left;
+}
+
+input {
+  border: 1px solid var(--gris-claro);
+  border-radius: 4px;
+  padding: 0.2rem;
+  margin: 0.5rem 0 1rem 0;
+  color: var(--verde-azulado);
+  text-indent: 10px;
+  outline: none;
+  width: 100%;
+}
+
+input:focus, textarea:focus {
+  border: 1px solid var(--gris-oscuro) !important;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: var(--gris-claro);
+  box-shadow: none;
+}
+
+.form-select-bg:hover {
+  border-color: var(--gris-oscuro);
+  box-shadow: none;
+}
+
+textarea {
+  resize: none;
+}
+

@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="btn btn-outline-green"
+  (click)="click()"
+  [ngStyle]="{'border-color': newColor, 'color': newColor}"
+  style="--bs-btn-padding-y: 0.6rem; --bs-btn-padding-x: 1rem; --bs-btn-font-size: 1rem"
+>
+<img [src]="btnImg" class="btn-img">
+  {{ name }}
+</button>

@@ -1,0 +1,4 @@
+<select class="form-select" [value]="value" (change)="setValue($any($event.target).value)" aria-label="Default select example">
+  <option selected>Seleccione un {{name}}</option>
+  <ng-content></ng-content>
+</select>

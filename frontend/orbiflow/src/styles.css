@@ -1,1 +1,85 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap');
+main {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
+
+:root {
+  /* Paleta de colores */
+  --blanco: #ffffff;
+  --negro: #000000;
+
+  --gris-blanco: #f4f6f5;
+  --gris-claro: #bec4cb;
+  --gris-oscuro: #575f66;
+  --verde-mate: #4e7c74;
+  --verde-bosque: #34554f;
+  --verde-petroleo: #2b4540;
+  --verde-azulado: #1f2933;
+
+  --verde-bg: #dbfce7;
+  --verde-selva: #2e7d32;
+
+  --azul-bg: #dbeafe;
+  --azul: #1565c0;
+
+  --rojo-bg: #ffe2e2;
+  --rojo: #c62828;
+
+  --ambar: #d49c02;
+  --ambar-bg: #fff6dc;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Google Sans Flex', sans-serif;
+  background-color: var(--gris-blanco);
+}
+
+/* Clases para h1 y h2 */
+.h1-title {
+  font-size: 2.25rem;
+}
+.h2-subtitle {
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+/* Clases para font-weight */
+.fw200 {
+  font-weight: 200;
+}
+.fw300 {
+  font-weight: 300;
+}
+.fw400 {
+  font-weight: 400;
+}
+.fw500 {
+  font-weight: 500;
+}
+.fw600 {
+  font-weight: 600;
+}
+.fw700 {
+  font-weight: 700;
+}
+.fw800 {
+  font-weight: 800;
+}
+.fw900 {
+  font-weight: 900;
+}
+
+/* QUERIES PARA UTILIZAR (MOBILE FIRST) */
+
+/* @media (min-width: 480px) { } */
+
+/* @media (min-width: 768px) { } */
+
+/* @media (min-width: 1024px) { } */
+
+/* @media (min-width: 1280px) { } */

@@ -3,13 +3,16 @@ __pycache__/
 *$py.class
 *.pyc
 db.sqlite3
+staticfiles/
 
 .venv
 venv/
 env/
-.env/
+.env
+.env.*
 .venv/
 /bin
+myenv/
 
 .angular/
 dist/

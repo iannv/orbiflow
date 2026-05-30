@@ -1,0 +1,24 @@
+<div class="sidebar" [ngClass]="{ expanded: isExpanded }">
+  <div class="header">
+    <img id="menu" class="" (click)="handleSidebarToggle()" src="assets/menu.png" alt="" />
+  </div>
+
+  @if (isExpanded) {
+    <div class="logo-container">
+      <img id="logo" src="assets/logo.png" alt="Orbiflow" />
+    </div>
+  }
+
+  <div class="div-content">
+    @for (item of filteredMenu; track $index) {
+      <a [routerLink]="item.route" class="link" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <div class="content">
+          <div class="icon">
+            <img [src]="item.iconName" alt="" />
+          </div>
+          <div class="title">{{ item.name }}</div>
+        </div>
+      </a>
+    }
+  </div>
+</div>

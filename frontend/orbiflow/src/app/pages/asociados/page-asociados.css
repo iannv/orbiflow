@@ -1,0 +1,467 @@
+/* ── Encabezado de página ── */
+#section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#div-btn {
+  margin-bottom: 1.5rem;
+}
+
+/* ── Filtros y búsqueda ── */
+#section-filters {
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--blanco);
+  border: 1px solid var(--gris-claro);
+  border-radius: 12px;
+  padding: 0 0.85rem;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  height: 2.75rem;
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.55;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23575f66' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' stroke-width='2'/%3E%3Cpath stroke-width='2' d='m20 20-3.5-3.5'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  /* height auto para que el flex container controle el centrado */
+  height: auto;
+  align-self: center;
+}
+
+.btn-clear {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-clear img {
+  width: 14px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--gris-oscuro);
+}
+
+.filter-label img {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 8px;
+  background: var(--blanco);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--verde-mate);
+  cursor: pointer;
+}
+
+.btn-filter img {
+  width: 16px;
+}
+
+.btn-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--verde-mate);
+  cursor: pointer;
+}
+
+.btn-sort img {
+  width: 14px;
+}
+
+/* ── Tarjetas de asociados ── */
+#section-associates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Reducir padding interno de la tarjeta */
+#section-associates :ng-deep .card {
+  padding: 0.6rem 0.85rem !important;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Cuerpo de la tarjeta: 4 filas apiladas */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+}
+
+/* Fila horizontal de datos */
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 2rem;
+  align-items: center;
+}
+
+.card-datum {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--gris-oscuro);
+  white-space: nowrap;
+}
+
+.datum-img {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.65;
+}
+
+/* Reducir margen del divisor (heredado de profile.css) */
+.divisor {
+  margin: 0.4rem 0 !important;
+}
+
+/* ── Pie de tarjeta: módulos + botón ── */
+.card-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+/* Botón Gestionar módulos: alineado a la derecha, texto en negrita */
+.card-foot app-secondary {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+:host .card-foot ::ng-deep button.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.85rem !important;
+}
+
+/* Oculta la imagen vacía que corre el texto */
+:host .card-foot ::ng-deep button.btn .btn-img {
+  display: none !important;
+}
+
+/* ── Tags de módulos asignados ── */
+.modules-title {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.modules-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.module-tag {
+  background: var(--gris-blanco);
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--gris-oscuro);
+}
+
+/* ── Paginación ── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--gris-claro);
+  background: var(--blanco);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.page-btn.active {
+  background: var(--verde-mate);
+  color: var(--blanco);
+  border-color: var(--verde-mate);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn img {
+  width: 14px;
+}
+
+.page-arrow-prev {
+  transform: rotate(180deg);
+}
+
+.page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+  color: var(--verde-mate);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Errores y estados generales ── */
+.text-danger {
+  color: var(--rojo);
+}
+
+/* ── Modal CU-05: campos del formulario ── */
+.modal-fields-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.modal-hint {
+  font-size: 0.9rem;
+  color: var(--verde-mate);
+  opacity: 0.8;
+  margin: 0.25rem 0;
+}
+
+.modal-error {
+  margin-top: 1rem;
+  color: var(--rojo);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ── Modal CU-06: Módulos con variantes alineadas al costado ── */
+
+.modules-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Card de cada módulo */
+.module-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  background: var(--blanco);
+}
+
+.module-row.module-inactive {
+  opacity: 0.5;
+  background: var(--gris-blanco);
+}
+
+/* Toggle switch */
+.module-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.module-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gris-claro);
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-track:before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.module-toggle input:checked + .toggle-track {
+  background-color: var(--verde-mate);
+}
+
+.module-toggle input:checked + .toggle-track:before {
+  transform: translateX(20px);
+}
+
+.module-toggle input:disabled + .toggle-track {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Info del módulo (título + descripción) */
+.module-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.module-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--verde-petroleo);
+  line-height: 1.25;
+}
+
+.module-desc {
+  font-size: 0.75rem;
+  color: var(--verde-mate);
+  line-height: 1.25;
+}
+
+/* Variantes alineadas al costado */
+.module-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.option-item input[type='radio'],
+.option-item input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--verde-mate);
+  cursor: pointer;
+  margin: 0;
+}
+
+.option-label {
+  color: var(--verde-petroleo);
+}
+
+/* ── Responsive ── */
+@media (min-width: 768px) {
+  .card-foot {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (min-width: 800px) {
+  #section-title {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #div-btn {
+    margin-bottom: 0;
+  }
+}

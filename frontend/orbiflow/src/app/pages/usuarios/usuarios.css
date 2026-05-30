@@ -1,0 +1,275 @@
+.error {
+  color: var(--rojo);
+}
+
+.warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #d9a300;
+  background: #fff7e0;
+  color: #6b5300;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.optional {
+  font-size: 12px;
+  color: var(--gris-oscuro);
+}
+
+#form-div {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-div div {
+  width: 100%;
+}
+
+.form-div-check {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.form-div-check input{
+  width: 4%;
+  margin: 0;
+}
+
+.form-div-check--locked {
+  opacity: 0.85;
+}
+
+.checkbox-locked {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.switch-activo {
+  position: absolute;
+  right: 10rem;
+  top: 13.1rem;
+}
+
+#section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#div-btn {
+  margin-bottom: 1.5rem;
+}
+
+.section-users-div {
+  display: flex;
+  justify-content: space-between;
+}
+
+#section-users .div-user-chip div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.div-user-chip p {
+  margin: 0 0 0.2rem 0;
+}
+
+#section-users app-base-card {
+  margin-top: -1rem;
+}
+
+#section-users app-base-card app-base-card {
+  /* margin-top: -1rem; */
+}
+
+#section-users app-base-card app-base-card .div-user-chip {
+  display: flex;
+  flex-direction: column;
+  /* gap: 1rem; */
+}
+
+#section-users app-base-card app-base-card .div-actions {
+  display: flex;
+  /* flex-direction: col; */
+  gap: 0.5rem;
+}
+
+#imgPunto {
+  display: none;
+}
+
+#section-permisos-rol {
+  margin-top: 1rem;
+}
+
+#section-permisos-rol div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+/* Paginator */
+.page-link {
+  color: var(--verde-mate);
+  box-shadow: none;
+}
+.active > .page-link,
+.page-link.active {
+  background-color: var(--verde-mate);
+  border-color: var(--verde-mate);
+  color: var(--gris-blanco);
+}
+#nav-paginator {
+  margin-top: 1.5rem;
+  margin-bottom: -10px;
+}
+
+/* Búsqueda */
+#section-filters {
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--gris-claro);
+  border-radius: 12px;
+  padding: 0 0.85rem;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  height: 2.75rem;
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.55;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%23575f66' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' stroke-width='2'/%3E%3Cpath stroke-width='2' d='m20 20-3.5-3.5'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  height: auto;
+  align-self: center;
+}
+
+.btn-clear {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-clear img {
+  width: 14px;
+}
+
+/* Filtro */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: last baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.filter-row div {
+  display: flex;
+  align-items: last baseline;
+  gap: 0.5rem;
+  color: var(--gris-oscuro);
+  flex-wrap: wrap;
+}
+.filter-row p {
+  margin: 0;
+  font-size: 12px;
+  margin-left: -0.4rem;
+}
+
+.filter-row img {
+  width: 16px;
+  display: flex;
+  align-self: first baseline;
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--gris-claro);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--verde-mate);
+  cursor: pointer;
+}
+
+app-chip:active {
+}
+
+/* QUERIES */
+
+/* @media (min-width: 480px) { } */
+
+@media (min-width: 768px) {
+  #section-users .div-user-chip div {
+    /* display: flex; */
+    flex-direction: row;
+    /* gap: 0.5rem; */
+    align-items: last baseline;
+  }
+  #imgPunto {
+    display: inline;
+    width: 4px;
+    align-self: center;
+  }
+}
+
+@media (min-width: 800px) {
+  #section-title {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #div-btn {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  #section-users app-base-card app-base-card .div-actions {
+    gap: 1rem;
+  }
+}
+
+/* @media (min-width: 1280px) { } */

@@ -1,0 +1,247 @@
+@if (mostrarToast) {
+  <app-toast [title]="toastTitle" [subtitle]="toastSubtitle"></app-toast>
+}
+
+<div class="container mt-4">
+  <h1 class="h1-title">Proceso Central de Liquidaciones</h1>
+  <h2 class="h2-subtitle mb-4">Consolidación inmutable de recibos de haberes</h2>
+
+  <div class="card p-4 mb-4 shadow-sm border-0">
+    <div class="row align-items-end">
+      <div class="col-md-8 position-relative">
+        <label class="form-label fw-bold"
+          >Liquidación del Mes: Seleccione un periodo 'En Revisión'</label
+        >
+
+        <div class="d-flex gap-3 align-items-center mt-2">
+          <select class="form-select form-select-bg w-50 m-0" [(ngModel)]="selectedPeriodId">
+            <option [ngValue]="null" disabled>Seleccione un periodo...</option>
+            <option *ngFor="let p of reviewedPeriods" [value]="p.id">
+              {{ p.month }}/{{ p.year }}
+            </option>
+          </select>
+
+          <button
+            class="btn btn-outline-primary m-0"
+            (click)="onLoadData()"
+            [disabled]="!selectedPeriodId"
+          >
+            Cargar Datos
+          </button>
+        </div>
+
+        <small
+          class="text-danger d-block mt-2 position-absolute"
+          *ngIf="reviewedPeriods.length === 0"
+          style="bottom: -22px; left: 12px"
+        >
+          No hay periodos en estado de revisión listos para cerrar.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="summary" class="mt-4">
+    <h4 class="fw600 text-muted mb-3" style="font-size: 1.1rem">Resumen de Totales Mensuales</h4>
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card p-3 shadow-sm border-0 bg-white">
+          <small class="text-muted d-block mb-1">Retiro Base Total</small>
+          <h2 class="fw600 m-0" style="color: var(--verde-petroleo)">
+            ${{ summary.totals.base_amount }}
+          </h2>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card p-3 shadow-sm border-0 bg-white">
+          <small class="text-muted d-block mb-1">Adicionales Aplicados</small>
+          <h2 class="fw600 m-0" style="color: var(--verde-petroleo)">
+            ${{ summary.totals.additional_amount }}
+          </h2>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div
+          class="card p-3 shadow-sm border-0"
+          [ngClass]="{
+            'bg-danger text-white': +summary.totals.cap_adjustment > 0,
+            'bg-white': +summary.totals.cap_adjustment === 0,
+          }"
+        >
+          <small
+            [ngClass]="{
+              'text-white-50': +summary.totals.cap_adjustment > 0,
+              'text-muted': +summary.totals.cap_adjustment === 0,
+            }"
+            class="d-block mb-1"
+          >
+            Recortes por Tope (30%)
+          </small>
+          <h2
+            class="fw600 m-0"
+            *ngIf="+summary.totals.cap_adjustment === 0"
+            style="color: var(--verde-selva)"
+          >
+            Sin recortes
+          </h2>
+          <h2 class="fw600 m-0" *ngIf="+summary.totals.cap_adjustment > 0">
+            -${{ summary.totals.cap_adjustment }}
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0 p-4 mb-4 bg-white">
+      <h5 class="fw600 mb-3" style="color: var(--verde-petroleo)">
+        Auditoría de Haberes por Asociado
+      </h5>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Asociado</th>
+              <th class="text-end">Retiro Base</th>
+              <th class="text-end">Adicionales</th>
+              <th class="text-end">Recorte Tope</th>
+              <th class="text-end">Total Estimado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of associatesCalculations; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <strong>{{ getAssociateName(item.associate_id) }}</strong>
+              </td>
+
+              <td class="text-end">${{ item.base_amount }}</td>
+              <td class="text-end">${{ item.additional_amount }}</td>
+              <td class="text-end text-danger">
+                {{ +item.cap_adjustment > 0 ? '-$' + item.cap_adjustment : '--' }}
+              </td>
+              <td class="text-end fw-bold" style="color: var(--verde-petroleo)">
+                ${{ item.total_amount }}
+              </td>
+
+              <td class="text-center">
+                <button
+                  class="btn btn-sm btn-link text-decoration-none p-0"
+                  (click)="openDetailsModal(item)"
+                >
+                  Ver desglose
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 mb-5">
+      <button class="btn btn-success px-4" (click)="openConfirmModal()">
+        Confirmar Cierre Definitivo
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-modal
+  [isOpen]="isConfirmModalOpen"
+  title="¿Confirmar Cierre Definitivo del Periodo?"
+  subtitle="Esta acción impactará la base de datos de manera irreversible, generando los recibos de haberes y guardando las auditorías."
+  size="md"
+  primaryBtnText="Proceder con el Cierre"
+  (close)="closeConfirmModal()"
+  (primaryBtnClick)="onConfirmClose()"
+  (secondaryBtnClick)="closeConfirmModal()"
+></app-modal>
+
+<app-modal
+  [isOpen]="isDetailsModalOpen"
+  title="Desglose Detallado de Haberes"
+  size="md"
+  primaryBtnText="Cerrar"
+  [hideSecondaryBtn]="true"
+  primaryBtnPosition="full"
+  (primaryBtnClick)="closeDetailsModal()"
+  (close)="closeDetailsModal()"
+>
+  <div *ngIf="selectedDetail" class="mt-3">
+    <div class="p-2 mb-3 bg-light rounded text-center">
+      <span class="text-muted small">Asociado:</span>
+      <strong class="d-block fs-5" style="color: var(--verde-petroleo)">
+        {{ getAssociateName(selectedDetail.associate_id) }}
+      </strong>
+    </div>
+
+    <ul class="list-group list-group-flush border rounded">
+      <li class="list-group-item d-flex justify-content-between p-3">
+        <span>Retiro de Base Líquido:</span>
+        <strong>${{ selectedDetail.base_amount }}</strong>
+      </li>
+
+      <li class="list-group-item p-3 bg-light">
+        <span class="fw-bold text-muted small text-uppercase">Conceptos Adicionales</span>
+      </li>
+      <ng-container *ngIf="selectedDetail.items?.length; else noItems">
+        <li
+          class="list-group-item d-flex justify-content-between p-2 px-3 border-0"
+          *ngFor="let item of selectedDetail.items"
+        >
+          <span class="text-muted" style="font-size: 0.9rem">
+            {{ item.module_name }} <span *ngIf="item.variant_name">- {{ item.variant_name }}</span>
+          </span>
+          <strong style="color: var(--verde-petroleo)">+${{ item.calculated_value }}</strong>
+        </li>
+      </ng-container>
+      <ng-template #noItems>
+        <li class="list-group-item p-2 px-3 text-muted border-0" style="font-size: 0.9rem">
+          Sin conceptos adicionales
+        </li>
+      </ng-template>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
+      >
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Adicionales:</span>
+        <strong style="color: var(--verde-petroleo)"
+          >+${{ selectedDetail.additional_amount }}</strong
+        >
+      </li>
+
+      <li class="list-group-item p-3 bg-light mt-1">
+        <span class="fw-bold text-muted small text-uppercase">Descuentos</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between p-2 px-3 border-0">
+        <span class="text-muted" style="font-size: 0.9rem">Ajuste por Exceso de Tope</span>
+        <strong [ngClass]="+selectedDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'">
+          -${{ selectedDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-2 px-3 border-top"
+        style="background-color: #fcfcfc"
+      >
+        <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Descuentos:</span>
+        <strong [ngClass]="+selectedDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'">
+          -${{ selectedDetail.cap_adjustment || '0.00' }}
+        </strong>
+      </li>
+
+      <li
+        class="list-group-item d-flex justify-content-between p-3 mt-2"
+        style="background-color: var(--verde-bg)"
+      >
+        <span><strong style="color: var(--verde-petroleo)">Monto Final a Percibir:</strong></span>
+        <strong style="color: var(--verde-petroleo); font-size: 1.1rem"
+          >${{ selectedDetail.total_amount }}</strong
+        >
+      </li>
+    </ul>
+  </div>
+</app-modal>

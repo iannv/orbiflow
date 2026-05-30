@@ -1,0 +1,17 @@
+@if (showShell()) {
+  <app-header></app-header>
+
+  <!-- <app-sidenav></app-sidenav> -->
+
+  <app-sidenav
+    [isExpanded]="sidebarExpanded"
+    (toggleSidebar)="sidebarExpanded = !sidebarExpanded"
+  ></app-sidenav>
+
+
+  <div class="content" [ngClass]="{ sidebarExpanded: sidebarExpanded }">
+    <router-outlet></router-outlet>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

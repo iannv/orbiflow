@@ -1,0 +1,10 @@
+.badge {
+    font-family: 'Google Sans Flex', sans-serif !important;
+    font-weight: 500;
+}
+
+.badge-active {
+    background-color: var(--verde-mate) !important;
+    color: var(--gris-blanco) !important;
+    border: none !important;
+}

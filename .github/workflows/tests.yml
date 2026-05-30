@@ -1,0 +1,53 @@
+name: OrbiFlow CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create temporary .env files for CI
+        run: |
+          echo "POSTGRES_DB=orbiflow_db" >> .env.local
+          echo "POSTGRES_USER=admin" >> .env.local
+          echo "POSTGRES_PASSWORD=admin_pass" >> .env.local
+          echo "POSTGRES_HOST=db" >> .env.local
+          echo "POSTGRES_PORT=5432" >> .env.local
+          echo "DJANGO_SECRET_KEY=ci_test_key_placeholder" >> .env.local
+          echo "DJANGO_DEBUG=true" >> .env.local
+          cp .env.local .env
+
+      - name: Build and Run Tests
+        run: |
+          # Use the --profile flag to include the db service
+          docker compose --profile local build
+          docker compose --profile local up -d db
+          
+          # Add a robust wait for the DB to be ready
+          echo "Waiting for DB to be healthy..."
+          status="starting"
+          for i in {1..10}; do
+            status=$(docker inspect -f '{{.State.Health.Status}}' orbiflow-db-1 2>/dev/null || echo "starting")
+            if [ "$status" == "healthy" ]; then
+              echo "Database is healthy!"
+              break
+            fi
+            echo "Waiting... (current status: $status)"
+            sleep 5
+          done
+
+          # Fail explicitly if the DB never became healthy (the loop above completes silently otherwise).
+          if [ "$status" != "healthy" ]; then
+            echo "::error::Database did not become healthy after 50s (last status: $status)"
+            docker compose --profile local logs db
+            exit 1
+          fi
+
+          # Now run the tests
+          make tests
