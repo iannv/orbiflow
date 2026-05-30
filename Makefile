@@ -1,83 +1,69 @@
-.PHONY: help up-local build-local up-cloud build-cloud stop down clean logs tests makemigrations migrate superuser db-shell shell data-diagram
+.PHONY: help build-local build-sandbox build-prod up-local up-sandbox up-prod \
+        stop down clean logs tests makemigrations migrate superuser shell data-diagram
 
-# Ayuda: Muestra los comandos disponibles
+# El compose interpola ${ENV_FILE:-.env.local} para el servicio backend.
+# Cada target de abajo sobrescribe ENV_FILE; se exporta para llegar a docker compose.
+export ENV_FILE ?= .env.local
+
 help:
 	@echo "Comandos disponibles en OrbiFlow:"
-	@echo "  make build-local      Local (Docker DB)"
-	@echo "  make build-sandbox    Nube (Rama Sandbox Neon)"
-	@echo "  make build-prod       Nube (Rama Producción Neon)"
-	@echo "  make up-local         Levanta app + base de datos LOCAL (sin buildear)"
-	@echo "  make up-sandbox       Levanta app conectada a Nube (Rama Sandbox)"
-	@echo "  make up-prod          Levanta app conectada a Nube (Rama Producción)"
-	@echo "  make stop             Detiene los contenedores"
-	@echo "  make down             Baja los servicios y elimina contenedores"
-	@echo "  make clean            LIMPIEZA TOTAL: Borra contenedores y VOLÚMENES"
-	@echo "  make logs             Muestra logs del backend"
-	@echo "  make tests            Ejecuta tests de Backend y Frontend"
-	@echo "  make makemigrations   Genera migraciones en el entorno activo"
+	@echo "  make build-local      Construye y levanta backend+frontend con DB Docker (.env.local)"
+	@echo "  make build-sandbox    Construye y levanta backend+frontend contra Neon Sandbox (.env.sandbox)"
+	@echo "  make build-prod       Construye y levanta backend+frontend contra Neon Producción (.env.prod)"
+	@echo "  make up-local         Igual que build-local pero sin reconstruir imágenes"
+	@echo "  make up-sandbox       Igual que build-sandbox pero sin reconstruir"
+	@echo "  make up-prod          Igual que build-prod pero sin reconstruir"
+	@echo "  make stop             Detiene contenedores"
+	@echo "  make down             Baja servicios y elimina contenedores"
+	@echo "  make clean            LIMPIEZA TOTAL: contenedores + volúmenes"
+	@echo "  make logs             Logs en vivo del backend"
 	@echo "  make migrate          Aplica migraciones en el entorno activo"
-	@echo "  make superuser        Crea administrador en el backend"
-	@echo "  make shell            Entrar al shell de Django"
-	@echo "  make data-diagram     Genera diagrama de clases"
+	@echo "  make makemigrations   Genera migraciones"
+	@echo "  make superuser        Crea administrador"
+	@echo "  make shell            Shell de Django"
+	@echo "  make tests            Tests de backend y frontend (siempre con .env.local)"
+	@echo "  make data-diagram     Diagrama de clases"
 
-# Gestión de contenedores con perfiles
-up-local:
-	cp .env.local .env
-	docker compose --profile local up -d
-
+# --- Build + up ---
+build-local: ENV_FILE=.env.local
 build-local:
-	cp .env.local .env
 	docker compose --profile local up --build -d
 
-up-sandbox:
-	cp .env.sandbox .env
-	docker compose --profile sandbox up -d
-
-up-prod:
-	cp .env.prod .env
-	docker compose --profile prod up -d
-
+build-sandbox: ENV_FILE=.env.sandbox
 build-sandbox:
-	cp .env.sandbox .env
-	docker compose --profile sandbox up --build -d
+	docker compose up --build -d
 
+build-prod: ENV_FILE=.env.prod
 build-prod:
-	cp .env.prod .env
-	docker compose --profile prod up --build -d
+	docker compose up --build -d
 
+# --- Up (sin reconstruir) ---
+up-local: ENV_FILE=.env.local
+up-local:
+	docker compose --profile local up -d
+
+up-sandbox: ENV_FILE=.env.sandbox
+up-sandbox:
+	docker compose up -d
+
+up-prod: ENV_FILE=.env.prod
+up-prod:
+	docker compose up -d
+
+# --- Ciclo de vida ---
 stop:
 	docker compose --profile local stop
-	docker compose stop
 
 down:
 	docker compose --profile local down
-	docker compose down
 
 clean:
 	docker compose --profile local down -v
-	docker compose down -v
 
 logs:
 	docker compose logs -f backend
 
-# Calidad y Testing
-tests:
-	@echo "--- 1. Preparando entorno local para tests ---"
-	cp .env.local .env
-	# Aseguramos que la base de datos esté levantada
-	docker compose --profile local up -d db
-	@echo "--- 2. Corriendo tests del Backend ---"
-	docker compose run --rm backend python manage.py test --keepdb
-	@echo "--- 3. Corriendo tests del Frontend ---"
-	docker compose run --rm frontend npx ng test
-
-test-nuke:
-	@echo "--- DESTRUCCIÓN TOTAL Y RECONSTRUCCIÓN ---"
-	docker compose --profile local down -v
-	make build-local
-	make tests
-
-# Base de Datos y Modelos
+# --- Tareas de Django (usan el contenedor backend y su env activo) ---
 makemigrations:
 	docker compose run --rm backend python manage.py makemigrations orbiflow
 
@@ -87,9 +73,15 @@ migrate:
 superuser:
 	docker compose exec backend python manage.py createsuperuser
 
-# Entrar al shell de Django
 shell:
 	docker compose exec backend python manage.py shell
 
 data-diagram:
 	docker compose exec backend python manage.py graph_models orbiflow -g -o orbiflow_core.png
+
+# --- Tests siempre con DB local ---
+tests: ENV_FILE=.env.local
+tests:
+	docker compose --profile local up -d db
+	docker compose run --rm backend python manage.py test --keepdb
+	docker compose run --rm frontend npx ng test --watch=false

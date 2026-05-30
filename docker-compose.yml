@@ -1,8 +1,9 @@
 services:
   db:
+    profiles: ["local"]
     image: postgres:16
     env_file:
-      - .env
+      - .env.local
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -18,15 +19,10 @@ services:
       context: ./backend/coop
     volumes:
       - ./backend/coop:/app
-    # Uses service_healthy to wait for the database to be ready before starting
-    depends_on:
-      db:
-        condition: service_healthy
-    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ${ENV_FILE:-.env.local}
 
   frontend:
     build:
