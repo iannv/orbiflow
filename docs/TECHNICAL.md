@@ -267,20 +267,33 @@ Todos los montos se manejan como `Decimal` y se cuantizan a 2 decimales con `ROU
 ### Flujo end-to-end
 
 ```text
-1. Login (JWT)               POST /api/auth/login/
-2. Configuración global      POST /api/config/             { hour_value, cap_pct }
-3. Módulos y variantes       POST /api/modules/  + POST /api/variants/
-                             (alternativa bulk: POST /api/modules/bulk/)
-4. Alta de Asociados         POST /api/users/  + POST /api/associates/
-5. Asignar variantes         POST /api/associate-variants/
-6. Crear periodo             POST /api/liquidations/         { year, month }
-7. Cargar horas (masivo)     POST /api/liquidations/{id}/upload-hours/
-                             { "entries": [{ "associate_id": 1, "hours_worked": 160 }] }
-8a. Dry-run                  POST /api/liquidations/{id}/calculate/  { "test_mode": true }
-8b. Ejecución definitiva     POST /api/liquidations/{id}/calculate/  { "test_mode": false }
-9. Resumen / recibos         GET  /api/liquidations/{id}/summary/
-                             GET  /api/retirements/?liquidation={id}
+1.  Login (JWT)               POST /api/auth/login/
+2.  Configuración global      POST /api/config/             { hour_value, cap_pct }
+3.  Módulos y variantes       POST /api/modules/  + POST /api/variants/
+                              (alternativa bulk: POST /api/modules/bulk/)
+4.  Alta de Asociados         POST /api/users/  + POST /api/associates/
+5.  Asignar variantes         POST /api/associate-variants/
+6.  Crear periodo             POST /api/liquidations/         { year, month }
+
+--- Pre-liquidación (pantalla de revisión) ---
+
+7.  Simular (en memoria)      POST /api/liquidations/{id}/simulate/
+                              { "entries": [{ "associate_id": 1, "hours_worked": 160 }] }
+                              → devuelve desglose sin tocar la DB; puede repetirse N veces.
+8.  Aprobar revisión          POST /api/liquidations/{id}/upload-hours/
+                              { "entries": [...] }              ← persiste horas en DB
+                              PATCH /api/liquidations/{id}/     { "status": "reviewed" }
+
+--- Cierre de liquidación ---
+
+9.  Ejecución definitiva      POST /api/liquidations/{id}/calculate/  { "test_mode": false }
+                              → persiste RetirementDetail + LiquidationItem; registra AuditLog.
+                              PATCH /api/liquidations/{id}/            { "status": "closed" }
+10. Resumen / recibos         GET  /api/liquidations/{id}/summary/
+                              GET  /api/retirements/?liquidation={id}
 ```
+
+> **Nota:** `/simulate/` recibe las horas directamente en el payload y no requiere haber llamado a `upload-hours/` antes. Los endpoints `/upload-hours/` y `/calculate/` están bloqueados cuando el periodo está en estado `closed`; `/simulate/` también.
 
 ---
 
