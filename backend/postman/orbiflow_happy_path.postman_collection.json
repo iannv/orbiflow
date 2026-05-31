@@ -338,51 +338,96 @@
 			},
 			"response": []
 		},
-		{
-			"name": "8. Carga Masiva de Horas",
-			"event": [
+	{
+		"name": "8. Simulación en Memoria",
+		"event": [
+			{
+				"listen": "test",
+				"script": {
+					"type": "text/javascript",
+					"exec": [
+						"pm.test('Simulación OK', () => pm.response.to.have.status(200));",
+						"const json = pm.response.json();",
+						"pm.test('Es dry-run', () => pm.expect(json.test_mode).to.eql(true));",
+						"pm.test('Devuelve al menos 1 recibo', () => pm.expect(json.retirements_count).to.be.at.least(1));",
+						"pm.test('Montos presentes', () => pm.expect(json.retirements[0]).to.have.property('total_amount'));"
+					]
+				}
+			}
+		],
+		"request": {
+			"method": "POST",
+			"header": [
 				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
-							"const json = pm.response.json();",
-							"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));"
-						]
-					}
+					"key": "Content-Type",
+					"value": "application/json"
 				}
 			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/liquidations/{{period_id}}/upload-hours/",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"liquidations",
-						"{{period_id}}",
-						"upload-hours",
-						""
-					]
-				},
-				"description": "Sube las horas trabajadas del mes para todos los asociados (acepta lote completo)."
+			"body": {
+				"mode": "raw",
+				"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
 			},
-			"response": []
+			"url": {
+				"raw": "{{base_url}}/liquidations/{{period_id}}/simulate/",
+				"host": [
+					"{{base_url}}"
+				],
+				"path": [
+					"liquidations",
+					"{{period_id}}",
+					"simulate",
+					""
+				]
+			},
+			"description": "Simula el cálculo en memoria sin guardar nada en la base. Llamar antes de aprobar la revisión para previsualizar los montos."
 		},
-		{
-			"name": "9. Ejecutar Motor (definitivo)",
+		"response": []
+	},
+	{
+		"name": "9. Carga Masiva de Horas",
+		"event": [
+			{
+				"listen": "test",
+				"script": {
+					"type": "text/javascript",
+					"exec": [
+						"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
+						"const json = pm.response.json();",
+						"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));"
+					]
+				}
+			}
+		],
+		"request": {
+			"method": "POST",
+			"header": [
+				{
+					"key": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"body": {
+				"mode": "raw",
+				"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
+			},
+			"url": {
+				"raw": "{{base_url}}/liquidations/{{period_id}}/upload-hours/",
+				"host": [
+					"{{base_url}}"
+				],
+				"path": [
+					"liquidations",
+					"{{period_id}}",
+					"upload-hours",
+					""
+				]
+			},
+			"description": "Persiste las horas trabajadas en la base de datos. Llamar una vez confirmada la revisión."
+		},
+		"response": []
+	},
+	{
+		"name": "10. Ejecutar Motor (definitivo)",
 			"event": [
 				{
 					"listen": "test",
@@ -425,8 +470,8 @@
 			},
 			"response": []
 		},
-		{
-			"name": "10. Resumen / Recibo del Periodo",
+	{
+		"name": "11. Resumen / Recibo del Periodo",
 			"event": [
 				{
 					"listen": "test",

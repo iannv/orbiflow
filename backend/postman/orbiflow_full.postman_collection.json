@@ -1272,6 +1272,51 @@
 					"response": []
 				},
 				{
+					"name": "Simular Liquidación (sin persistir)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entries\": [\n        {\"associate_id\": 1, \"hours_worked\": 160}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/simulate/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"simulate",
+								""
+							]
+						},
+						"description": "Simulación en memoria: calcula montos para los asociados enviados en el payload sin tocar la base de datos. No requiere haber llamado a upload-hours/ previamente."
+					},
+					"response": []
+				},
+				{
 					"name": "Ejecutar Motor (dry-run)",
 					"request": {
 						"auth": {
