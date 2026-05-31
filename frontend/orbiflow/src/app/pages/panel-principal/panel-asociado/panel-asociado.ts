@@ -6,15 +6,16 @@ import { AssociateService } from '../../../services/associate-service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { formatCurrency } from '../../../shared/utils/formatCurrency';
-import { LiquidationPeriod, LiquidationSummary } from '../../../interfaces/Liquidation';
+import { LiquidationPeriod } from '../../../interfaces/Liquidation';
 import { Retirement } from '../../../interfaces/Retirement';
 import { RetirementService } from '../../../services/retirement-service';
-import { User } from '../../../interfaces/User';
-import { last } from 'rxjs';
+import { Chip } from '../../../components/chip/chip';
+import { Associate } from '../../../interfaces/Associate';
+import { formatDate } from '../../../shared/utils/formatDate';
 
 @Component({
   selector: 'app-panel-asociado',
-  imports: [BaseCard, RouterLink],
+  imports: [BaseCard, RouterLink, Chip],
   templateUrl: './panel-asociado.html',
   styleUrl: './panel-asociado.css',
 })
@@ -25,11 +26,13 @@ export class PanelAsociado {
 
   totalHoursWorked: number = 0;
   period: any | string = 'Sin registro';
+  currentPeriod: any;
 
-  seniority: number = 0;
-  entryDate: string = 'Sin registro';
+  seniorityYear: number = 0;
+  seniorityMonth: number = 0;
+  entryDate: string = '';
 
-  periodStatus: number = 0;
+  periodStatus: LiquidationPeriod | string = 'Desconocido';
 
   role = RolEnum;
 
@@ -42,9 +45,27 @@ export class PanelAsociado {
   ) {}
 
   ngOnInit() {
+    const user = this.authService.currentUser();
     this.getSeniority();
-    this.getLastRetirement(1);
+    this.getLastRetirement(user!.id);
+
+    this.getPeriodStatus();
   }
+
+  months = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ];
 
   // Último retiro
   getLastRetirement(userId: number) {
@@ -56,23 +77,8 @@ export class PanelAsociado {
         const liquidation = period.find((p) => p.id === this.lastRetirement?.liquidation);
         this.dateLastWithdrawal = `${liquidation?.month}/${liquidation?.year}`;
 
-        if (liquidation) {
-          const months = [
-            'Enero',
-            'Febrero',
-            'Marzo',
-            'Abril',
-            'Mayo',
-            'Junio',
-            'Julio',
-            'Agosto',
-            'Septiembre',
-            'Octubre',
-            'Noviembre',
-            'Diciembre',
-          ];
-          this.period = `${months[liquidation.month - 1]}`;
-        }
+        if (liquidation) this.period = `${this.months[liquidation.month - 1]}`;
+
         this.cdr.detectChanges();
       });
       this.cdr.detectChanges();
@@ -81,17 +87,53 @@ export class PanelAsociado {
 
   // Obtener antigüedad
   getSeniority() {
-    console.log(this.authService.currentUser());
-    const associateId = this.authService.currentUser()?.id;
-    if (!associateId) return;
-    this.associateService.getAssociateByUser(associateId).subscribe((associate) => {
-      if (associate.length > 0) {
-        this.entryDate = associate[0].entry_date;
-        this.cdr.detectChanges();
-      }
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) return;
+    this.associateService.getAssociateByUser(userId).subscribe((associate) => {
+      const associateDate = associate[0];
+      this.entryDate = formatDate(associateDate.entry_date);
+      this.seniorityYear = associateDate.years_in_coop;
+
+      const entryMonth:any = this.entryDate.split('/')[1];
+      const actualMonth = new Date().getMonth() + 1;
+      this.seniorityMonth = 12 - (entryMonth - actualMonth);
+      
+      this.cdr.detectChanges();
     });
   }
 
   // Obtener estado del período
-  getPeriodStatus() {}
+  liquidacionChipColorName: string = '';
+  liquidacionChipColorBg: string = '';
+  getPeriodStatus() {
+    this.liquidationService.getPeriods().subscribe((period) => {
+      const latestPeriod = period[0];
+      this.currentPeriod = this.months[latestPeriod.month - 1];
+      this.periodStatus = latestPeriod.status;
+
+      switch (this.periodStatus) {
+        case 'open':
+          this.periodStatus = 'Abierto';
+          this.liquidacionChipColorName = 'var(--verde-selva)';
+          this.liquidacionChipColorBg = 'var(--verde-bg)';
+          break;
+
+        case 'reviewed':
+          this.periodStatus = 'En revisión';
+          this.liquidacionChipColorName = 'var(--ambar)';
+          this.liquidacionChipColorBg = 'var(--ambar-bg)';
+          break;
+
+        case 'closed':
+          this.periodStatus = 'Cerrado';
+          this.liquidacionChipColorName = 'var(--rojo)';
+          this.liquidacionChipColorBg = 'var(--rojo-bg)';
+          break;
+
+        default:
+          this.periodStatus = 'Desconocido';
+      }
+      this.cdr.detectChanges();
+    });
+  }
 }

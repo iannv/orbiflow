@@ -31,7 +31,7 @@
         <img src="assets/panel-liquidaciones.png" alt="" />
       </div>
       <div>
-        <h4>{{ seniority }}</h4>
+        <h4>{{ seniorityYear }} años y {{seniorityMonth}} meses </h4>
         <span class="fw300"> Fecha de ingreso: {{ entryDate }} </span>
       </div>
     </app-base-card>
@@ -41,9 +41,14 @@
         <h3>Estado del período</h3>
         <img src="assets/panel-recibos.png" alt="" />
       </div>
-      <div>
-        <h4>{{ periodStatus }}</h4>
-        <span class="fw300">{{ period }}</span>
+      <div id="estadoPeriodo">
+        <app-chip
+          [name]="periodStatus.toString()"
+          [backgroundColor]="liquidacionChipColorBg"
+          [colorName]="liquidacionChipColorName"
+          fontSize="18px"
+        ></app-chip>
+        <span class="fw300">{{ currentPeriod }}</span>
       </div>
     </app-base-card>
   </section>
