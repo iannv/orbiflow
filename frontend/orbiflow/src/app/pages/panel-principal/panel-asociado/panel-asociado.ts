@@ -46,8 +46,9 @@ export class PanelAsociado {
 
   ngOnInit() {
     const user = this.authService.currentUser();
+    if (!user) return;
+    this.getLastRetirement(user.id);
     this.getSeniority();
-    this.getLastRetirement(user!.id);
 
     this.getPeriodStatus();
   }
@@ -94,10 +95,10 @@ export class PanelAsociado {
       this.entryDate = formatDate(associateDate.entry_date);
       this.seniorityYear = associateDate.years_in_coop;
 
-      const entryMonth:any = this.entryDate.split('/')[1];
+      const entryMonth: any = this.entryDate.split('/')[1];
       const actualMonth = new Date().getMonth() + 1;
       this.seniorityMonth = 12 - (entryMonth - actualMonth);
-      
+
       this.cdr.detectChanges();
     });
   }
