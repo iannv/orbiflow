@@ -18,7 +18,11 @@
     <div class="row align-items-end pb-2">
       <div class="col-md-4 mb-3 mb-md-0 position-relative">
         <label class="form-label fw-bold">Elija un periodo:</label>
-        <select class="form-select form-select-bg" [(ngModel)]="selectedPeriodId">
+        <select 
+          class="form-select form-select-bg" 
+          [(ngModel)]="selectedPeriodId"
+          (ngModelChange)="onPeriodChange()"
+        >
           <option [ngValue]="null" disabled>Seleccione...</option>
           <option *ngFor="let p of periods" [value]="p.id">{{ p.month }}/{{ p.year }}</option>
         </select>
@@ -67,81 +71,160 @@
   <div class="card shadow-sm border-0 p-3 mb-4" *ngIf="dataLoaded">
     <h5 class="mb-3">Validación de carga:</h5>
 
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Asociado</th>
-          <th>Jornada</th>
-          <th>Horas mes</th>
-          <th>Adicionales</th>
-          <th>Estado</th>
-          <th>Revisión</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let assoc of associates; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ assoc.full_name }}</td>
-          <td>{{ assoc.base_hours }} hs</td>
-          <td>
-            <input
-              type="number"
-              class="form-control"
-              style="width: 100px"
-              [(ngModel)]="hoursData[assoc.id]"
-            />
-          </td>
+    <div class="alert alert-info d-flex align-items-center py-2 mb-3" style="font-size: 0.85rem">
+      <div class="me-2 fw-bold">Nota:</div>
+      <div>
+        La nómina está filtrada. Solo se muestran los asociados cuya fecha de alta es igual o
+        anterior al periodo de
+        <strong>{{ getSelectedPeriodParams()?.month }}/{{ getSelectedPeriodParams()?.year }}</strong
+        >.
+      </div>
+    </div>
 
-          <ng-container *ngIf="getSimulationForAssociate(assoc.id) as sim; else noSim">
-            <td>${{ sim.additional_amount }}</td>
-            <td>
-              <span
-                class="badge"
-                [ngClass]="
-                  +sim.cap_adjustment > 0 || hoursData[assoc.id] === 0 ? 'bg-danger' : 'bg-success'
-                "
-              >
-                {{
-                  hoursData[assoc.id] === 0
-                    ? '0 Horas'
-                    : +sim.cap_adjustment > 0
-                      ? 'Alerta Tope'
-                      : 'OK'
-                }}
-              </span>
+    <div class="alert alert-warning d-flex align-items-start py-2 mb-3" style="font-size: 0.85rem">
+      <div class="me-2 fw-bold">Flujo de simulación:</div>
+      <div>
+        1. <strong>Destilde</strong> a los asociados que no participan en este periodo.<br />
+        2. Haga clic en <strong>Autocompletar Horas</strong> (o cárguelas manualmente).<br />
+        3. Haga clic en <strong>Validar y Simular</strong>.<br />
+        4. Si está de acuerdo con los montos, haga clic en <strong>Aprobar Revisión</strong> para pasar a Liquidaciones.
+      </div>
+    </div>
+
+    <div *ngIf="associates.length === 0" class="alert alert-warning text-center py-4 my-3">
+      <strong>No hay asociados disponibles.</strong><br />
+      Ningún asociado tiene fecha de ingreso válida para este mes.
+    </div>
+
+    <div class="table-responsive" *ngIf="associates.length > 0">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 50px" class="text-center">Sel.</th>
+            <th>#</th>
+            <th>Asociado</th>
+            <th>Jornada</th>
+            <th>Horas mes</th>
+            <th>Adicionales</th>
+            <th>Total Estimado</th> <th>Estado</th>
+            <th>Revisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let assoc of associates; let i = index" 
+            [ngClass]="{ 'opacity-50': !selectedAssociates[assoc.id] }"
+          >
+            <td class="text-center">
+              <div class="form-check d-flex justify-content-center m-0">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="selectedAssociates[assoc.id]"
+                  [disabled]="simulationResults.length > 0"
+                  style="cursor: pointer"
+                />
+              </div>
             </td>
+
+            <td>{{ i + 1 }}</td>
+            <td>{{ assoc.full_name }}</td>
+            <td>{{ assoc.base_hours }} hs</td>
             <td>
-              <button
-                class="btn btn-sm btn-link text-decoration-none"
-                (click)="openRevisionModal(assoc.id)"
-              >
-                Revisar
-              </button>
+              <input
+                type="number"
+                class="form-control"
+                style="width: 100px"
+                [(ngModel)]="hoursData[assoc.id]"
+                [disabled]="!selectedAssociates[assoc.id] || simulationResults.length > 0"
+              />
             </td>
-          </ng-container>
 
-          <ng-template #noSim>
-            <td class="text-muted">--</td>
-            <td class="text-muted">--</td>
-            <td><button class="btn btn-sm btn-link text-muted" disabled>Revisar</button></td>
-          </ng-template>
-        </tr>
-      </tbody>
-    </table>
+            <ng-container *ngIf="getSimulationForAssociate(assoc.id) as sim; else noSim">
+              <td>${{ sim.additional_amount }}</td>
+              
+              <td>
+                <strong style="color: var(--verde-petroleo); font-size: 1.05rem;">
+                  ${{ sim.total_amount }}
+                </strong>
+              </td>
 
-    <div class="d-flex justify-content-end gap-3 mt-3">
-      <button class="btn btn-outline-secondary" (click)="autoCompleteHours()">
-        Autocompletar Horas
-      </button>
-      <button class="btn btn-primary" (click)="onSimulate()">Validar y Simular</button>
-      <button
-        class="btn btn-success"
-        (click)="onMarkAsReviewed()"
-        [disabled]="simulationResults.length === 0"
-      >
-        Aprobar Revisión
-      </button>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="
+                    +sim.cap_adjustment > 0 || hoursData[assoc.id] === 0 ? 'bg-danger' : 'bg-success'
+                  "
+                >
+                  {{
+                    hoursData[assoc.id] === 0
+                      ? '0 Horas'
+                      : +sim.cap_adjustment > 0
+                        ? 'Alerta Tope'
+                        : 'OK'
+                  }}
+                </span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-sm btn-link text-decoration-none"
+                  (click)="openRevisionModal(assoc.id)"
+                >
+                  Revisar
+                </button>
+              </td>
+            </ng-container>
+
+            <ng-template #noSim>
+              <td class="text-muted">--</td>
+              <td class="text-muted">--</td> <td class="text-muted">--</td>
+              <td><button class="btn btn-sm btn-link text-muted" disabled>Revisar</button></td>
+            </ng-template>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
+      <div>
+        <button class="btn btn-outline-danger" (click)="onEliminarPeriodo()">
+          <i class="bi bi-trash3 me-1"></i> Descartar Periodo
+        </button>
+      </div>
+
+      <div class="d-flex gap-2" *ngIf="associates.length > 0">
+        <button 
+          class="btn btn-outline-secondary" 
+          (click)="autoCompleteHours()" 
+          [disabled]="simulationResults.length > 0"
+        >
+          Autocompletar
+        </button>
+
+        <button 
+          class="btn btn-warning" 
+          (click)="onCorregirHoras()" 
+          *ngIf="simulationResults.length > 0"
+        >
+          Corregir Horas
+        </button>
+
+        <button 
+          class="btn btn-primary" 
+          (click)="onSimulate()" 
+          *ngIf="simulationResults.length === 0"
+        >
+          Validar y Simular
+        </button>
+
+        <button
+          class="btn btn-success"
+          (click)="onMarkAsReviewed()"
+          [disabled]="simulationResults.length === 0"
+        >
+          Aprobar Revisión
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -225,11 +308,13 @@
   (close)="closeRevisionModal()"
 >
   <div *ngIf="selectedSimulationDetail" class="mt-3">
-
-<div class="p-2 mb-3 bg-light rounded text-center">
+    <div class="p-2 mb-3 bg-light rounded text-center">
       <span class="text-muted small">Asociado:</span>
       <strong class="d-block fs-5" style="color: var(--verde-petroleo)">
-        {{ selectedSimulationDetail.associate_full_name || getAssociateName(selectedSimulationDetail.associate_id) }}
+        {{
+          selectedSimulationDetail.associate_full_name ||
+            getAssociateName(selectedSimulationDetail.associate_id)
+        }}
       </strong>
     </div>
 
@@ -305,3 +390,27 @@
     </ul>
   </div>
 </app-modal>
+
+<app-modal
+  [isOpen]="isConfirmModalOpen"
+  title="Descartar Periodo"
+  subtitle="¿Está seguro de descartar la pre-liquidación actual? Esta acción borrará el periodo de la base de datos."
+  size="sm"
+  primaryBtnText="Descartar"
+  primaryBtnColor="red"
+  (close)="isConfirmModalOpen = false"
+  (primaryBtnClick)="confirmarEliminacionPeriodo()"
+  (secondaryBtnClick)="isConfirmModalOpen = false"
+></app-modal>
+
+<app-modal
+  [isOpen]="isApproveModalOpen"
+  title="Aprobar y Guardar Liquidación"
+  subtitle="¿Está seguro de guardar estos cambios? Una vez confirmada, la liquidación pasará a estado 'En Revisión' y se crearán los registros de manera definitiva en el sistema. Esta acción no se puede deshacer desde esta pantalla."
+  size="md"
+  primaryBtnText="Confirmar Guardado"
+  primaryBtnColor="green"
+  (close)="isApproveModalOpen = false"
+  (primaryBtnClick)="confirmApproveReview()"
+  (secondaryBtnClick)="isApproveModalOpen = false"
+></app-modal>

@@ -231,6 +231,44 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+    
+    @action(detail=True, methods=['post'], url_path='simulate')
+    def simulate(self, request, pk=None):
+        """
+        Simulación en memoria. Reutiliza el motor de cálculo sin tocar la base de datos.
+        Payload esperado: {"entries": [{"associate_id": 1, "hours_worked": 160}]}
+        """
+        period = self.get_object()
+        if period.status == 'closed':
+            return Response(
+                {"error": "El periodo está cerrado, no se puede simular."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = BulkHoursSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        entries = serializer.validated_data['entries']
+
+        associate_ids = [e['associate_id'] for e in entries]
+        associates = Associate.objects.filter(id__in=associate_ids, is_deleted=False).select_related('user')
+        
+        hours_map = {e['associate_id']: e['hours_worked'] for e in entries}
+
+        calculator = LiquidationCalculator(period)
+        results = []
+        
+        for associate in associates:
+            hours = hours_map.get(associate.id, 0)
+            calc_result = calculator._calculate_for_associate(associate, hours)
+            results.append(calc_result)
+
+        return Response({
+            'period': LiquidationPeriodSerializer(period).data,
+            'test_mode': True,
+            'retirements_count': len(results),
+            'totals': calculator._aggregate(results),
+            'retirements': [r.as_dict() for r in results],
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='calculate')
     def calculate(self, request, pk=None):
