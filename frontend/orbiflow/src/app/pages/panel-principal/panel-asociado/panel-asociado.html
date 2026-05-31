@@ -20,7 +20,7 @@
         <img src="assets/panel-modulo.png" alt="" />
       </div>
       <div>
-        <h4>{{ totalHoursWorked }}</h4>
+        <h4>{{ lastRetirement?.hours_worked }} hs</h4>
         <span class="fw300">Período: {{ period }}</span>
       </div>
     </app-base-card>
@@ -31,7 +31,7 @@
         <img src="assets/panel-liquidaciones.png" alt="" />
       </div>
       <div>
-        <h4>{{ seniority }}</h4>
+        <h4>{{ seniorityYear }} años y {{seniorityMonth}} meses </h4>
         <span class="fw300"> Fecha de ingreso: {{ entryDate }} </span>
       </div>
     </app-base-card>
@@ -41,9 +41,14 @@
         <h3>Estado del período</h3>
         <img src="assets/panel-recibos.png" alt="" />
       </div>
-      <div>
-        <h4>{{ periodStatus }}</h4>
-        <span class="fw300">{{ period }}</span>
+      <div id="estadoPeriodo">
+        <app-chip
+          [name]="periodStatus.toString()"
+          [backgroundColor]="liquidacionChipColorBg"
+          [colorName]="liquidacionChipColorName"
+          fontSize="18px"
+        ></app-chip>
+        <span class="fw300">{{ currentPeriod }}</span>
       </div>
     </app-base-card>
   </section>
@@ -52,7 +57,7 @@
     <div>
       <app-base-card title="Accesos rápidos" subtitle="Gestión del sistema">
         <app-base-card>
-          <a [routerLink]="['/profile']">
+          <a [routerLink]="['/perfil']">
             <p>Mi perfil</p>
             <p class="fw200 m-0">
               Consulta tus datos personales, antigüedad y los módulos que impactan en tu retiro
@@ -70,7 +75,7 @@
           </a>
         </app-base-card>
         <app-base-card>
-          <a [routerLink]="['/profile']">
+          <a [routerLink]="['/archivo-cooperativo']">
             <p>Archivo cooperativo</p>
             <p class="fw200 m-0">
               Auditoría social de pares. Consulta las liquidaciones de todos los asociados para
