@@ -95,9 +95,13 @@ export class PanelAsociado {
       this.entryDate = formatDate(associateDate.entry_date);
       this.seniorityYear = associateDate.years_in_coop;
 
-      const entryMonth: any = this.entryDate.split('/')[1];
+      const entryMonth = Number(this.entryDate.split('/')[1]);
       const actualMonth = new Date().getMonth() + 1;
-      this.seniorityMonth = 12 - (entryMonth - actualMonth);
+      if (actualMonth >= entryMonth) {
+        this.seniorityMonth = actualMonth - entryMonth;
+      } else {
+        this.seniorityMonth= 12 - (entryMonth - actualMonth);
+      }
 
       this.cdr.detectChanges();
     });
