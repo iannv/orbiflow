@@ -45,11 +45,20 @@ export class PanelAsociado {
   ) {}
 
   ngOnInit() {
-    const user = this.authService.currentUser();
-    if (!user) return;
-    this.getLastRetirement(user.id);
-    this.getSeniority();
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
 
+    this.associateService.getAssociateByUser(currentUser.id).subscribe({
+      next: (associate) => {
+        const associateData = associate[0];
+
+        if (associateData) {
+          this.getLastRetirement(associateData.id);
+        }
+      },
+    });
+
+    this.getSeniority();
     this.getPeriodStatus();
   }
 
@@ -69,20 +78,33 @@ export class PanelAsociado {
   ];
 
   // Último retiro
-  getLastRetirement(userId: number) {
-    this.retirementService.getRetirementsByAssociate(userId).subscribe((retirement) => {
-      this.lastRetirement = retirement.sort((a, b) => b.id - a.id)[0];
-      this.lastWithdrawal = formatCurrency(this.lastRetirement.total_amount);
+  getLastRetirement(associateId: number) {
+    this.retirementService.getRetirementsByAssociate(associateId).subscribe({
+      next: (retirements) => {
+        if (!retirements.length) {
+          this.lastRetirement = undefined;
+          this.lastWithdrawal = '0';
+          this.dateLastWithdrawal = 'Sin registro';
+          this.period = 'Sin registro';
+          return;
+        }
+        this.lastRetirement = retirements.sort((a, b) => b.id - a.id)[0];
+        this.lastWithdrawal = formatCurrency(this.lastRetirement.total_amount);
+        this.liquidationService.getPeriods().subscribe({
+          next: (periods) => {
+            const liquidation = periods.find((p) => p.id === this.lastRetirement?.liquidation);
 
-      this.liquidationService.getPeriods().subscribe((period) => {
-        const liquidation = period.find((p) => p.id === this.lastRetirement?.liquidation);
-        this.dateLastWithdrawal = `${liquidation?.month}/${liquidation?.year}`;
-
-        if (liquidation) this.period = `${this.months[liquidation.month - 1]}`;
-
-        this.cdr.detectChanges();
-      });
-      this.cdr.detectChanges();
+            if (!liquidation) {
+              this.dateLastWithdrawal = 'Sin registro';
+              this.period = 'Sin registro';
+              return;
+            }
+            this.dateLastWithdrawal = `${liquidation.month}/${liquidation.year}`;
+            this.period = this.months[liquidation.month - 1];
+            this.cdr.detectChanges();
+          },
+        });
+      },
     });
   }
 
@@ -95,9 +117,13 @@ export class PanelAsociado {
       this.entryDate = formatDate(associateDate.entry_date);
       this.seniorityYear = associateDate.years_in_coop;
 
-      const entryMonth: any = this.entryDate.split('/')[1];
+      const entryMonth = Number(this.entryDate.split('/')[1]);
       const actualMonth = new Date().getMonth() + 1;
-      this.seniorityMonth = 12 - (entryMonth - actualMonth);
+      if (actualMonth >= entryMonth) {
+        this.seniorityMonth = actualMonth - entryMonth;
+      } else {
+        this.seniorityMonth = 12 - (entryMonth - actualMonth);
+      }
 
       this.cdr.detectChanges();
     });

@@ -6,7 +6,7 @@
     <app-base-card>
       <div>
         <h3>Último retiro</h3>
-        <img src="assets/panel-asociados.png" alt="" />
+        <img src="assets/ultimo_retiro.png" alt="" />
       </div>
       <div>
         <h4>{{ lastWithdrawal }}</h4>
@@ -31,7 +31,19 @@
         <img src="assets/panel-liquidaciones.png" alt="" />
       </div>
       <div>
-        <h4>{{ seniorityYear }} años y {{seniorityMonth}} meses </h4>
+        @if (seniorityYear === 0) {
+          <h4>{{ seniorityMonth }} {{ seniorityMonth === 1 ? 'mes' : 'meses' }}</h4>
+        } @else if (seniorityMonth === 0) {
+          <h4>{{ seniorityYear }} {{ seniorityYear === 1 ? 'año' : 'años' }}</h4>
+        } @else {
+          <h4>
+            {{ seniorityYear }}
+            {{ seniorityYear === 1 ? 'año' : 'años' }}
+            y
+            {{ seniorityMonth }}
+            {{ seniorityMonth === 1 ? 'mes' : 'meses' }}
+          </h4>
+        }
         <span class="fw300"> Fecha de ingreso: {{ entryDate }} </span>
       </div>
     </app-base-card>
