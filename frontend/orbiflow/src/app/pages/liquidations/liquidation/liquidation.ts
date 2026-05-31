@@ -64,6 +64,12 @@ export class LiquidationComponent implements OnInit {
     return this.associatesMap[id] || `Socio #${id}`;
   }
 
+  onPeriodChange() {
+    this.summary = null;
+    this.associatesCalculations = [];
+    this.cdr.detectChanges();
+  }
+
  onLoadData() {
     if (!this.selectedPeriodId) return;
 

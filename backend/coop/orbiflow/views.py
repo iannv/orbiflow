@@ -2,6 +2,7 @@ from django.db import connection, transaction
 from django.http import JsonResponse
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -166,8 +167,9 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     CRUD de Periodos de Liquidación + acciones del Motor de Liquidación.
 
     Acciones extra:
-      * POST  /api/liquidations/{id}/upload-hours/  -> carga masiva de horas.
-      * POST  /api/liquidations/{id}/calculate/     -> ejecuta el motor.
+      * POST  /api/liquidations/{id}/upload-hours/  -> carga masiva de horas (persiste en DB).
+      * POST  /api/liquidations/{id}/simulate/      -> simulación en memoria (sin persistir).
+      * POST  /api/liquidations/{id}/calculate/     -> ejecuta el motor (persiste si test_mode=false).
       * GET   /api/liquidations/{id}/summary/       -> resumen con totales.
       * GET   /api/liquidations/{id}/retirements/   -> recibos persistidos.
     """
@@ -175,6 +177,23 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     serializer_class = LiquidationPeriodSerializer
     permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['year', 'month', 'status']
+
+    @staticmethod
+    def _validate_associate_ids(associate_ids: list) -> None:
+        """
+        Lanza ValidationError (400) si algún ID no existe o está eliminado.
+        """
+        existing_ids = set(
+            Associate.objects
+            .filter(id__in=associate_ids, is_deleted=False)
+            .values_list('id', flat=True)
+        )
+        missing = [aid for aid in associate_ids if aid not in existing_ids]
+        if missing:
+            raise ValidationError({
+                "error": "Algunos asociados no existen o están eliminados.",
+                "missing_associate_ids": missing,
+            })
 
     @action(detail=True, methods=['post'], url_path='upload-hours')
     def upload_hours(self, request, pk=None):
@@ -195,18 +214,7 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
 
         entries = serializer.validated_data['entries']
         associate_ids = [e['associate_id'] for e in entries]
-        existing_ids = set(
-            Associate.objects
-            .filter(id__in=associate_ids, is_deleted=False)
-            .values_list('id', flat=True)
-        )
-        missing = [aid for aid in associate_ids if aid not in existing_ids]
-        if missing:
-            return Response(
-                {"error": "Algunos asociados no existen o están eliminados.",
-                 "missing_associate_ids": missing},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        self._validate_associate_ids(associate_ids)
 
         created = 0
         updated = 0
@@ -231,6 +239,45 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+    
+    @action(detail=True, methods=['post'], url_path='simulate')
+    def simulate(self, request, pk=None):
+        """
+        Simulación en memoria. Reutiliza el motor de cálculo sin tocar la base de datos.
+        Payload esperado: {"entries": [{"associate_id": 1, "hours_worked": 160}]}
+        """
+        period = self.get_object()
+        if period.status == 'closed':
+            return Response(
+                {"error": "El periodo está cerrado, no se puede simular."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = BulkHoursSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        entries = serializer.validated_data['entries']
+
+        associate_ids = [e['associate_id'] for e in entries]
+        self._validate_associate_ids(associate_ids)
+
+        associates = Associate.objects.filter(id__in=associate_ids).select_related('user')
+        hours_map = {e['associate_id']: e['hours_worked'] for e in entries}
+
+        calculator = LiquidationCalculator(period)
+        results = []
+        
+        for associate in associates:
+            hours = hours_map.get(associate.id, 0)
+            calc_result = calculator._calculate_for_associate(associate, hours)
+            results.append(calc_result)
+
+        return Response({
+            'period': LiquidationPeriodSerializer(period).data,
+            'test_mode': True,
+            'retirements_count': len(results),
+            'totals': calculator._aggregate(results),
+            'retirements': [r.as_dict() for r in results],
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_path='calculate')
     def calculate(self, request, pk=None):

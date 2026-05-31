@@ -14,7 +14,11 @@
         >
 
         <div class="d-flex gap-3 align-items-center mt-2">
-          <select class="form-select form-select-bg w-50 m-0" [(ngModel)]="selectedPeriodId">
+          <select
+            class="form-select form-select-bg w-50 m-0"
+            [(ngModel)]="selectedPeriodId"
+            (ngModelChange)="onPeriodChange()"
+          >
             <option [ngValue]="null" disabled>Seleccione un periodo...</option>
             <option *ngFor="let p of reviewedPeriods" [value]="p.id">
               {{ p.month }}/{{ p.year }}
