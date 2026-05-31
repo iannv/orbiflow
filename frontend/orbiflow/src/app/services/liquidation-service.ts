@@ -51,4 +51,12 @@ export class LiquidationService {
   getRetirementsByLiquidation(id: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}${id}/retirements/`);
   }
+
+  deletePeriod(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}${id}/`);
+  }
+
+  simulateLiquidation(id: number, payload: UploadHoursPayload): Observable<any> {
+    return this.http.post(`${this.apiUrl}${id}/simulate/`, payload);
+  }
 }

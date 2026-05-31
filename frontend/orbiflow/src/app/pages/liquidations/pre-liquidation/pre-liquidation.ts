@@ -6,7 +6,6 @@ import { LiquidationService } from '../../../services/liquidation-service';
 import { AssociateService } from '../../../services/associate-service'; 
 import { LiquidationPeriod } from '../../../interfaces/Liquidation';
 
-
 // Componentes de OrbiFlow
 import { Modal } from '../../../components/modal/modal';
 import { Toast } from '../../../components/toast/toast';
@@ -26,16 +25,21 @@ export class PreLiquidationComponent implements OnInit {
   associates: any[] = [];
   hoursData: { [associateId: number]: number } = {};
   
+  // sirve para el seguimiento de los asociados que se enviarán a la simulación y al guardado final
+  selectedAssociates: { [associateId: number]: boolean } = {};
+  
   diasHabiles: number = 20; 
   simulationResults: any[] = []; 
   selectedSimulationDetail: any = null; 
   dataLoaded: boolean = false; 
 
-  //  Estados de los Modales Propios 
+  // Estados de los Modales Propios 
   isCreateModalOpen = false;
   isRevisionModalOpen = false;
+  isConfirmModalOpen = false; 
+  isApproveModalOpen = false; 
 
-  //  Estados del Toast
+  // Estados del Toast
   mostrarToast = false;
   toastTitle = '';
   toastSubtitle = '';
@@ -111,7 +115,6 @@ export class PreLiquidationComponent implements OnInit {
   }
 
   onCreatePeriod() {
-    
     if (!this.isYearValid()) {
       this.lanzarToast('Dato Incorrecto', 'Por favor, ingrese un año válido de 4 cifras.');
       return; 
@@ -139,7 +142,6 @@ export class PreLiquidationComponent implements OnInit {
     });
   }
 
-
   getSelectedPeriodParams() {
     return this.periods.find(p => p.id === Number(this.selectedPeriodId));
   }
@@ -154,13 +156,38 @@ export class PreLiquidationComponent implements OnInit {
     });
   }
 
+  // Limpia la vista cuando se elige un periodo distinto
+  onPeriodChange() {
+    this.dataLoaded = false;
+    this.associates = [];
+    this.simulationResults = [];
+    this.cdr.detectChanges();
+  }
+
   onLoadData() {
     if (!this.selectedPeriodId) return;
+
+    const currentPeriod = this.getSelectedPeriodParams();
+    if (!currentPeriod) return;
     
     this.associateService.getAssociates().subscribe({
       next: (res) => {
-        this.associates = res;
-        this.associates.forEach(a => this.hoursData[a.id] = 0);
+        // Filtrado por Fecha de Alta
+        this.associates = res.filter((assoc: any) => {
+          if (!assoc.entry_date) return true;
+          const [yearStr, monthStr] = assoc.entry_date.split('-'); 
+          const entryYear = parseInt(yearStr, 10);
+          const entryMonth = parseInt(monthStr, 10);
+          return entryYear < currentPeriod.year || 
+                 (entryYear === currentPeriod.year && entryMonth <= currentPeriod.month);
+        });
+
+        // valores por defecto de los asociados
+        this.associates.forEach(a => {
+          this.hoursData[a.id] = 0;
+          this.selectedAssociates[a.id] = true;
+        });
+        
         this.dataLoaded = true;
         this.simulationResults = []; 
         this.cdr.detectChanges(); 
@@ -172,24 +199,38 @@ export class PreLiquidationComponent implements OnInit {
   autoCompleteHours() {
     if (!this.diasHabiles) return;
     this.associates.forEach(assoc => {
-      this.hoursData[assoc.id] = (assoc.base_hours ?? 8) * this.diasHabiles;
+      // autocompleta horas de los asociados tildados
+      if (this.selectedAssociates[assoc.id]) {
+        this.hoursData[assoc.id] = (assoc.base_hours ?? 8) * this.diasHabiles;
+      }
     });
     this.cdr.detectChanges(); 
   }
 
   onSimulate() {
-    const payload = {
-      entries: this.associates.map(a => ({
+    const entries = this.associates
+      .filter(a => this.selectedAssociates[a.id])
+      .map(a => ({
         associate_id: a.id,
         hours_worked: this.hoursData[a.id] || 0
-      }))
-    };
+      }));
 
-    this.liquidationService.uploadHours(this.selectedPeriodId!, payload).subscribe(() => {
-      this.liquidationService.calculate(this.selectedPeriodId!, true).subscribe(result => {
+    if (entries.length === 0) {
+      this.lanzarToast('Aviso', 'Seleccione al menos un asociado para simular.');
+      return;
+    }
+
+    const payload = { entries };
+
+    this.liquidationService.simulateLiquidation(this.selectedPeriodId!, payload).subscribe({
+      next: (result: any) => {
         this.simulationResults = result.retirements || result; 
         this.cdr.detectChanges(); 
-      });
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.lanzarToast('Error', 'Hubo un error al generar la simulación.');
+      }
     });
   }
 
@@ -204,19 +245,77 @@ export class PreLiquidationComponent implements OnInit {
   }
 
   onMarkAsReviewed() {
-    this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe(() => {
-      this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
-      this.loadOpenPeriods(); 
-      this.dataLoaded = false;
-      this.selectedPeriodId = null;
-      this.cdr.detectChanges(); 
+    this.isApproveModalOpen = true;
+    this.cdr.detectChanges();
+  }
 
-      setTimeout(() => {
-    this.router.navigate(['/liquidaciones']); 
-  }, 3500);
+  confirmApproveReview() {
+    // payload final con los asociados tildados definitivos
+    const entries = this.associates
+      .filter(a => this.selectedAssociates[a.id])
+      .map(a => ({
+        associate_id: a.id,
+        hours_worked: this.hoursData[a.id] || 0
+      }));
+
+    const payload = { entries };
+
+    // guardamos las horas a la base de datos de forma definitiva
+    this.liquidationService.uploadHours(this.selectedPeriodId!, payload).subscribe({
+      next: () => {
+        // si se guardaron bien, se cambia el estado del periodo
+        this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe(() => {
+          this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
+          this.loadOpenPeriods(); 
+          this.dataLoaded = false;
+          this.selectedPeriodId = null;
+          this.isApproveModalOpen = false; 
+          this.cdr.detectChanges(); 
+
+          setTimeout(() => {
+            this.router.navigate(['/liquidaciones']); 
+          }, 3500);
+        });
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.lanzarToast('Error', 'No se pudieron guardar las horas definitivas.');
+        this.isApproveModalOpen = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
+  // Resetea la vista para poder volver a modificar
+  onCorregirHoras() {
+    this.simulationResults = [];
+    this.cdr.detectChanges();
+  }
+
+  // Permite borrar el periodo en caso de haberse creado por error
+  onEliminarPeriodo() {
+    this.isConfirmModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  confirmarEliminacionPeriodo() {
+    this.liquidationService.deletePeriod(this.selectedPeriodId!).subscribe({
+      next: () => {
+        this.lanzarToast('Periodo Descartado', 'Se ha eliminado el periodo.');
+        this.selectedPeriodId = null;
+        this.dataLoaded = false;
+        this.isConfirmModalOpen = false;
+        this.loadOpenPeriods();
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.lanzarToast('Error', 'No se pudo descartar el periodo.');
+        this.isConfirmModalOpen = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   lanzarToast(titulo: string, subtitulo: string): void {
     this.toastTitle = titulo;
