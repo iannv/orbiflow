@@ -12,6 +12,7 @@ import { PdfGeneratorService } from '../../services/pdf-service';
 import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
 import { UserService } from '../../services/user-service';
 import { numeroALetras } from '../../shared/utils/numeroALetras';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
 
 @Component({
   selector: 'app-recibos',
@@ -23,6 +24,7 @@ export class Recibos {
   retirementsList: Retirement[] = [];
   periodsList: LiquidationPeriod[] = [];
   yearList: number[] = [];
+  formatCurrency = formatCurrency;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -104,8 +106,10 @@ export class Recibos {
       });
   }
 
-  // ABRIR Y VISUALIZAR RECIBO
-  viewPDF(retirement: Retirement) {
+  // FUNCION PARA DATA DEL RECIBO
+  data: any = {};
+  totalAmount: any;
+  generateDataRetirement(retirement: Retirement, callback: (data: any) => void) {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
 
@@ -121,8 +125,8 @@ export class Recibos {
 
             // Mes y año de la liquidación
             this.liquidationService.getPeriods().subscribe({
-              next: (liquidation) => {
-                const liquidationData = liquidation.find((p) => p.id === retirement.liquidation);
+              next: (liquidations) => {
+                const liquidationData = liquidations.find((p) => p.id === retirement.liquidation);
 
                 // Conceptos
                 this.liquidationService
@@ -131,11 +135,11 @@ export class Recibos {
                     next: (retirementsByLiquidation) => {
                       const retirementsByLiquidationData = retirementsByLiquidation.find(
                         (r) => r.id === retirement.id,
+                        
                       );
 
-                      const totalToStringData = numeroALetras(Number(retirement.total_amount));
-
                       // Enviar data al retiremetsPDF
+                      const totalToStringData = numeroALetras(Number(retirement.total_amount));
                       const data = {
                         associate: associateData,
                         retirement: retirement,
@@ -143,9 +147,9 @@ export class Recibos {
                         liquidation: liquidationData,
                         retirementsByLiquidation: retirementsByLiquidationData,
                         totalToString: totalToStringData,
+                        totalFormatted: formatCurrency(retirement.total_amount),
                       };
-                      const pdf = retirementPDF(data);
-                      this.pdfService.abrirEnPestania(pdf);
+                      callback(data);
                     },
                   });
               },
@@ -156,8 +160,20 @@ export class Recibos {
     });
   }
 
+  // Abrir y visualizar recibo
+  viewPDF(retirement: Retirement) {
+    this.generateDataRetirement(retirement, (data) => {
+      const pdf = retirementPDF(data);
+      this.pdfService.abrirEnPestania(pdf);
+    });
+  }
+
   // Descargar recibo en PDF
-  // downloadPDF() {}
-
-
+  downloadPDF(retirement: Retirement) {
+    this.generateDataRetirement(retirement, (data) => {
+      const pdf = retirementPDF(data);
+      const pdfName = `Recibo_${this.getPeriod(retirement)}_${data.associate.full_name}`;
+      this.pdfService.descargar(pdf, pdfName);
+    });
+  }
 }

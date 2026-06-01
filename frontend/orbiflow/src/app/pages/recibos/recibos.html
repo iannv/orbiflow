@@ -37,14 +37,14 @@
 
                       <p class="fw300">
                         Importe:
-                        <span class="fw700"> ${{ retirement.total_amount }} </span>
+                        <span class="fw700"> ${{ formatCurrency(retirement.total_amount) }} </span>
                       </p>
-                      
+
                       <a id="ver-recibo-link" (click)="viewPDF(retirement)">Ver recibo</a>
                       <app-primary
                         name="Descargar PDF"
                         btnImg="assets/descargar.png"
-                        (btnClick)="viewPDF(retirement)"
+                        (btnClick)="downloadPDF(retirement)"
                       ></app-primary>
                     </div>
                   </app-base-card>
