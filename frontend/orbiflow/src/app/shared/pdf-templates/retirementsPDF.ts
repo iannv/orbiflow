@@ -290,7 +290,7 @@ export function retirementPDF(data: any) {
               },
 
               {
-                text: `$${data.retirement.total_amount}`,
+                text: `$${data.totalFormatted}`,
                 bold: true,
                 alignment: 'right',
                 fillColor: '#bec4cb',
@@ -367,11 +367,10 @@ export function retirementPDF(data: any) {
               },
 
               {
-                text: `SUELDO NETO: $${data.retirement.total_amount}`,
+                text: `SUELDO NETO: $${data.totalFormatted}`,
                 bold: true,
                 fontSize: 12,
                 alignment: 'left',
-                // fillColor: '#a8adb3',
               },
             ],
           ],
