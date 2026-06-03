@@ -6,6 +6,8 @@ import { BaseCard } from '../../components/base-card/base-card';
 import { Action } from '../../components/button/action/action';
 import { Primary } from '../../components/button/primary/primary';
 import { Modal } from '../../components/modal/modal';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../shared/utils/formatPercentage';
 
 type EditMode = 'hour' | 'cap' | 'both';
 
@@ -25,6 +27,10 @@ export class ConfiguracionGeneral implements OnInit {
   currentConfig = signal<GlobalConfig | null>(null);
   lastModification = signal<GlobalConfig | null>(null); 
   isLoading = signal<boolean>(true);
+
+  //utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
 
   // Control de Modales
   isEditModalOpen = signal(false);
@@ -63,7 +69,7 @@ export class ConfiguracionGeneral implements OnInit {
     });
   }
 
-  // --- Lógica del Modal de Edición ---
+  //  Lógica del Modal de Edición
   openEditModal(mode: EditMode) {
     this.editingField.set(mode);
     const current = this.currentConfig();
@@ -107,7 +113,7 @@ export class ConfiguracionGeneral implements OnInit {
     });
   }
 
-  // --- Lógica del Modal de Historial ---
+  //  Lógica del Modal de Historial
   openHistoryModal() {
     this.isHistoryModalOpen.set(true);
   }
