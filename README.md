@@ -40,18 +40,30 @@ Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `
 ### Flujo de un mes
 
 ```
+--- Configuración General ---
 1. Configurar valor hora y tope               POST /api/config/
+
+--- Gestión de Módulos ---
 2. Definir módulos y variantes                POST /api/modules/  + POST /api/variants/
+
+--- Gestión de Asociados --- 
 3. Asignar variantes al asociado              POST /api/associate-variants/
+
+--- Pre-Liquidaciones ---
 4. Crear el período (congela valor hora/tope) POST /api/liquidations/
-5. Cargar horas trabajadas (bulk)             POST /api/liquidations/{id}/upload-hours/
-6. Dry-run del cálculo                        POST /api/liquidations/{id}/calculate/  test_mode=true
-7. Ejecución definitiva (persiste recibos)    POST /api/liquidations/{id}/calculate/  test_mode=false
-8. Resumen y recibos                          GET  /api/liquidations/{id}/summary/
+5. Simulación al vuelo (Stateless)            POST /api/liquidations/{id}/simulate/
+6. Cargar horas trabajadas definitivas (bulk) POST /api/liquidations/{id}/upload-hours/
+
+--- Liquidaciones (Cierre) ---
+7. Auditoría de cierre                        POST /api/liquidations/{id}/calculate/  test_mode=true
+8. Ejecución definitiva (persiste recibos)    POST /api/liquidations/{id}/calculate/  test_mode=false
+
+--- Reportes ---
+9. Resumen y recibos                          GET  /api/liquidations/{id}/summary/
                                               GET  /api/retirements/
 ```
 
-El dry-run del paso 6 devuelve el desglose completo en JSON sin tocar la base — sirve para revisar todo antes de impactar los recibos.
+La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memoria RAM, sin tocar la base de datos. Una vez aprobada la revisión, se cargan las horas definitivas (paso 6). Ya en la etapa de cierre, el paso 7 llama al motor de cálculo en modo lectura (test_mode=true) para auditar los totales en pantalla, previo a la ejecución definitiva del paso 8 (test_mode=false) que impacta y genera los recibos reales en la base de datos.
 
 ---
 
