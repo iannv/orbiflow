@@ -80,6 +80,11 @@ export function buildLiquidacionConsolidadaTemplate(
           {
             width: '*',
             text: [
+              //  Horas Liquidadas
+              { text: 'Cálculo Base:\n', fontSize: 9, bold: true, color: '#4b5563' },
+              { text: `Horas Liquidadas: ${item.hours_worked || 0} hs\n\n`, fontSize: 9, color: '#6b7280' },
+              
+              //  Conceptos
               { text: 'Conceptos Aplicados:\n', fontSize: 9, bold: true, color: '#4b5563' },
               { text: conceptosText, fontSize: 9, color: '#6b7280' },
             ],

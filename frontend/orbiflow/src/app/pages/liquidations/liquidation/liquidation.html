@@ -47,13 +47,20 @@
 
   <div *ngIf="summary" class="mt-4">
     <h4 class="fw600 text-muted mb-3" style="font-size: 1.1rem">Resumen de Totales Mensuales</h4>
-    
+
     <div class="row mb-4">
       <div class="col-md-4 mb-3 mb-md-0">
         <div class="card p-3 shadow-sm border-0 bg-white h-100">
           <div class="d-flex justify-content-between align-items-start mb-1">
             <small class="text-muted mt-1">Retiro Base Total</small>
-            <span class="badge fw-medium" style="background-color: #eef2fa; color: var(--verde-petroleo); border: 1px solid #b3c7ee;">
+            <span
+              class="badge fw-medium"
+              style="
+                background-color: #eef2fa;
+                color: var(--verde-petroleo);
+                border: 1px solid #b3c7ee;
+              "
+            >
               Valor Hora: ${{ formatCurrency(summary.period.applied_hour_value || 0) }}
             </span>
           </div>
@@ -77,13 +84,13 @@
           class="card p-3 shadow-sm border-0 h-100"
           [ngClass]="{
             'bg-danger text-white': +summary.totals.cap_adjustment > 0,
-            'bg-white': +summary.totals.cap_adjustment === 0
+            'bg-white': +summary.totals.cap_adjustment === 0,
           }"
         >
           <small
             [ngClass]="{
               'text-white-50': +summary.totals.cap_adjustment > 0,
-              'text-muted': +summary.totals.cap_adjustment === 0
+              'text-muted': +summary.totals.cap_adjustment === 0,
             }"
             class="d-block mb-1"
           >
@@ -130,7 +137,9 @@
               <td class="text-end">${{ formatCurrency(item.base_amount || 0) }}</td>
               <td class="text-end">${{ formatCurrency(item.additional_amount || 0) }}</td>
               <td class="text-end text-danger">
-                {{ +item.cap_adjustment > 0 ? '-$' + formatCurrency(item.cap_adjustment || 0) : '--' }}
+                {{
+                  +item.cap_adjustment > 0 ? '-$' + formatCurrency(item.cap_adjustment || 0) : '--'
+                }}
               </td>
               <td class="text-end fw-bold" style="color: var(--verde-petroleo)">
                 ${{ formatCurrency(item.total_amount || 0) }}
@@ -188,9 +197,17 @@
     </div>
 
     <ul class="list-group list-group-flush border rounded">
-      <li class="list-group-item d-flex justify-content-between p-3">
-        <span>Retiro de Base Líquido:</span>
-        <strong>${{ formatCurrency(selectedDetail.base_amount || 0) }}</strong>
+      <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+        <div style="display: grid;">
+          <span class="d-block mb-1">Retiro de Base Líquido:</span>
+          <span
+            class="badge fw-normal"
+            style="background-color: #f8f9fa; color: #4b5563; border: 1px solid #e5e7eb"
+          >
+            <i class="bi bi-clock me-1"></i> {{ selectedDetail.hours_worked || 0 }} hs liquidadas
+          </span>
+        </div>
+        <strong class="fs-5">${{ formatCurrency(selectedDetail.base_amount || 0) }}</strong>
       </li>
 
       <li class="list-group-item p-3 bg-light">
@@ -204,7 +221,9 @@
           <span class="text-muted" style="font-size: 0.9rem">
             {{ item.module_name }} <span *ngIf="item.variant_name">- {{ item.variant_name }}</span>
           </span>
-          <strong style="color: var(--verde-petroleo)">+${{ formatCurrency(item.calculated_value || 0) }}</strong>
+          <strong style="color: var(--verde-petroleo)"
+            >+${{ formatCurrency(item.calculated_value || 0) }}</strong
+          >
         </li>
       </ng-container>
       <ng-template #noItems>

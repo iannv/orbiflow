@@ -52,7 +52,11 @@
                       <div class="text-muted text-center" style="flex: 1; font-size: 0.95rem">
                         Total Liquidado:
                         <strong style="color: var(--verde-petroleo)">
-                          {{ periodTotals[period.id!] ? '$' + formatCurrency(periodTotals[period.id!]) : '...' }}
+                          {{
+                            periodTotals[period.id!]
+                              ? '$' + formatCurrency(periodTotals[period.id!])
+                              : '...'
+                          }}
                         </strong>
                       </div>
 
@@ -122,10 +126,26 @@
             {{ selectedSummary.period.year }}</strong
           >
           <div class="d-flex gap-2">
-            <span class="badge fw-medium" style="background-color: #eef2fa; color: var(--verde-petroleo); border: 1px solid #b3c7ee; padding: 0.4em 0.6em;">
+            <span
+              class="badge fw-medium"
+              style="
+                background-color: #eef2fa;
+                color: var(--verde-petroleo);
+                border: 1px solid #b3c7ee;
+                padding: 0.4em 0.6em;
+              "
+            >
               Valor Hora: ${{ formatCurrency(selectedSummary.period.applied_hour_value || 0) }}
             </span>
-            <span class="badge fw-medium" style="background-color: #fdf5f6; color: #d0465a; border: 1px solid #f6dadd; padding: 0.4em 0.6em;">
+            <span
+              class="badge fw-medium"
+              style="
+                background-color: #fdf5f6;
+                color: #d0465a;
+                border: 1px solid #f6dadd;
+                padding: 0.4em 0.6em;
+              "
+            >
               Tope Aplicado: {{ formatPercentage(selectedSummary.period.applied_cap_pct || 0) }}%
             </span>
           </div>
@@ -182,8 +202,22 @@
                         <span
                           class="d-block fw-bold text-muted mb-1 text-uppercase"
                           style="font-size: 0.75rem"
-                          >Conceptos Aplicados</span
                         >
+                          Cálculo Base
+                        </span>
+                        <div class="d-flex justify-content-between border-bottom pb-1 mb-3">
+                          <span>Horas Liquidadas</span>
+                          <span class="fw-bold" style="color: var(--verde-petroleo)">
+                            {{ item.hours_worked || 0 }} hs
+                          </span>
+                        </div>
+
+                        <span
+                          class="d-block fw-bold text-muted mb-1 text-uppercase"
+                          style="font-size: 0.75rem"
+                        >
+                          Conceptos Aplicados
+                        </span>
                         <div
                           *ngFor="let detail of item.items"
                           class="d-flex justify-content-between border-bottom pb-1 mb-1"
@@ -225,11 +259,15 @@
       <div class="row text-center text-muted" style="font-size: 0.85rem">
         <div class="col">
           Total Adicionales Aprobados:
-          <strong class="text-dark">${{ formatCurrency(selectedSummary.totals.additional_amount || 0) }}</strong>
+          <strong class="text-dark"
+            >${{ formatCurrency(selectedSummary.totals.additional_amount || 0) }}</strong
+          >
         </div>
         <div class="col" *ngIf="+selectedSummary.totals.cap_adjustment > 0">
           Total Ajustado por Topes:
-          <strong class="text-danger">-${{ formatCurrency(selectedSummary.totals.cap_adjustment || 0) }}</strong>
+          <strong class="text-danger"
+            >-${{ formatCurrency(selectedSummary.totals.cap_adjustment || 0) }}</strong
+          >
         </div>
         <div class="col">
           Recibos Emitidos:
