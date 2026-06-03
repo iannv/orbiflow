@@ -2,16 +2,16 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { ModulosService } from '../../services/modulos-service';
 import { Modulo } from '../../interfaces/Modulo';
-
 import { BaseCard } from '../../components/base-card/base-card';
 import { Primary } from '../../components/button/primary/primary';
 import { Action } from '../../components/button/action/action';
 import { Chip } from '../../components/chip/chip';
 import { Modal } from '../../components/modal/modal';
 import { Toast } from '../../components/toast/toast';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../shared/utils/formatPercentage';
 
 @Component({
   selector: 'app-modulos',
@@ -36,6 +36,10 @@ export class Modulos implements OnInit {
   mostrarToast = false;
   toastTitle = '';
   toastSubtitle = '';
+
+  //utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
 
   private modulosService = inject(ModulosService);
   private fb = inject(FormBuilder);
@@ -87,7 +91,7 @@ export class Modulos implements OnInit {
     });
   }
 
-  // --- LÓGICA DE MODALES Y FORMULARIOS ---
+  // Lógica de modales y formularios
 
   openModal(): void {
     this.moduloEnEdicion = null;
@@ -228,7 +232,7 @@ export class Modulos implements OnInit {
     return 'Hubo un problema de conexión con el servidor.';
   }
 
-  // --- LÓGICA DE ELIMINACIÓN ---
+  //  Lógica de eliminación
 
   confirmarEliminacion(id: number | undefined): void {
     if (!id) return;

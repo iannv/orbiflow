@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { AssociateService } from '../../../services/associate-service'; 
 import { LiquidationPeriod } from '../../../interfaces/Liquidation';
+import { formatCurrency } from '../../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../../shared/utils/formatPercentage';
 
 // Componentes de OrbiFlow
 import { Modal } from '../../../components/modal/modal';
@@ -50,6 +52,10 @@ export class PreLiquidationComponent implements OnInit {
   globalHourValue: string = '0.00';
   globalCapPct: string = '30.00';
 
+  //Utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
+
   mesesDisponibles = [
     { valor: 1, nombre: 'Enero' }, { valor: 2, nombre: 'Febrero' },
     { valor: 3, nombre: 'Marzo' }, { valor: 4, nombre: 'Abril' },
@@ -80,7 +86,7 @@ export class PreLiquidationComponent implements OnInit {
         const activeConfig = Array.isArray(config) ? config[0] : config;
         if (activeConfig) {
           this.globalHourValue = activeConfig.hour_value || '0.00';
-          this.globalCapPct = activeConfig.cap_pct || '30.00'; 
+          this.globalCapPct = activeConfig.cap_percentage || '30.00'; 
         }
         this.isCreateModalOpen = true; 
         this.cdr.detectChanges();

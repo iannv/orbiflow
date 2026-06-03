@@ -1,0 +1,7 @@
+/* Solo aplica en pantallas Desktop (992px o más) */
+@media (min-width: 992px) {
+  :host ::ng-deep .app-modal-lg {
+    max-width: 900px !important;
+    width: 100%;
+  }
+}

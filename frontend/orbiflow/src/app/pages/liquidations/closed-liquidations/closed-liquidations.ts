@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { AssociateService } from '../../../services/associate-service';
@@ -6,6 +6,8 @@ import { LiquidationPeriod, LiquidationSummary } from '../../../interfaces/Liqui
 import { PdfGeneratorService } from '../../../services/pdf-service';
 import { Modal } from '../../../components/modal/modal';
 import { buildLiquidacionConsolidadaTemplate } from '../../../shared/pdf-templates/closedLiquidations-template';
+import { formatCurrency } from '../../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../../shared/utils/formatPercentage';
 
 @Component({
   selector: 'app-closed-liquidations',
@@ -26,9 +28,14 @@ export class ClosedLiquidationsComponent implements OnInit {
   selectedSummary: LiquidationSummary | null = null;
   isLoadingDetails = false;
 
+  // Utilidades de Formato
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
+
   private liquidationService = inject(LiquidationService);
   private associateService = inject(AssociateService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
   private pdfService = inject(PdfGeneratorService);
 
   ngOnInit() {
@@ -38,8 +45,11 @@ export class ClosedLiquidationsComponent implements OnInit {
 
   cargarMapaAsociados() {
     this.associateService.getAssociates().subscribe((data) => {
-      data.forEach((assoc) => {
-        this.associatesMap[assoc.id] = assoc.full_name;
+      this.ngZone.run(() => {
+        data.forEach((assoc) => {
+          this.associatesMap[assoc.id] = assoc.full_name;
+        });
+        this.cdr.detectChanges();
       });
     });
   }
@@ -61,9 +71,11 @@ export class ClosedLiquidationsComponent implements OnInit {
   loadClosedPeriods() {
     this.liquidationService.getPeriods('closed').subscribe({
       next: (res: LiquidationPeriod[]) => {
-        this.groupPeriodsByYear(res);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.groupPeriodsByYear(res);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
 
         res.forEach((period) => {
           const pId = period.id;
@@ -71,8 +83,10 @@ export class ClosedLiquidationsComponent implements OnInit {
           if (pId) {
             this.liquidationService.getSummary(pId).subscribe((summary) => {
               if (summary && summary.totals) {
-                this.periodTotals[pId] = summary.totals.total_amount;
-                this.cdr.detectChanges();
+                this.ngZone.run(() => {
+                  this.periodTotals[pId] = summary.totals.total_amount;
+                  this.cdr.detectChanges();
+                });
               }
             });
           }
@@ -80,8 +94,10 @@ export class ClosedLiquidationsComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error al recuperar el histórico:', err);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -128,14 +144,18 @@ export class ClosedLiquidationsComponent implements OnInit {
 
     this.liquidationService.getSummary(periodId).subscribe({
       next: (res: LiquidationSummary) => {
-        this.selectedSummary = res;
-        this.isLoadingDetails = false;
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.selectedSummary = res;
+          this.isLoadingDetails = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err: any) => {
         console.error('Error al cargar el detalle', err);
-        this.isLoadingDetails = false;
-        this.cdr.detectChanges();
+        this.ngZone.run(() => {
+          this.isLoadingDetails = false;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

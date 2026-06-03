@@ -110,8 +110,11 @@
                   <div class="valor-box">
                     <span class="fw300 text-muted" style="font-size: 0.8rem">Valor</span>
                     <p class="fw600 m-0">
-                      {{ variante.type === 'fixed_amount' ? '$' : '' }}{{ variante.value
-                      }}{{ variante.type === 'percentage' ? '%' : '' }}
+                      @if (variante.type === 'fixed_amount') {
+                        ${{ formatCurrency(variante.value || 0) }}
+                      } @else {
+                        {{ formatPercentage(variante.value || 0) }}%
+                      }
                     </p>
                   </div>
                 </div>
