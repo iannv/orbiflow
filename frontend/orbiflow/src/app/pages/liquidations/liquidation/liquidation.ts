@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { LiquidationPeriod, LiquidationSummary } from '../../../interfaces/Liquidation';
 import { AssociateService } from '../../../services/associate-service';
+import { formatCurrency } from '../../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../../shared/utils/formatPercentage';
 
 import { Modal } from '../../../components/modal/modal';
 import { Toast } from '../../../components/toast/toast';
@@ -32,8 +34,13 @@ export class LiquidationComponent implements OnInit {
   toastTitle = '';
   toastSubtitle = '';
 
+  //utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
+
   private liquidationService = inject(LiquidationService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone); 
   private associateService = inject(AssociateService);
   private router = inject(Router);
 
@@ -45,8 +52,10 @@ export class LiquidationComponent implements OnInit {
   loadReviewedPeriods() {
     this.liquidationService.getPeriods('reviewed').subscribe({
       next: (res) => {
-        this.reviewedPeriods = res;
-        this.cdr.detectChanges(); 
+        this.ngZone.run(() => {
+          this.reviewedPeriods = res;
+          this.cdr.detectChanges(); 
+        });
       },
       error: (err) => console.error('Error al cargar periodos en revisión', err)
     });
@@ -54,8 +63,11 @@ export class LiquidationComponent implements OnInit {
 
   cargarMapaAsociados() {
     this.associateService.getAssociates().subscribe(data => {
-      data.forEach(assoc => {
-        this.associatesMap[assoc.id] = assoc.full_name;
+      this.ngZone.run(() => {
+        data.forEach(assoc => {
+          this.associatesMap[assoc.id] = assoc.full_name;
+        });
+        this.cdr.detectChanges(); 
       });
     });
   }
@@ -75,37 +87,40 @@ export class LiquidationComponent implements OnInit {
 
     this.summary = null;
     this.associatesCalculations = [];
+    
+    const periodId = Number(this.selectedPeriodId); 
 
-    this.liquidationService.calculate(this.selectedPeriodId, true).subscribe({
+    this.liquidationService.calculate(periodId, true).subscribe({
       next: (result) => {
+        this.ngZone.run(() => {
+          this.associatesCalculations = result.retirements || result;
 
-        this.associatesCalculations = result.retirements || result;
+          let totalBase = 0;
+          let totalAdditional = 0;
+          let totalCap = 0;
+          let totalFinal = 0;
 
-        let totalBase = 0;
-        let totalAdditional = 0;
-        let totalCap = 0;
-        let totalFinal = 0;
+          this.associatesCalculations.forEach(item => {
+            totalBase += parseFloat(item.base_amount || '0');
+            totalAdditional += parseFloat(item.additional_amount || '0');
+            totalCap += parseFloat(item.cap_adjustment || '0');
+            totalFinal += parseFloat(item.total_amount || '0');
+          });
 
-        this.associatesCalculations.forEach(item => {
-          totalBase += parseFloat(item.base_amount || '0');
-          totalAdditional += parseFloat(item.additional_amount || '0');
-          totalCap += parseFloat(item.cap_adjustment || '0');
-          totalFinal += parseFloat(item.total_amount || '0');
+          this.summary = {
+            period: this.reviewedPeriods.find(p => p.id === periodId)!,
+            retirements_count: this.associatesCalculations.length,
+            retirements: this.associatesCalculations,
+            totals: {
+              base_amount: totalBase.toFixed(2),
+              additional_amount: totalAdditional.toFixed(2),
+              cap_adjustment: totalCap.toFixed(2),
+              total_amount: totalFinal.toFixed(2)
+            }
+          };
+
+          this.cdr.detectChanges(); 
         });
-
-        this.summary = {
-          period: this.reviewedPeriods.find(p => p.id === this.selectedPeriodId)!,
-          retirements_count: this.associatesCalculations.length,
-          retirements: this.associatesCalculations,
-          totals: {
-            base_amount: totalBase.toFixed(2),
-            additional_amount: totalAdditional.toFixed(2),
-            cap_adjustment: totalCap.toFixed(2),
-            total_amount: totalFinal.toFixed(2)
-          }
-        };
-
-        this.cdr.detectChanges(); 
       },
       error: (err) => {
         console.error('Error al previsualizar cálculos', err);
@@ -134,26 +149,29 @@ export class LiquidationComponent implements OnInit {
     this.selectedDetail = null;
   }
 
-onConfirmClose() {
+  onConfirmClose() {
     if (!this.selectedPeriodId) return;
     
-    this.liquidationService.calculate(this.selectedPeriodId, false).subscribe({
+    const periodId = Number(this.selectedPeriodId);
+    
+    this.liquidationService.calculate(periodId, false).subscribe({
       next: () => {
-        this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'closed').subscribe({
+        this.liquidationService.updatePeriodStatus(periodId, 'closed').subscribe({
           next: () => {
+            this.ngZone.run(() => {
+              this.isConfirmModalOpen = false;
+              this.summary = null;
+              this.associatesCalculations = [];
+              this.selectedPeriodId = null;
+              
+              this.lanzarToast('Cierre Exitoso', 'La liquidación se consolidó de manera inmutable.');
+              
+              this.loadReviewedPeriods(); 
 
-            this.isConfirmModalOpen = false;
-            this.summary = null;
-            this.associatesCalculations = [];
-            this.selectedPeriodId = null;
-            
-            this.lanzarToast('Cierre Exitoso', 'La liquidación se consolidó de manera inmutable.');
-            
-            this.loadReviewedPeriods(); 
-
-            setTimeout(() => {
-              this.router.navigate(['/liquidaciones']); 
-            }, 3500);
+              setTimeout(() => {
+                this.router.navigate(['/liquidaciones']); 
+              }, 3500);
+            });
           },
           error: (err) => {
             console.error('Error al actualizar estado del periodo', err);
