@@ -18,8 +18,8 @@
     <div class="row align-items-end pb-2">
       <div class="col-md-4 mb-3 mb-md-0 position-relative">
         <label class="form-label fw-bold">Elija un periodo:</label>
-        <select 
-          class="form-select form-select-bg" 
+        <select
+          class="form-select form-select-bg"
           [(ngModel)]="selectedPeriodId"
           (ngModelChange)="onPeriodChange()"
         >
@@ -40,8 +40,10 @@
           class="text-muted small position-absolute"
           style="bottom: -22px; left: 12px; white-space: nowrap"
         >
-          <strong>Valor Hora Aplicado:</strong> ${{ currentPeriod.applied_hour_value }} |
-          <strong>Tope:</strong> {{ currentPeriod.applied_cap_pct }}%
+          <strong>Valor Hora Aplicado:</strong> ${{
+            formatCurrency(currentPeriod.applied_hour_value || 0)
+          }}
+          | <strong>Tope:</strong> {{ formatPercentage(currentPeriod.applied_cap_pct || 0) }}%
         </div>
       </div>
 
@@ -87,7 +89,8 @@
         1. <strong>Destilde</strong> a los asociados que no participan en este periodo.<br />
         2. Haga clic en <strong>Autocompletar Horas</strong> (o cárguelas manualmente).<br />
         3. Haga clic en <strong>Validar y Simular</strong>.<br />
-        4. Si está de acuerdo con los montos, haga clic en <strong>Aprobar Revisión</strong> para pasar a Liquidaciones.
+        4. Si está de acuerdo con los montos, haga clic en <strong>Aprobar Revisión</strong> para
+        pasar a Liquidaciones.
       </div>
     </div>
 
@@ -106,13 +109,14 @@
             <th>Jornada</th>
             <th>Horas mes</th>
             <th>Adicionales</th>
-            <th>Total Estimado</th> <th>Estado</th>
+            <th>Total Estimado</th>
+            <th>Estado</th>
             <th>Revisión</th>
           </tr>
         </thead>
         <tbody>
-          <tr 
-            *ngFor="let assoc of associates; let i = index" 
+          <tr
+            *ngFor="let assoc of associates; let i = index"
             [ngClass]="{ 'opacity-50': !selectedAssociates[assoc.id] }"
           >
             <td class="text-center">
@@ -141,11 +145,11 @@
             </td>
 
             <ng-container *ngIf="getSimulationForAssociate(assoc.id) as sim; else noSim">
-              <td>${{ sim.additional_amount }}</td>
-              
+              <td>${{ formatCurrency(sim.additional_amount || 0) }}</td>
+
               <td>
-                <strong style="color: var(--verde-petroleo); font-size: 1.05rem;">
-                  ${{ sim.total_amount }}
+                <strong style="color: var(--verde-petroleo); font-size: 1.05rem">
+                  ${{ formatCurrency(sim.total_amount || 0) }}
                 </strong>
               </td>
 
@@ -153,7 +157,9 @@
                 <span
                   class="badge"
                   [ngClass]="
-                    +sim.cap_adjustment > 0 || hoursData[assoc.id] === 0 ? 'bg-danger' : 'bg-success'
+                    +sim.cap_adjustment > 0 || hoursData[assoc.id] === 0
+                      ? 'bg-danger'
+                      : 'bg-success'
                   "
                 >
                   {{
@@ -177,7 +183,8 @@
 
             <ng-template #noSim>
               <td class="text-muted">--</td>
-              <td class="text-muted">--</td> <td class="text-muted">--</td>
+              <td class="text-muted">--</td>
+              <td class="text-muted">--</td>
               <td><button class="btn btn-sm btn-link text-muted" disabled>Revisar</button></td>
             </ng-template>
           </tr>
@@ -193,25 +200,25 @@
       </div>
 
       <div class="d-flex gap-2" *ngIf="associates.length > 0">
-        <button 
-          class="btn btn-outline-secondary" 
-          (click)="autoCompleteHours()" 
+        <button
+          class="btn btn-outline-secondary"
+          (click)="autoCompleteHours()"
           [disabled]="simulationResults.length > 0"
         >
           Autocompletar
         </button>
 
-        <button 
-          class="btn btn-warning" 
-          (click)="onCorregirHoras()" 
+        <button
+          class="btn btn-warning"
+          (click)="onCorregirHoras()"
           *ngIf="simulationResults.length > 0"
         >
           Corregir Horas
         </button>
 
-        <button 
-          class="btn btn-primary" 
-          (click)="onSimulate()" 
+        <button
+          class="btn btn-primary"
+          (click)="onSimulate()"
           *ngIf="simulationResults.length === 0"
         >
           Validar y Simular
@@ -280,13 +287,13 @@
         <div class="col-6">
           <small class="text-muted d-block">Valor por Hora Actual</small>
           <span class="fw-bold fs-5" style="color: var(--verde-petroleo)">
-            ${{ globalHourValue }}
+            ${{ formatCurrency(globalHourValue || 0) }}
           </span>
         </div>
         <div class="col-6">
           <small class="text-muted d-block">Tope Máx. de Ajuste</small>
           <span class="fw-bold fs-5" style="color: var(--verde-petroleo)">
-            {{ globalCapPct }}%
+            {{ formatPercentage(globalCapPct || 0) }}%
           </span>
         </div>
       </div>
@@ -321,7 +328,7 @@
     <ul class="list-group list-group-flush border rounded">
       <li class="list-group-item d-flex justify-content-between p-3">
         <span>Retiro de Base Líquido:</span>
-        <strong>${{ selectedSimulationDetail.base_amount }}</strong>
+        <strong>${{ formatCurrency(selectedSimulationDetail.base_amount || 0) }}</strong>
       </li>
 
       <li class="list-group-item p-3 bg-light">
@@ -335,7 +342,7 @@
           <span class="text-muted" style="font-size: 0.9rem">
             {{ item.module_name }} <span *ngIf="item.variant_name">- {{ item.variant_name }}</span>
           </span>
-          <strong style="color: var(--verde-petroleo)">+${{ item.calculated_value }}</strong>
+          <strong style="color: var(--verde-petroleo)">+${{ formatCurrency(item.calculated_value || 0) }}</strong>
         </li>
       </ng-container>
       <ng-template #noItems>
@@ -350,7 +357,7 @@
       >
         <span class="fw-bold text-muted" style="font-size: 0.9rem">Total Adicionales:</span>
         <strong style="color: var(--verde-petroleo)"
-          >+${{ selectedSimulationDetail.additional_amount }}</strong
+          >+${{ formatCurrency(selectedSimulationDetail.additional_amount || 0) }}</strong
         >
       </li>
 
@@ -362,7 +369,7 @@
         <strong
           [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
         >
-          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+          -${{ formatCurrency(selectedSimulationDetail.cap_adjustment || 0) }}
         </strong>
       </li>
 
@@ -374,7 +381,7 @@
         <strong
           [ngClass]="+selectedSimulationDetail.cap_adjustment > 0 ? 'text-danger' : 'text-muted'"
         >
-          -${{ selectedSimulationDetail.cap_adjustment || '0.00' }}
+          -${{ formatCurrency(selectedSimulationDetail.cap_adjustment || 0) }}
         </strong>
       </li>
 
@@ -384,7 +391,7 @@
       >
         <span><strong style="color: var(--verde-petroleo)">Monto Final a Percibir:</strong></span>
         <strong style="color: var(--verde-petroleo); font-size: 1.1rem"
-          >${{ selectedSimulationDetail.total_amount }}</strong
+          >${{ formatCurrency(selectedSimulationDetail.total_amount || 0) }}</strong
         >
       </li>
     </ul>
