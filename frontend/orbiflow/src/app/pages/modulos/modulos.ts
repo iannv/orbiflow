@@ -149,6 +149,24 @@ export class Modulos implements OnInit {
       return; 
     }
 
+    // Verificador de exclusividad (Regla de Negocio)
+    const isExclusive = this.moduloForm.get('is_exclusive')?.value;
+    let defaultsCount = 0;
+
+    this.variantesFormArray.controls.forEach((control) => {
+      if (control.get('is_default')?.value) {
+        defaultsCount++;
+      }
+    });
+
+    if (isExclusive && defaultsCount > 1) {
+      this.lanzarToast(
+        'Conflicto de reglas', 
+        'Un módulo exclusivo solo puede tener UNA variante asignada por defecto.'
+      );
+      return; 
+    }
+
     let errorPorcentaje = false;
     this.variantesFormArray.controls.forEach((control) => {
       const tipo = control.get('type')?.value;
@@ -260,7 +278,7 @@ export class Modulos implements OnInit {
     });
   }
 
-  // --- FEEDBACK VISUAL ---
+  // Feedback visual
 
   toggleEstadoModulo(event: Event, modulo: Modulo): void {
     const checkbox = event.target as HTMLInputElement;
@@ -286,6 +304,20 @@ export class Modulos implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  manejarExclusividadPorDefecto(indexCambiado: number): void {
+    const isExclusive = this.moduloForm.get('is_exclusive')?.value;
+    const varianteCambiada = this.variantesFormArray.at(indexCambiado);
+
+    if (isExclusive && varianteCambiada.get('is_default')?.value === true) {
+      
+      this.variantesFormArray.controls.forEach((control, i) => {
+        if (i !== indexCambiado) {
+          control.get('is_default')?.setValue(false, { emitEvent: false });
+        }
+      });
+    }
   }
 
   lanzarToast(titulo: string, subtitulo: string): void {
