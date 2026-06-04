@@ -261,6 +261,7 @@
                     type="checkbox"
                     formControlName="is_default"
                     [id]="'switchDef' + $index"
+                    (change)="manejarExclusividadPorDefecto($index)"
                   />
                   <label
                     class="form-check-label"
