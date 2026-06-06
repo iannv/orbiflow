@@ -20,7 +20,7 @@ import {
   FormsModule,
 } from '@angular/forms';
 import { Toast } from '../../components/toast/toast';
-import { Switch } from "../../components/button/switch/switch";
+import { Switch } from '../../components/button/switch/switch';
 
 @Component({
   selector: 'app-usuarios',
@@ -35,8 +35,8 @@ import { Switch } from "../../components/button/switch/switch";
     Modal,
     Select,
     Toast,
-    Switch
-],
+    Switch,
+  ],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
@@ -82,7 +82,14 @@ export class Usuarios implements OnInit {
         first_name: ['', Validators.required],
         last_name: ['', Validators.required],
         username: ['', Validators.required],
-        password: [''],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/),
+          ],
+        ],
         repeatPassword: [''],
         email: ['', [Validators.required, Validators.email]],
         roleControl: ['', Validators.required],

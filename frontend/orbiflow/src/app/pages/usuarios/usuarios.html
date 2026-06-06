@@ -55,14 +55,15 @@
             backgroundColor="var(--gris-blanco)"
             colorName="var(--verde-azulado)"
             (click)="filterByRole(r.value)"
-            [badgeActive]="
+            [badgeActive]="selectedRole === r.value"
+          ></app-chip>
+          <!-- [badgeActive]="
               selectedRole === RolEnum.ADMIN ||
               selectedRole === RolEnum.ASSOCIATE ||
               selectedRole === RolEnum.TREASURER
                 ? selectedRole === r.value
                 : false
-            "
-          ></app-chip>
+            " -->
         }
       </div>
       <!-- Paginator -->
@@ -188,9 +189,9 @@
 
           @if (needsLegajoWarning && modalMode === 'create') {
             <p class="warning">
-              Atención: los usuarios con rol "Asociado" o "Tesorero" requieren un
-              legajo asociado. Podés crear el usuario ahora y completar el legajo
-              luego desde la sección de Asociados.
+              Atención: los usuarios con rol "Asociado" o "Tesorero" requieren un legajo asociado.
+              Podés crear el usuario ahora y completar el legajo luego desde la sección de
+              Asociados.
             </p>
           }
         </div>
