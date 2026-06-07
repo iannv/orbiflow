@@ -4,9 +4,10 @@
 
   @if (isLoading) {
     <div class="text-center my-5">
-      <div class="spinner-border text-primary" role="status">
+      <!-- <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
-      </div>
+      </div> -->
+      <app-loader></app-loader>
     </div>
   } @else if (years.length === 0) {
     <div class="alert alert-info mt-4">No se registran periodos cerrados en el sistema.</div>
@@ -109,10 +110,11 @@
   (close)="closeDetailsModal()"
 >
   @if (isLoadingDetails) {
-    <div class="text-center my-4">
+    <!-- <div class="text-center my-4">
       <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
       <p class="text-muted mt-2">Cargando detalles...</p>
-    </div>
+    </div> -->
+    <app-loader></app-loader>
   } @else if (selectedSummary) {
     <div class="mt-2">
       <div

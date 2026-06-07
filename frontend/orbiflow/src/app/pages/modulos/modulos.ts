@@ -12,17 +12,20 @@ import { Modal } from '../../components/modal/modal';
 import { Toast } from '../../components/toast/toast';
 import { formatCurrency } from '../../shared/utils/formatCurrency';
 import { formatPercentage } from '../../shared/utils/formatPercentage';
+import { Loader } from "../../components/loader/loader";
 
 @Component({
   selector: 'app-modulos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BaseCard, Primary, Action, Chip, Modal, Toast],
+  imports: [CommonModule, ReactiveFormsModule, BaseCard, Primary, Action, Chip, Modal, Toast, Loader],
   templateUrl: './modulos.html',
   styleUrl: './modulos.css',
 })
 export class Modulos implements OnInit {
   modulosList: Modulo[] = [];
   moduloForm!: FormGroup;
+
+  loading = true;
 
   // Estados de Modales
   isModalOpen = false;
@@ -82,9 +85,11 @@ export class Modulos implements OnInit {
   }
 
   cargarModulos(): void {
+    this.loading = true;
     this.modulosService.getModulos().subscribe({
       next: (data) => {
         this.modulosList = data;
+        this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar módulos', err),
@@ -139,7 +144,6 @@ export class Modulos implements OnInit {
   }
 
   guardarModulo(): void {
-    
     // Validaciones
     if (this.variantesFormArray.length === 0) {
       this.lanzarToast(

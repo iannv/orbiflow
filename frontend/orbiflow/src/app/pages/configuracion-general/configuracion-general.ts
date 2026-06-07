@@ -8,13 +8,14 @@ import { Primary } from '../../components/button/primary/primary';
 import { Modal } from '../../components/modal/modal';
 import { formatCurrency } from '../../shared/utils/formatCurrency';
 import { formatPercentage } from '../../shared/utils/formatPercentage';
+import { Loader } from "../../components/loader/loader";
 
 type EditMode = 'hour' | 'cap' | 'both';
 
 @Component({
   selector: 'app-configuracion-general',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BaseCard, Action, Primary, Modal],
+  imports: [CommonModule, ReactiveFormsModule, BaseCard, Action, Primary, Modal, Loader],
   templateUrl: './configuracion-general.html',
   styleUrl: './configuracion-general.css'
 })

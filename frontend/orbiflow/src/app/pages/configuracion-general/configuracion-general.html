@@ -5,7 +5,7 @@
   </div>
 
   @if (isLoading()) {
-    <p>Cargando configuraciones...</p>
+    <app-loader></app-loader>
   } @else {
     @if (!currentConfig()) {
       <app-base-card title="Sin configuración" subtitle="La base de datos está vacía.">
