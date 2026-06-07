@@ -27,6 +27,10 @@ export class LiquidationComponent implements OnInit {
   associatesCalculations: any[] = [];
   selectedDetail: any = null;
 
+  // Prevención de transacciones duplicadas
+  isProcessing = false;
+  private toastTimeoutId: any;
+
   isConfirmModalOpen = false;
   isDetailsModalOpen = false;
 
@@ -84,7 +88,9 @@ export class LiquidationComponent implements OnInit {
 
  onLoadData() {
     if (!this.selectedPeriodId) return;
+    if (this.isProcessing) return; // Bloqueo preventivo
 
+    this.isProcessing = true;
     this.summary = null;
     this.associatesCalculations = [];
     
@@ -119,12 +125,14 @@ export class LiquidationComponent implements OnInit {
             }
           };
 
+          this.isProcessing = false;
           this.cdr.detectChanges(); 
         });
       },
       error: (err) => {
         console.error('Error al previsualizar cálculos', err);
         this.lanzarToast('Error', 'No se pudieron simular los detalles.');
+        this.isProcessing = false;
       }
     });
   }
@@ -152,6 +160,10 @@ export class LiquidationComponent implements OnInit {
   onConfirmClose() {
     if (!this.selectedPeriodId) return;
     
+    // Bloqueo  de transacciones dobles
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+    
     const periodId = Number(this.selectedPeriodId);
     
     this.liquidationService.calculate(periodId, false).subscribe({
@@ -163,6 +175,7 @@ export class LiquidationComponent implements OnInit {
               this.summary = null;
               this.associatesCalculations = [];
               this.selectedPeriodId = null;
+              this.isProcessing = false; 
               
               this.lanzarToast('Cierre Exitoso', 'La liquidación se consolidó de manera inmutable.');
               
@@ -176,12 +189,14 @@ export class LiquidationComponent implements OnInit {
           error: (err) => {
             console.error('Error al actualizar estado del periodo', err);
             this.lanzarToast('Error', 'No se pudo actualizar el estado a Cerrado.');
+            this.isProcessing = false;
           }
         });
       },
       error: (err) => {
         console.error('Error en el cálculo definitivo', err);
         this.lanzarToast('Error Crítico', 'Hubo un fallo al intentar persistir los recibos.');
+        this.isProcessing = false;
       }
     });
   }
@@ -192,7 +207,12 @@ export class LiquidationComponent implements OnInit {
     this.mostrarToast = true;
     this.cdr.detectChanges();
 
-    setTimeout(() => {
+    // Se limpia el temporizador anterior para evitar solapamientos
+    if (this.toastTimeoutId) {
+      clearTimeout(this.toastTimeoutId);
+    }
+
+    this.toastTimeoutId = setTimeout(() => {
       this.mostrarToast = false;
       this.cdr.detectChanges();
     }, 3500);
