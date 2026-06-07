@@ -9,14 +9,17 @@ import { LiquidationService } from '../../../services/liquidation-service';
 import { LiquidationPeriod } from '../../../interfaces/Liquidation';
 import { Chip } from '../../../components/chip/chip';
 import { formatCurrency } from '../../../shared/utils/formatCurrency';
+import { Loader } from "../../../components/loader/loader";
 
 @Component({
   selector: 'app-panel-admin',
-  imports: [BaseCard, RouterLink, Chip],
+  imports: [BaseCard, RouterLink, Chip, Loader],
   templateUrl: './panel-admin.html',
   styleUrl: './panel-admin.css',
 })
 export class PanelAdmin {
+  loading = true;
+
   asociadosActivos: number = 0;
   totalAsociados: number = 0;
 
@@ -65,10 +68,12 @@ export class PanelAdmin {
   }
 
   isAdmin() {
+    this.loading = false;
     return this.authService.currentUser()?.role === 'admin';
   }
 
   isTressurer() {
+    this.loading = false;
     return this.authService.currentUser()?.role === 'treasurer';
   }
 

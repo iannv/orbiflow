@@ -8,11 +8,12 @@ import { Modal } from '../../../components/modal/modal';
 import { buildLiquidacionConsolidadaTemplate } from '../../../shared/pdf-templates/closedLiquidations-template';
 import { formatCurrency } from '../../../shared/utils/formatCurrency';
 import { formatPercentage } from '../../../shared/utils/formatPercentage';
+import { Loader } from "../../../components/loader/loader";
 
 @Component({
   selector: 'app-closed-liquidations',
   standalone: true,
-  imports: [CommonModule, Modal],
+  imports: [CommonModule, Modal, Loader],
   templateUrl: './closed-liquidations.html',
   styleUrl: './closed-liquidations.css',
 })
