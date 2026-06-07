@@ -28,7 +28,7 @@ export class ClosedLiquidationsComponent implements OnInit {
   selectedSummary: LiquidationSummary | null = null;
   isLoadingDetails = false;
 
-  // Utilidades de Formato
+  // Utilidades
   formatCurrency = formatCurrency;
   formatPercentage = formatPercentage;
 
@@ -57,7 +57,8 @@ export class ClosedLiquidationsComponent implements OnInit {
   getAssociateName(associateData: any): string {
     if (!associateData) return 'Socio Desconocido';
 
-    if (typeof associateData === 'object' && associateData.id) {
+    // Validar explícitamente que no sea null antes de buscar propiedades
+    if (typeof associateData === 'object' && associateData !== null && associateData.id) {
       return (
         this.associatesMap[associateData.id] ||
         associateData.full_name ||
@@ -113,29 +114,22 @@ export class ClosedLiquidationsComponent implements OnInit {
 
     this.years = Object.keys(this.periodsByYear)
       .map(Number)
-      .sort((a, b) => b - a);
+      .sort((a, b) => b - a); 
   }
 
   getMonthName(month: number): string {
     const meses = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
     ];
     return meses[month - 1] || month.toString();
   }
 
   openDetailsModal(periodId?: number) {
     if (!periodId) return;
+    
+    //Bloqueo de peticiones simultáneas (Spam Clic)
+    if (this.isLoadingDetails) return;
 
     this.isDetailsModalOpen = true;
     this.isLoadingDetails = true;
