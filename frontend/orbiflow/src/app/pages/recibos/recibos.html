@@ -2,71 +2,77 @@
   <h1 class="h1-title">Mis Recibos</h1>
   <h2 class="h2-subtitle">Historial de liquidaciones de retiro</h2>
 
-  <!-- SECTION HISTORIAL DE RETIROS -->
-  <section class="section-retiros mt-3">
-    <div class="accordion mb-5" id="accordionYears">
-      @for (year of yearList; track $index) {
-        @if (getRetirementsByYear(year).length > 0) {
-          <div class="accordion-item mb-3 border rounded shadow-sm">
-            <!-- HEADER -->
-            <h2 class="accordion-header" [id]="'heading' + year">
-              <button
-                class="accordion-button collapsed fw-bold"
-                type="button"
-                data-bs-toggle="collapse"
-                [attr.data-bs-target]="'#collapse' + year"
-                aria-expanded="false"
-                [attr.aria-controls]="'collapse' + year"
+  @if (loading) {
+    <app-loader></app-loader>
+  }
+
+  @if (!loading) {
+    <!-- SECTION HISTORIAL DE RETIROS -->
+    <section class="section-retiros mt-3">
+      <div class="accordion mb-5" id="accordionYears">
+        @for (year of yearList; track $index) {
+          @if (getRetirementsByYear(year).length > 0) {
+            <div class="accordion-item mb-3 border rounded shadow-sm">
+              <!-- HEADER -->
+              <h2 class="accordion-header" [id]="'heading' + year">
+                <button
+                  class="accordion-button collapsed fw-bold"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#collapse' + year"
+                  aria-expanded="false"
+                  [attr.aria-controls]="'collapse' + year"
+                >
+                  <span class="fw600">Año {{ year }}</span>
+                </button>
+              </h2>
+  
+              <!-- COLLAPSE -->
+              <div
+                [id]="'collapse' + year"
+                class="accordion-collapse collapse"
+                [attr.aria-labelledby]="'heading' + year"
+                data-bs-parent="#accordionYears"
               >
-                <span class="fw600">Año {{ year }}</span>
-              </button>
-            </h2>
-
-            <!-- COLLAPSE -->
-            <div
-              [id]="'collapse' + year"
-              class="accordion-collapse collapse"
-              [attr.aria-labelledby]="'heading' + year"
-              data-bs-parent="#accordionYears"
-            >
-              <div class="accordion-body p-0">
-                @for (retirement of getRetirementsByYear(year); track $index) {
-                  <app-base-card padding="0">
-                    <div class="collapsed-div-card">
-                      <p class="fw400">{{ getPeriod(retirement) }}</p>
-
-                      <p class="fw300">
-                        Importe:
-                        <span class="fw700"> ${{ formatCurrency(retirement.total_amount) }} </span>
-                      </p>
-
-                      <a id="ver-recibo-link" (click)="viewPDF(retirement)">Ver recibo</a>
-                      <app-primary
-                        name="Descargar PDF"
-                        btnImg="assets/descargar.png"
-                        (btnClick)="downloadPDF(retirement)"
-                      ></app-primary>
-                    </div>
-                  </app-base-card>
-                }
+                <div class="accordion-body p-0">
+                  @for (retirement of getRetirementsByYear(year); track $index) {
+                    <app-base-card padding="0">
+                      <div class="collapsed-div-card">
+                        <p class="fw400">{{ getPeriod(retirement) }}</p>
+  
+                        <p class="fw300">
+                          Importe:
+                          <span class="fw700"> ${{ formatCurrency(retirement.total_amount) }} </span>
+                        </p>
+  
+                        <a id="ver-recibo-link" (click)="viewPDF(retirement)">Ver recibo</a>
+                        <app-primary
+                          name="Descargar PDF"
+                          btnImg="assets/descargar.png"
+                          (btnClick)="downloadPDF(retirement)"
+                        ></app-primary>
+                      </div>
+                    </app-base-card>
+                  }
+                </div>
               </div>
             </div>
-          </div>
+          }
         }
-      }
+      </div>
+    </section>
+  
+    <!-- SECTION NOTA-->
+    <div
+      class="alert mt-4"
+      style="background-color: #eef2fa; border: 1px solid #b3c7ee; border-radius: 8px"
+    >
+      <strong style="color: var(--azul); font-size: 0.95rem">Nota</strong>
+      <p class="mb-0 mt-1 fw300" style="color: var(--gris-oscuro); font-size: 0.9rem">
+        Los recibos solo están disponibles para períodos en estado
+        <strong class="fw600">"Cerrado"</strong>. Una vez cerrado un período, el documento PDF queda
+        disponible permanentemente para consulta y descarga.
+      </p>
     </div>
-  </section>
-
-  <!-- SECTION NOTA-->
-  <div
-    class="alert mt-4"
-    style="background-color: #eef2fa; border: 1px solid #b3c7ee; border-radius: 8px"
-  >
-    <strong style="color: var(--azul); font-size: 0.95rem">Nota</strong>
-    <p class="mb-0 mt-1 fw300" style="color: var(--gris-oscuro); font-size: 0.9rem">
-      Los recibos solo están disponibles para períodos en estado
-      <strong class="fw600">"Cerrado"</strong>. Una vez cerrado un período, el documento PDF queda
-      disponible permanentemente para consulta y descarga.
-    </p>
-  </div>
+  }
 </main>

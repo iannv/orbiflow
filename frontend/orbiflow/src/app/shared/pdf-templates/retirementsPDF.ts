@@ -1,6 +1,6 @@
 import { LOGO_ORBIFLOW } from '../../../assets/logo-orbiflow';
-
-// CAMBIAR LOGO ORBIFLOW POR ORBICOOP
+import { formatCurrency } from '../utils/formatCurrency';
+import { formatDate } from '../utils/formatDate';
 
 function getRoleLabel(role: string): string {
   const roles: Record<string, string> = {
@@ -12,18 +12,16 @@ function getRoleLabel(role: string): string {
   return roles[role.toLowerCase()] || role;
 }
 
-// TODO: FORMATEAR FECHA DE INGRESO A dd/mm/yyyy
-
 export function retirementPDF(data: any) {
   const liquidationItems = data.retirement.items || [];
 
-  const itemsRows = liquidationItems.map((item: any) => [
+  const itemsRows = liquidationItems.filter((item: any) => Number(item.calculated_value) > 0).map((item: any) => [
     {
       text: item.module_name,
     },
 
     {
-      text: `$${item.calculated_value}`,
+      text: `$${formatCurrency(item.calculated_value)}`,
       alignment: 'right',
     },
 
@@ -182,7 +180,7 @@ export function retirementPDF(data: any) {
                       },
 
                       {
-                        text: data.associate.entry_date,
+                        text: formatDate(data.associate.entry_date),
                       },
                     ],
 
@@ -279,6 +277,18 @@ export function retirementPDF(data: any) {
             ],
 
             // ITEMS DINAMICOS
+            [
+              {
+                text: 'Sueldo base',
+              },
+              {
+                text: `$${formatCurrency(data.retirement.base_amount)}`,
+                alignment: 'right',
+              },
+              {
+                text: '',
+              },
+            ],
             ...itemsRows,
 
             // SUBTOTAL
