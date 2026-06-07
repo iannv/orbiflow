@@ -21,6 +21,7 @@ import {
 } from '@angular/forms';
 import { Toast } from '../../components/toast/toast';
 import { Switch } from '../../components/button/switch/switch';
+import { Loader } from "../../components/loader/loader";
 
 @Component({
   selector: 'app-usuarios',
@@ -36,7 +37,8 @@ import { Switch } from '../../components/button/switch/switch';
     Select,
     Toast,
     Switch,
-  ],
+    Loader
+],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
@@ -47,6 +49,7 @@ export class Usuarios implements OnInit {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  loading = true;
   modalMode: 'create' | 'edit' | 'delete' = 'create';
   userForm!: FormGroup;
   userList: User[] = [];
@@ -63,11 +66,12 @@ export class Usuarios implements OnInit {
 
   ngOnInit() {
     this.initForm();
-  }
-
-  ngAfterViewInit() {
     this.getUsers();
   }
+
+  // ngAfterViewInit() {
+  //   this.getUsers();
+  // }
 
   passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
@@ -108,6 +112,8 @@ export class Usuarios implements OnInit {
   chipColorName?: string;
   chipBackgroundColor?: string;
   getUsers() {
+    this.loading = true;
+
     this.userService.getUsers().subscribe((users) => {
       this.userList = users.map((user) => {
         if (user.role === RolEnum.ADMIN) {
@@ -132,6 +138,7 @@ export class Usuarios implements OnInit {
       });
       this.filteredList = [...this.userList];
       this.currentPage = 1;
+      this.loading = false;
       this.cdr.detectChanges();
     });
   }

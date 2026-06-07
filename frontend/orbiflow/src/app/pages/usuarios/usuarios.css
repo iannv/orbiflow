@@ -57,9 +57,8 @@
 }
 
 .switch-activo {
-  position: absolute;
-  right: 10rem;
-  top: 13.1rem;
+  display: flex;
+  justify-self: flex-end;
 }
 
 #section-title {

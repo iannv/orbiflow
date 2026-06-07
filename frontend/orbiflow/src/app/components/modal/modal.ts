@@ -18,6 +18,7 @@ export class Modal {
   @Input() isOpen = false;
   @Input() title = '';
   @Input() subtitle = '';
+  @Input() position = '';
 
   @Input() primaryBtnText = 'Guardar';
   @Input() secondaryBtnText = 'Cancelar';
