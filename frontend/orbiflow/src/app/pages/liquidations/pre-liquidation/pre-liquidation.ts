@@ -35,6 +35,10 @@ export class PreLiquidationComponent implements OnInit {
   selectedSimulationDetail: any = null; 
   dataLoaded: boolean = false; 
 
+  //  Bloqueo de peticiones en paralelo
+  isProcessing = false; 
+  private toastTimeoutId: any;
+
   // Estados de los Modales Propios 
   isCreateModalOpen = false;
   isRevisionModalOpen = false;
@@ -116,8 +120,8 @@ export class PreLiquidationComponent implements OnInit {
   isYearValid(): boolean {
     return this.newPeriodYear !== null && 
            this.newPeriodYear !== undefined && 
-           this.newPeriodYear >= 2000 && 
-           this.newPeriodYear <= 2100;
+           this.newPeriodYear >= 1900 && 
+           this.newPeriodYear <= 2999;
   }
 
   onCreatePeriod() {
@@ -125,6 +129,10 @@ export class PreLiquidationComponent implements OnInit {
       this.lanzarToast('Dato Incorrecto', 'Por favor, ingrese un año válido de 4 cifras.');
       return; 
     }
+
+    // Bloqueo de peticiones dobles
+    if (this.isProcessing) return;
+    this.isProcessing = true;
 
     const payload = {
       month: this.newPeriodMonth,
@@ -139,11 +147,14 @@ export class PreLiquidationComponent implements OnInit {
         this.lanzarToast('Periodo Creado', `Periodo ${created.month}/${created.year} guardado correctamente.`);
         this.loadOpenPeriods(); 
         this.closeCreateModal(); 
+        this.isProcessing = false; 
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error("Error al crear:", err);
         this.lanzarToast('Error', 'No se pudo crear. Verifique si el periodo ya existe.');
+        this.isProcessing = false; 
+        this.cdr.detectChanges();
       }
     });
   }
@@ -226,16 +237,23 @@ export class PreLiquidationComponent implements OnInit {
       return;
     }
 
+    // Bloqueo de peticiones dobles
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
     const payload = { entries };
 
     this.liquidationService.simulateLiquidation(this.selectedPeriodId!, payload).subscribe({
       next: (result: any) => {
         this.simulationResults = result.retirements || result; 
+        this.isProcessing = false;
         this.cdr.detectChanges(); 
       },
       error: (err: any) => {
         console.error(err);
         this.lanzarToast('Error', 'Hubo un error al generar la simulación.');
+        this.isProcessing = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -256,6 +274,10 @@ export class PreLiquidationComponent implements OnInit {
   }
 
   confirmApproveReview() {
+    // Bloqueo de peticiones dobles
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
     // payload final con los asociados tildados definitivos
     const entries = this.associates
       .filter(a => this.selectedAssociates[a.id])
@@ -266,27 +288,38 @@ export class PreLiquidationComponent implements OnInit {
 
     const payload = { entries };
 
-    // guardamos las horas a la base de datos de forma definitiva
+    // se guardan las horas a la base de datos de forma definitiva
     this.liquidationService.uploadHours(this.selectedPeriodId!, payload).subscribe({
       next: () => {
         // si se guardaron bien, se cambia el estado del periodo
-        this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe(() => {
-          this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
-          this.loadOpenPeriods(); 
-          this.dataLoaded = false;
-          this.selectedPeriodId = null;
-          this.isApproveModalOpen = false; 
-          this.cdr.detectChanges(); 
+        this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe({
+          next: () => {
+            this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
+            this.loadOpenPeriods(); 
+            this.dataLoaded = false;
+            this.selectedPeriodId = null;
+            this.isApproveModalOpen = false; 
+            this.isProcessing = false; 
+            this.cdr.detectChanges(); 
 
-          setTimeout(() => {
-            this.router.navigate(['/liquidaciones']); 
-          }, 3500);
+            setTimeout(() => {
+              this.router.navigate(['/liquidaciones']); 
+            }, 3500);
+          },
+          error: (err: any) => {
+            console.error(err);
+            this.lanzarToast('Error', 'No se pudo actualizar el estado del periodo.');
+            this.isApproveModalOpen = false;
+            this.isProcessing = false;
+            this.cdr.detectChanges();
+          }
         });
       },
       error: (err: any) => {
         console.error(err);
         this.lanzarToast('Error', 'No se pudieron guardar las horas definitivas.');
         this.isApproveModalOpen = false;
+        this.isProcessing = false; 
         this.cdr.detectChanges();
       }
     });
@@ -305,12 +338,17 @@ export class PreLiquidationComponent implements OnInit {
   }
 
   confirmarEliminacionPeriodo() {
+    // Bloqueo de peticiones dobles
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
     this.liquidationService.deletePeriod(this.selectedPeriodId!).subscribe({
       next: () => {
         this.lanzarToast('Periodo Descartado', 'Se ha eliminado el periodo.');
         this.selectedPeriodId = null;
         this.dataLoaded = false;
         this.isConfirmModalOpen = false;
+        this.isProcessing = false; 
         this.loadOpenPeriods();
         this.cdr.detectChanges();
       },
@@ -318,6 +356,7 @@ export class PreLiquidationComponent implements OnInit {
         console.error(err);
         this.lanzarToast('Error', 'No se pudo descartar el periodo.');
         this.isConfirmModalOpen = false;
+        this.isProcessing = false;
         this.cdr.detectChanges();
       }
     });
@@ -329,7 +368,12 @@ export class PreLiquidationComponent implements OnInit {
     this.mostrarToast = true;
     this.cdr.detectChanges();
 
-    setTimeout(() => {
+    //  Evitar que alertas consecutivas se oculten antes de tiempo
+    if (this.toastTimeoutId) {
+      clearTimeout(this.toastTimeoutId);
+    }
+
+    this.toastTimeoutId = setTimeout(() => {
       this.mostrarToast = false;
       this.cdr.detectChanges();
     }, 3500);
