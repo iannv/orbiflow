@@ -1,5 +1,5 @@
 @if (isOpen) {
-  <div class="app-modal-overlay">
+  <div class="app-modal-overlay" [ngClass]="{'position': position}">
     <div
       class="app-modal"
       [ngClass]="'app-modal-' + size"
