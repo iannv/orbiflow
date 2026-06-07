@@ -13,10 +13,11 @@ import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
 import { UserService } from '../../services/user-service';
 import { numeroALetras } from '../../shared/utils/numeroALetras';
 import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { Loader } from "../../components/loader/loader";
 
 @Component({
   selector: 'app-recibos',
-  imports: [BaseCard, Primary],
+  imports: [BaseCard, Primary, Loader],
   templateUrl: './recibos.html',
   styleUrl: './recibos.css',
 })
@@ -25,6 +26,7 @@ export class Recibos {
   periodsList: LiquidationPeriod[] = [];
   yearList: number[] = [];
   formatCurrency = formatCurrency;
+  loading = true;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -43,6 +45,8 @@ export class Recibos {
 
   // Obtener recibos de un asociado
   getRetirements() {
+    this.loading = true;
+
     const user = this.authService.currentUser();
     if (!user) return;
 
@@ -53,6 +57,7 @@ export class Recibos {
         this.retirementsList = retirements;
         this.liquidationService.getPeriods().subscribe((periods) => {
           this.periodsList = periods;
+          this.loading = false;
           this.getYears();
           this.cdr.detectChanges();
         });
