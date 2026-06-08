@@ -214,6 +214,8 @@
       } @else {
         <select
           class="form-select"
+          [class.field-invalid]="formErrors.user"
+          [attr.aria-invalid]="formErrors.user ? true : null"
           [(ngModel)]="formData.user"
           name="user"
           (ngModelChange)="onUserSelect($event)"
@@ -225,6 +227,9 @@
             </option>
           }
         </select>
+        @if (formErrors.user) {
+          <p class="field-error">{{ formErrors.user }}</p>
+        }
       }
     </div>
   }
@@ -250,8 +255,16 @@
           type="text"
           [(ngModel)]="formData.dni"
           name="dni"
+          maxlength="8"
+          inputmode="numeric"
+          [class.field-invalid]="formErrors.dni"
+          [attr.aria-invalid]="formErrors.dni ? true : null"
+          (ngModelChange)="clearFieldError('dni')"
           placeholder="Ej: 30123456"
         />
+        @if (formErrors.dni) {
+          <p class="field-error">{{ formErrors.dni }}</p>
+        }
       </div>
 
       <div class="app-modal-field">
@@ -260,7 +273,14 @@
           type="date"
           [(ngModel)]="formData.entry_date"
           name="entry_date"
+          [max]="todayIso"
+          [class.field-invalid]="formErrors.entry_date"
+          [attr.aria-invalid]="formErrors.entry_date ? true : null"
+          (ngModelChange)="clearFieldError('entry_date')"
         />
+        @if (formErrors.entry_date) {
+          <p class="field-error">{{ formErrors.entry_date }}</p>
+        }
       </div>
     </div>
 
@@ -271,8 +291,15 @@
         [(ngModel)]="formData.cbu"
         name="cbu"
         maxlength="22"
+        inputmode="numeric"
+        [class.field-invalid]="formErrors.cbu"
+        [attr.aria-invalid]="formErrors.cbu ? true : null"
+        (ngModelChange)="clearFieldError('cbu')"
         placeholder="22 dígitos"
       />
+      @if (formErrors.cbu) {
+        <p class="field-error">{{ formErrors.cbu }}</p>
+      }
     </div>
 
     <div class="app-modal-grid-2">
@@ -284,8 +311,15 @@
           name="base_hours"
           min="1"
           max="12"
+          step="1"
+          [class.field-invalid]="formErrors.base_hours"
+          [attr.aria-invalid]="formErrors.base_hours ? true : null"
+          (ngModelChange)="clearFieldError('base_hours')"
           placeholder="8"
         />
+        @if (formErrors.base_hours) {
+          <p class="field-error">{{ formErrors.base_hours }}</p>
+        }
       </div>
 
       <div class="app-modal-field">
@@ -304,8 +338,15 @@
           type="email"
           [(ngModel)]="formData.personal_email"
           name="personal_email"
+          autocomplete="email"
+          [class.field-invalid]="formErrors.personal_email"
+          [attr.aria-invalid]="formErrors.personal_email ? true : null"
+          (ngModelChange)="clearFieldError('personal_email')"
           placeholder="Ej: nombre@gmail.com"
         />
+        @if (formErrors.personal_email) {
+          <p class="field-error">{{ formErrors.personal_email }}</p>
+        }
       </div>
 
       <div class="app-modal-field">
@@ -314,8 +355,17 @@
           type="text"
           [(ngModel)]="formData.phone_number"
           name="phone_number"
+          maxlength="20"
+          inputmode="tel"
+          autocomplete="tel"
+          [class.field-invalid]="formErrors.phone_number"
+          [attr.aria-invalid]="formErrors.phone_number ? true : null"
+          (ngModelChange)="clearFieldError('phone_number')"
           placeholder="Ej: 1145231001"
         />
+        @if (formErrors.phone_number) {
+          <p class="field-error">{{ formErrors.phone_number }}</p>
+        }
       </div>
 
       <div class="app-modal-field app-modal-field-full">
@@ -324,8 +374,16 @@
           type="text"
           [(ngModel)]="formData.address"
           name="address"
+          maxlength="255"
+          autocomplete="street-address"
+          [class.field-invalid]="formErrors.address"
+          [attr.aria-invalid]="formErrors.address ? true : null"
+          (ngModelChange)="clearFieldError('address')"
           placeholder="Ej: Av. Corrientes 1234"
         />
+        @if (formErrors.address) {
+          <p class="field-error">{{ formErrors.address }}</p>
+        }
       </div>
 
       <div class="app-modal-field app-modal-field-full">
@@ -334,16 +392,31 @@
           type="text"
           [(ngModel)]="emergencyContactInput"
           name="emergency_contact"
+          [class.field-invalid]="formErrors.emergency_contact"
+          [attr.aria-invalid]="formErrors.emergency_contact ? true : null"
+          (ngModelChange)="clearFieldError('emergency_contact')"
           placeholder="Nombre y teléfono"
         />
+        @if (formErrors.emergency_contact) {
+          <p class="field-error">{{ formErrors.emergency_contact }}</p>
+        }
       </div>
     </div>
   </div>
 
-  @if (modalError) {
-    <p class="modal-error">
-      {{ modalError }}
-    </p>
+  @if (modalError || formErrorSummary.length > 0) {
+    <div class="modal-error" role="alert">
+      @if (modalError) {
+        <p>{{ modalError }}</p>
+      }
+      @if (formErrorSummary.length > 0) {
+        <ul class="modal-error-list">
+          @for (message of formErrorSummary; track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      }
+    </div>
   }
 </app-modal>
 

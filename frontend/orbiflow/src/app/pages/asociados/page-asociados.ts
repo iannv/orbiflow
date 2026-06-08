@@ -16,6 +16,19 @@ import { User } from '../../interfaces/User';
 import { Loader } from '../../components/loader/loader';
 import { Toast } from '../../components/toast/toast';
 
+type AssociateFormField =
+  | 'user'
+  | 'dni'
+  | 'cbu'
+  | 'entry_date'
+  | 'base_hours'
+  | 'personal_email'
+  | 'phone_number'
+  | 'address'
+  | 'emergency_contact';
+
+type AssociateFormErrors = Partial<Record<AssociateFormField, string>>;
+
 @Component({
   selector: 'app-page-asociados',
   standalone: true,
@@ -43,6 +56,8 @@ export class PageAsociados implements OnInit {
   loading = true;
   error: string | null = null;
   modalError: string | null = null;
+  formErrors: AssociateFormErrors = {};
+  formErrorSummary: string[] = [];
 
   // ── Toast de notificación ──
   mostrarToast = false;
@@ -69,6 +84,10 @@ export class PageAsociados implements OnInit {
   formData: CreateAssociatePayload = this.emptyForm();
   emergencyContactInput = ''; // campo aparte: el backend espera un objeto JSON
   selectedUserEmail = '';     // solo lectura, se autocompleta al elegir usuario
+  readonly todayIso = this.toLocalIsoDate(new Date());
+
+  private readonly validationSummaryMessage = 'Revisá los datos marcados.';
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
   // ── Estado temporal CU-06 ──
   // Los toggles modifican este Set; se persiste en el backend solo al confirmar
@@ -205,7 +224,7 @@ export class PageAsociados implements OnInit {
     this.selectedAssociate = null;
     this.formData = this.emptyForm();
     this.availableUsers = [];
-    this.modalError = null;
+    this.clearFormFeedback();
     this.emergencyContactInput = '';
     this.selectedUserEmail = '';
 
@@ -235,14 +254,14 @@ export class PageAsociados implements OnInit {
   onUserSelect(userId: number): void {
     const u = this.availableUsers.find((x) => x.id === userId);
     this.selectedUserEmail = u?.email ?? '';
-    this.modalError = null;
+    this.clearFieldError('user');
   }
 
   // Precarga el formulario con los datos del asociado y abre en modo edición
   openEditModal(associate: Associate): void {
     this.modalMode = 'edit';
     this.selectedAssociate = associate;
-    this.modalError = null;
+    this.clearFormFeedback();
     this.emergencyContactInput =
       associate.emergency_contact?.['contact']?.toString() ?? '';
     this.formData = {
@@ -261,43 +280,30 @@ export class PageAsociados implements OnInit {
 
   closeModal(): void {
     this.showModal = false;
-    this.modalError = null;
+    this.clearFormFeedback();
   }
 
   // Valida el formulario, construye el payload y llama a crear o actualizar
   submitForm(): void {
-    this.modalError = null;
+    this.clearFormFeedback();
 
-    if (this.modalMode === 'create' && !this.formData.user) {
-      this.modalError = 'Seleccioná un usuario.';
+    if (!this.validateAssociateForm()) {
       return;
     }
 
-    if (!/^\d{22}$/.test(this.formData.cbu.trim())) {
-      this.modalError = 'El CBU debe tener 22 dígitos.';
-      return;
-    }
+    const payload = this.buildAssociatePayload();
+    let req: Observable<Associate>;
 
-    const payload: CreateAssociatePayload = {
-      user: Number(this.formData.user),
-      dni: this.formData.dni.trim(),
-      cbu: this.formData.cbu.trim(),
-      entry_date: this.formData.entry_date,
-      base_hours: Number(this.formData.base_hours),
-      personal_email: this.formData.personal_email.trim(),
-      phone_number: this.formData.phone_number.trim(),
-      address: this.formData.address.trim(),
-      emergency_contact: this.emergencyContactInput.trim()
-        ? { contact: this.emergencyContactInput.trim() }
-        : null,
-    };
-    const req =
-      this.modalMode === 'create'
-        ? this.associateService.createAssociate(payload)
-        : this.associateService.updateAssociate(
-            this.selectedAssociate!.id,
-            payload,
-          );
+    if (this.modalMode === 'create') {
+      req = this.associateService.createAssociate(payload);
+    } else {
+      const selectedAssociate = this.selectedAssociate;
+      if (!selectedAssociate) {
+        this.modalError = 'No se pudo identificar el legajo a editar.';
+        return;
+      }
+      req = this.associateService.updateAssociate(selectedAssociate.id, payload);
+    }
 
     req.subscribe({
       next: () => {
@@ -310,77 +316,7 @@ export class PageAsociados implements OnInit {
         setTimeout(() => this.mostrarToast = false, 3000);
       },
       error: (err) => {
-        // Mapea los errores del backend a mensajes legibles en español
-        if (err?.error) {
-          const backendErrors = err.error;
-          const messages: string[] = [];
-
-          Object.keys(backendErrors).forEach((key) => {
-            const detail = Array.isArray(backendErrors[key])
-              ? backendErrors[key][0]
-              : backendErrors[key];
-
-            switch (key) {
-              case 'user':
-                if (String(detail).includes('already exists')) {
-                  this.availableUsers = this.availableUsers.filter(
-                    (u) => u.id !== this.formData.user,
-                  );
-                  this.formData.user = 0;
-                  this.selectedUserEmail = '';
-                  messages.push('El usuario ya tiene un legajo y no puede volver a ser registrado.');
-                } else {
-                  messages.push('El usuario seleccionado no es válido.');
-                }
-                break;
-
-              case 'dni':
-                messages.push('El DNI ya está registrado.');
-                break;
-
-              case 'cbu':
-                messages.push('El CBU ya está registrado.');
-                break;
-
-              case 'personal_email':
-                messages.push('El email personal ya está registrado.');
-                break;
-
-              case 'phone_number':
-                messages.push('Falta completar el teléfono.');
-                break;
-
-              case 'address':
-                messages.push('Falta completar el domicilio.');
-                break;
-
-              case 'entry_date':
-                messages.push('Falta completar la fecha de ingreso.');
-                break;
-
-              case 'emergency_contact':
-                messages.push('Falta completar el contacto de emergencia.');
-                break;
-
-              case 'work_email':
-                messages.push('El email laboral es inválido.');
-                break;
-
-              case 'non_field_errors':
-                messages.push(String(detail));
-                break;
-
-              default:
-                messages.push(`${key}: ${detail}`);
-                break;
-            }
-          });
-
-          this.modalError = messages.join(' ');
-        } else {
-          this.modalError = 'No se pudo guardar el legajo.';
-        }
-
+        this.applyBackendErrors(err?.error);
         this.cdr.detectChanges();
       },
     });
@@ -527,6 +463,313 @@ export class PageAsociados implements OnInit {
     };
 
     all.forEach((req) => req.subscribe({ next: finish, error: finish }));
+  }
+
+  clearFieldError(field: AssociateFormField): void {
+    if (!this.formErrors[field]) return;
+
+    const next = { ...this.formErrors };
+    delete next[field];
+    this.formErrors = next;
+    this.formErrorSummary = this.getFormErrorSummary(next);
+
+    if (this.formErrorSummary.length === 0 && this.modalError === this.validationSummaryMessage) {
+      this.modalError = null;
+    }
+  }
+
+  private clearFormFeedback(): void {
+    this.modalError = null;
+    this.formErrors = {};
+    this.formErrorSummary = [];
+  }
+
+  private validateAssociateForm(): boolean {
+    const errors: AssociateFormErrors = {};
+
+    const userId = Number(this.formData.user);
+    if (this.modalMode === 'create' && (!Number.isInteger(userId) || userId <= 0)) {
+      this.addFormError(errors, 'user', 'Seleccioná un usuario para vincular el legajo.');
+    }
+
+    const dni = this.formData.dni.trim();
+    if (!dni) {
+      this.addFormError(errors, 'dni', 'Completá el DNI.');
+    } else if (!/^\d{7,8}$/.test(dni)) {
+      this.addFormError(errors, 'dni', 'El DNI debe tener 7 u 8 dígitos.');
+    }
+
+    const entryDate = this.formData.entry_date.trim();
+    if (!entryDate) {
+      this.addFormError(errors, 'entry_date', 'Completá la fecha de ingreso.');
+    } else if (!this.isValidIsoDate(entryDate)) {
+      this.addFormError(errors, 'entry_date', 'Ingresá una fecha de ingreso válida.');
+    } else if (entryDate > this.todayIso) {
+      this.addFormError(errors, 'entry_date', 'La fecha de ingreso no puede ser futura.');
+    }
+
+    const cbu = this.formData.cbu.trim();
+    if (!cbu) {
+      this.addFormError(errors, 'cbu', 'Completá el CBU.');
+    } else if (!/^\d{22}$/.test(cbu)) {
+      this.addFormError(errors, 'cbu', 'El CBU debe tener 22 dígitos.');
+    }
+
+    const baseHoursRaw = String(this.formData.base_hours ?? '').trim();
+    const baseHours = Number(baseHoursRaw);
+    if (!baseHoursRaw) {
+      this.addFormError(errors, 'base_hours', 'Completá la jornada base.');
+    } else if (!Number.isFinite(baseHours) || !Number.isInteger(baseHours) || baseHours < 1 || baseHours > 12) {
+      this.addFormError(errors, 'base_hours', 'La jornada base debe ser un número entero entre 1 y 12.');
+    }
+
+    const personalEmail = this.formData.personal_email.trim();
+    if (!personalEmail) {
+      this.addFormError(errors, 'personal_email', 'Completá el email personal.');
+    } else if (!this.emailPattern.test(personalEmail)) {
+      this.addFormError(errors, 'personal_email', 'Ingresá un email personal válido.');
+    }
+
+    const phone = this.formData.phone_number.trim();
+    if (!phone) {
+      this.addFormError(errors, 'phone_number', 'Completá el teléfono.');
+    } else if (!/^[0-9+() .-]{6,20}$/.test(phone)) {
+      this.addFormError(errors, 'phone_number', 'Ingresá un teléfono válido.');
+    }
+
+    const address = this.formData.address.trim();
+    if (!address) {
+      this.addFormError(errors, 'address', 'Completá el domicilio.');
+    } else if (address.length > 255) {
+      this.addFormError(errors, 'address', 'El domicilio no puede superar 255 caracteres.');
+    }
+
+    this.formErrors = errors;
+    this.formErrorSummary = this.getFormErrorSummary(errors);
+    this.modalError = this.formErrorSummary.length > 0 ? this.validationSummaryMessage : null;
+
+    return this.formErrorSummary.length === 0;
+  }
+
+  private buildAssociatePayload(): CreateAssociatePayload {
+    const emergencyContact = this.emergencyContactInput.trim();
+
+    return {
+      user: Number(this.formData.user),
+      dni: this.formData.dni.trim(),
+      cbu: this.formData.cbu.trim(),
+      entry_date: this.formData.entry_date.trim(),
+      base_hours: Number(this.formData.base_hours),
+      personal_email: this.formData.personal_email.trim(),
+      phone_number: this.formData.phone_number.trim(),
+      address: this.formData.address.trim(),
+      emergency_contact: emergencyContact ? { contact: emergencyContact } : {},
+    };
+  }
+
+  private applyBackendErrors(errorBody: unknown): void {
+    if (!errorBody || typeof errorBody !== 'object' || Array.isArray(errorBody)) {
+      this.modalError = 'No se pudo guardar el legajo.';
+      return;
+    }
+
+    const errors: AssociateFormErrors = {};
+    const globalErrors: string[] = [];
+
+    Object.entries(errorBody as Record<string, unknown>).forEach(([key, value]) => {
+      const detail = this.extractBackendDetail(value);
+      const message = this.mapBackendErrorMessage(key, detail);
+      const field = this.backendKeyToFormField(key);
+
+      if (key === 'user' && this.isDuplicateError(detail)) {
+        this.availableUsers = this.availableUsers.filter(
+          (u) => u.id !== this.formData.user,
+        );
+        this.formData.user = 0;
+        this.selectedUserEmail = '';
+      }
+
+      if (field) {
+        this.addFormError(errors, field, message);
+      } else {
+        globalErrors.push(message);
+      }
+    });
+
+    this.formErrors = errors;
+    this.formErrorSummary = [
+      ...this.getFormErrorSummary(errors),
+      ...globalErrors,
+    ];
+    this.modalError = this.formErrorSummary.length > 0
+      ? this.validationSummaryMessage
+      : 'No se pudo guardar el legajo.';
+  }
+
+  private addFormError(
+    errors: AssociateFormErrors,
+    field: AssociateFormField,
+    message: string,
+  ): void {
+    errors[field] ??= message;
+  }
+
+  private getFormErrorSummary(errors: AssociateFormErrors): string[] {
+    return Object.values(errors).filter((value): value is string => Boolean(value));
+  }
+
+  private backendKeyToFormField(key: string): AssociateFormField | null {
+    switch (key) {
+      case 'user':
+      case 'dni':
+      case 'cbu':
+      case 'entry_date':
+      case 'base_hours':
+      case 'personal_email':
+      case 'phone_number':
+      case 'address':
+      case 'emergency_contact':
+        return key;
+      default:
+        return null;
+    }
+  }
+
+  private mapBackendErrorMessage(key: string, detail: string): string {
+    switch (key) {
+      case 'user':
+        if (this.isRequiredError(detail)) return 'Seleccioná un usuario para vincular el legajo.';
+        if (this.isDuplicateError(detail)) return 'El usuario ya tiene un legajo y no puede volver a ser registrado.';
+        return 'El usuario seleccionado no es válido.';
+
+      case 'dni':
+        if (this.isRequiredError(detail)) return 'Completá el DNI.';
+        if (this.isDuplicateError(detail)) return 'El DNI ya está registrado.';
+        if (this.isMaxLengthError(detail)) return 'El DNI no puede superar 8 dígitos.';
+        return 'Ingresá un DNI válido.';
+
+      case 'cbu':
+        if (this.isRequiredError(detail)) return 'Completá el CBU.';
+        if (this.isDuplicateError(detail)) return 'El CBU ya está registrado.';
+        if (this.isMaxLengthError(detail)) return 'El CBU no puede superar 22 dígitos.';
+        return 'El CBU debe tener 22 dígitos.';
+
+      case 'entry_date':
+        if (this.isRequiredError(detail)) return 'Completá la fecha de ingreso.';
+        return 'Ingresá una fecha de ingreso válida.';
+
+      case 'base_hours':
+        if (this.isRequiredError(detail)) return 'Completá la jornada base.';
+        return 'La jornada base debe ser un número entero entre 1 y 12.';
+
+      case 'personal_email':
+        if (this.isRequiredError(detail)) return 'Completá el email personal.';
+        if (this.isDuplicateError(detail)) return 'El email personal ya está registrado.';
+        return 'Ingresá un email personal válido.';
+
+      case 'phone_number':
+        if (this.isRequiredError(detail)) return 'Completá el teléfono.';
+        if (this.isMaxLengthError(detail)) return 'El teléfono no puede superar 20 caracteres.';
+        return 'Ingresá un teléfono válido.';
+
+      case 'address':
+        if (this.isRequiredError(detail)) return 'Completá el domicilio.';
+        if (this.isMaxLengthError(detail)) return 'El domicilio no puede superar 255 caracteres.';
+        return 'Revisá el domicilio.';
+
+      case 'emergency_contact':
+        if (this.isRequiredError(detail)) return 'Completá el contacto de emergencia.';
+        return 'Revisá el contacto de emergencia.';
+
+      case 'non_field_errors':
+        return detail || 'No se pudo guardar el legajo.';
+
+      default:
+        return detail ? `${key}: ${detail}` : 'No se pudo guardar el legajo.';
+    }
+  }
+
+  private extractBackendDetail(value: unknown): string {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => this.extractBackendDetail(item))
+        .find((item) => item.length > 0) ?? '';
+    }
+
+    if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      const directValue = record['detail'] ?? record['message'] ?? record['error'];
+      if (directValue) return this.extractBackendDetail(directValue);
+
+      const nestedValue = Object.values(record)
+        .map((item) => this.extractBackendDetail(item))
+        .find((item) => item.length > 0);
+      return nestedValue ?? '';
+    }
+
+    return value == null ? '' : String(value);
+  }
+
+  private isRequiredError(detail: string): boolean {
+    const text = this.normalizeErrorDetail(detail);
+    return [
+      'required',
+      'blank',
+      'null',
+      'empty',
+      'may not be blank',
+      'may not be null',
+      'this field is required',
+      'este campo es requerido',
+      'no puede estar en blanco',
+      'no puede ser nulo',
+      'no puede estar vacío',
+    ].some((fragment) => text.includes(fragment));
+  }
+
+  private isDuplicateError(detail: string): boolean {
+    const text = this.normalizeErrorDetail(detail);
+    return [
+      'already exists',
+      'already registered',
+      'already in use',
+      'unique',
+      'ya existe',
+      'ya está registrado',
+      'ya esta registrado',
+      'duplicado',
+    ].some((fragment) => text.includes(fragment));
+  }
+
+  private isMaxLengthError(detail: string): boolean {
+    const text = this.normalizeErrorDetail(detail);
+    return [
+      'no more than',
+      'max_length',
+      'maximum',
+      'más de',
+      'mas de',
+      'máximo',
+      'maximo',
+    ].some((fragment) => text.includes(fragment));
+  }
+
+  private normalizeErrorDetail(detail: string): string {
+    return detail.trim().toLowerCase();
+  }
+
+  private isValidIsoDate(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+    const date = new Date(`${value}T00:00:00`);
+    return !Number.isNaN(date.getTime()) && this.toLocalIsoDate(date) === value;
+  }
+
+  private toLocalIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // ── Helpers ──
