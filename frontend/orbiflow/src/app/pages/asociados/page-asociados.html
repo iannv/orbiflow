@@ -82,9 +82,9 @@
                 style="cursor:pointer"
               >
                 <app-chip
-                  [name]="associate.is_deleted ? 'Inactivo' : 'Activo'"
-                  [backgroundColor]="associate.is_deleted ? 'var(--gris-claro)' : 'var(--verde-bg)'"
-                  [colorName]="associate.is_deleted ? 'var(--gris-oscuro)' : 'var(--verde-selva)'"
+                  [name]="associate.is_active ? 'Activo' : 'Inactivo'"
+                  [backgroundColor]="associate.is_active ? 'var(--verde-bg)' : 'var(--gris-claro)'"
+                  [colorName]="associate.is_active ? 'var(--verde-selva)' : 'var(--gris-oscuro)'"
                 />
               </span>
 
@@ -490,3 +490,4 @@
     }
   </div>
 </app-modal>
+

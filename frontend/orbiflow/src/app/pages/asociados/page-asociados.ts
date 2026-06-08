@@ -309,11 +309,9 @@ export class PageAsociados implements OnInit {
       next: () => {
         this.closeModal();
         this.loadAssociates();
-        // Mostrar toast de éxito
-        this.toastTitle = this.modalMode === 'create' ? 'Legajo creado' : 'Legajo actualizado';
-        this.toastSubtitle = this.modalMode === 'create' ? 'El legajo se creó correctamente' : 'Los cambios se guardaron correctamente';
-        this.mostrarToast = true;
-        setTimeout(() => this.mostrarToast = false, 3000);
+        const title = this.modalMode === 'create' ? 'Legajo creado' : 'Legajo actualizado';
+        const subtitle = this.modalMode === 'create' ? 'El legajo se creó correctamente.' : 'Los cambios se guardaron correctamente.';
+        this.lanzarToast(title, subtitle);
       },
       error: (err) => {
         this.applyBackendErrors(err?.error);
@@ -322,11 +320,23 @@ export class PageAsociados implements OnInit {
     });
   }
 
-  // Activa / desactiva visualmente el estado del asociado.
-  // Nota: is_deleted es read_only en el backend, este cambio es solo local.
+  // Activa / desactiva el estado del asociado.
+  // El campo is_active es un @property del modelo Associate que lee user.is_active,
+  // por lo que se persiste actualizando el User vinculado.
   toggleStatus(associate: Associate): void {
-    associate.is_deleted = !associate.is_deleted;
-    this.cdr.detectChanges();
+    const newStatus = !associate.is_active;
+
+    this.userService.updateUser(associate.user, { is_active: newStatus }).subscribe({
+      next: () => {
+        associate.is_active = newStatus;
+        this.cdr.detectChanges();
+        const label = newStatus ? 'activado' : 'desactivado';
+        this.lanzarToast('Estado actualizado', `${associate.full_name} fue ${label}.`);
+      },
+      error: () => {
+        this.lanzarToast('Error', 'No se pudo cambiar el estado del asociado.');
+      },
+    });
   }
 
   // ── Modal CU-06: gestión de módulos ──
@@ -448,21 +458,33 @@ export class PageAsociados implements OnInit {
 
     if (all.length === 0) {
       this.closeModulesModal();
+      this.lanzarToast('Módulos actualizados', 'Los cambios se guardaron correctamente.');
       return;
     }
 
-    // Espera a que todas las llamadas terminen (éxito o error) para cerrar y recargar
     let completed = 0;
-    const finish = () => {
+    let hasError = false;
+    const finish = (success: boolean) => {
+      if (!success) {
+        hasError = true;
+      }
       completed++;
       if (completed === all.length) {
         this.savingModules = false;
         this.closeModulesModal();
         this.loadAssociates();
+        if (hasError) {
+          this.lanzarToast('Error al guardar', 'Algunos cambios de módulos no pudieron aplicarse.');
+        } else {
+          this.lanzarToast('Módulos actualizados', 'Los módulos se asignaron correctamente.');
+        }
       }
     };
 
-    all.forEach((req) => req.subscribe({ next: finish, error: finish }));
+    all.forEach((req) => req.subscribe({
+      next: () => finish(true),
+      error: () => finish(false)
+    }));
   }
 
   clearFieldError(field: AssociateFormField): void {
@@ -476,6 +498,18 @@ export class PageAsociados implements OnInit {
     if (this.formErrorSummary.length === 0 && this.modalError === this.validationSummaryMessage) {
       this.modalError = null;
     }
+  }
+
+  private lanzarToast(titulo: string, subtitulo: string): void {
+    this.toastTitle = titulo;
+    this.toastSubtitle = subtitulo;
+    this.mostrarToast = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.mostrarToast = false;
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   private clearFormFeedback(): void {
@@ -601,9 +635,9 @@ export class PageAsociados implements OnInit {
       ...this.getFormErrorSummary(errors),
       ...globalErrors,
     ];
-    this.modalError = this.formErrorSummary.length > 0
+    this.modalError = Object.keys(errors).length > 0
       ? this.validationSummaryMessage
-      : 'No se pudo guardar el legajo.';
+      : (globalErrors[0] ?? 'No se pudo guardar el legajo.');
   }
 
   private addFormError(
@@ -681,6 +715,9 @@ export class PageAsociados implements OnInit {
         if (this.isRequiredError(detail)) return 'Completá el contacto de emergencia.';
         return 'Revisá el contacto de emergencia.';
 
+      case 'detail':
+      case 'message':
+      case 'error':
       case 'non_field_errors':
         return detail || 'No se pudo guardar el legajo.';
 
