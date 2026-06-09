@@ -14,19 +14,26 @@ describe('Modulos Component', () => {
   beforeEach(async () => {
     // Se crea el mock del servicio con datos simulados
     mockModulosService = {
-      getModulos: vi.fn().mockReturnValue(of([
-        { id: 1, name: 'Presentismo', calculation_type: 'simple', applies_to_cap: true, is_active: true, variants: [] }
-      ])),
+      getModulos: vi.fn().mockReturnValue(
+        of([
+          {
+            id: 1,
+            name: 'Presentismo',
+            calculation_type: 'simple',
+            applies_to_cap: true,
+            is_active: true,
+            variants: [],
+          },
+        ]),
+      ),
       createModulo: vi.fn().mockReturnValue(of({ success: true })),
       updateModulo: vi.fn().mockReturnValue(of({ success: true })),
-      deleteModulo: vi.fn().mockReturnValue(of({ success: true }))
+      deleteModulo: vi.fn().mockReturnValue(of({ success: true })),
     };
 
     await TestBed.configureTestingModule({
       imports: [Modulos, ReactiveFormsModule],
-      providers: [
-        { provide: ModulosService, useValue: mockModulosService }
-      ]
+      providers: [{ provide: ModulosService, useValue: mockModulosService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Modulos);
@@ -35,10 +42,10 @@ describe('Modulos Component', () => {
   });
 
   // ::: Batch 1: Creación e inicialización de los valores iniciales :::
-  
+
   it('debe crear el componente y cargar la lista de módulos', () => {
     expect(component).toBeTruthy();
-    
+
     // Se verifica la correcta asignación de la lista desde el servicio
     expect(component.modulosList.length).toBe(1);
     expect(component.modulosList[0].name).toBe('Presentismo');
@@ -49,7 +56,7 @@ describe('Modulos Component', () => {
 
   it('debe invalidar el formulario si el nombre está vacío', () => {
     const nameControl = component.moduloForm.controls['name'];
-    
+
     nameControl.setValue('');
     expect(nameControl.valid).toBe(false);
     expect(nameControl.hasError('required')).toBe(true);
@@ -57,7 +64,7 @@ describe('Modulos Component', () => {
 
   it('debe invalidar el formulario si no se selecciona un tipo de cálculo', () => {
     const calcControl = component.moduloForm.controls['calculation_type'];
-    
+
     calcControl.setValue(null);
     expect(calcControl.valid).toBe(false);
     expect(calcControl.hasError('required')).toBe(true);
@@ -79,35 +86,29 @@ describe('Modulos Component', () => {
     expect(component.variantesFormArray.length).toBe(1);
   });
 
-  it('NO debe guardar el módulo si no posee al menos una variante y debe lanzar un toast', () => {
-    const spyToast = vi.spyOn(component, 'lanzarToast');
+  it('NO debe guardar el módulo si no posee al menos una variante y debe mostrar mensaje de error', () => {
     const spyCreate = vi.spyOn(mockModulosService, 'createModulo');
-
-    // Se vacía el array de variantes intencionalmente
     component.variantesFormArray.clear();
-    
-    // Se acciona el guardado
     component.guardarModulo();
-
-    // Se audita la prevención del guardado y la alerta al usuario
     expect(spyCreate).not.toHaveBeenCalled();
-    expect(spyToast).toHaveBeenCalledWith('Atención', 'Debe agregar al menos una variante al módulo para realizar cálculos.');
+    expect(component.mgeError).toBe(
+      'Debe agregar al menos una variante al módulo para realizar cálculos.',
+    );
   });
 
   it('NO debe guardar si una variante de tipo porcentaje supera el 100%', () => {
-    const spyToast = vi.spyOn(component, 'lanzarToast');
-    
-    // Se inyecta una variante con datos erróneos
     component.agregarVariante();
     const variante = component.variantesFormArray.at(0);
-    variante.patchValue({ name: 'Excedida', type: 'percentage', value: 150 });
-
-    // Se acciona el guardado
+    variante.patchValue({
+      name: 'Excedida',
+      type: 'percentage',
+      value: 150,
+    });
     component.guardarModulo();
-
-    // Se verifica que se marque el error y se alerte al usuario
     expect(variante.get('value')?.hasError('max')).toBe(true);
-    expect(spyToast).toHaveBeenCalledWith('Valor incorrecto', 'El valor no puede superar el 100% cuando el tipo es Porcentaje.');
+    expect(component.mgeError).toBe(
+      'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
+    );
   });
 
   // ::: Batch 4: Lógica condicional y manejo de modales :::
@@ -136,7 +137,7 @@ describe('Modulos Component', () => {
       is_exclusive: false,
       applies_to_cap: true,
       is_active: true,
-      variants: [{ id: 10, name: 'Anual', type: 'fixed_amount', value: 5000, is_default: true }]
+      variants: [{ id: 10, name: 'Anual', type: 'fixed_amount', value: 5000, is_default: true }],
     };
 
     // Se simula la edición
@@ -160,16 +161,21 @@ describe('Modulos Component', () => {
     // Se preparan datos válidos
     component.openModal();
     component.moduloForm.patchValue({ name: 'Viáticos', calculation_type: 'simple' });
-    
+
     component.agregarVariante();
-    component.variantesFormArray.at(0).patchValue({ name: 'Única', type: 'fixed_amount', value: 1000 });
+    component.variantesFormArray
+      .at(0)
+      .patchValue({ name: 'Única', type: 'fixed_amount', value: 1000 });
 
     // Guardado
     component.guardarModulo();
 
     // Se verifica el correcto funcionamiento
     expect(spyCreate).toHaveBeenCalled();
-    expect(spyToast).toHaveBeenCalledWith('Módulo guardado', 'El nuevo concepto se registró en el sistema.');
+    expect(spyToast).toHaveBeenCalledWith(
+      'Módulo guardado',
+      'El nuevo concepto se registró en el sistema.',
+    );
     expect(spyCloseModal).toHaveBeenCalled();
   });
 

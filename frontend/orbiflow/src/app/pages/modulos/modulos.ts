@@ -12,12 +12,22 @@ import { Modal } from '../../components/modal/modal';
 import { Toast } from '../../components/toast/toast';
 import { formatCurrency } from '../../shared/utils/formatCurrency';
 import { formatPercentage } from '../../shared/utils/formatPercentage';
-import { Loader } from "../../components/loader/loader";
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-modulos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BaseCard, Primary, Action, Chip, Modal, Toast, Loader],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    BaseCard,
+    Primary,
+    Action,
+    Chip,
+    Modal,
+    Toast,
+    Loader,
+  ],
   templateUrl: './modulos.html',
   styleUrl: './modulos.css',
 })
@@ -39,6 +49,8 @@ export class Modulos implements OnInit {
   mostrarToast = false;
   toastTitle = '';
   toastSubtitle = '';
+
+  mgeError = '';
 
   //utilidades
   formatCurrency = formatCurrency;
@@ -141,16 +153,14 @@ export class Modulos implements OnInit {
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.mgeError = '';
   }
 
   guardarModulo(): void {
     // Validaciones
     if (this.variantesFormArray.length === 0) {
-      this.lanzarToast(
-        'Atención',
-        'Debe agregar al menos una variante al módulo para realizar cálculos.',
-      );
-      return; 
+      this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
+      return;
     }
 
     // Verificador de exclusividad (Regla de Negocio)
@@ -164,11 +174,8 @@ export class Modulos implements OnInit {
     });
 
     if (isExclusive && defaultsCount > 1) {
-      this.lanzarToast(
-        'Conflicto de reglas', 
-        'Un módulo exclusivo solo puede tener UNA variante asignada por defecto.'
-      );
-      return; 
+      this.mgeError = 'Un módulo exclusivo solo puede tener UNA variante asignada por defecto.';
+      return;
     }
 
     let errorPorcentaje = false;
@@ -177,25 +184,19 @@ export class Modulos implements OnInit {
       const valor = control.get('value')?.value;
 
       if (tipo === 'percentage' && valor > 100) {
-        control.get('value')?.setErrors({ max: true }); 
+        control.get('value')?.setErrors({ max: true });
         errorPorcentaje = true;
       }
     });
 
     if (errorPorcentaje) {
-      this.lanzarToast(
-        'Valor incorrecto',
-        'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
-      );
-      return; 
+      this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
+      return;
     }
 
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
-      this.lanzarToast(
-        'Formulario incompleto',
-        'Por favor, complete todos los campos obligatorios.',
-      );
+      this.mgeError = 'Por favor, complete todos los campos obligatorios.';
       return;
     }
 
@@ -315,7 +316,6 @@ export class Modulos implements OnInit {
     const varianteCambiada = this.variantesFormArray.at(indexCambiado);
 
     if (isExclusive && varianteCambiada.get('is_default')?.value === true) {
-      
       this.variantesFormArray.controls.forEach((control, i) => {
         if (i !== indexCambiado) {
           control.get('is_default')?.setValue(false, { emitEvent: false });

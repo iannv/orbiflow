@@ -214,6 +214,8 @@
           </button>
         </div>
 
+        <p class="error">{{ mgeError }}</p>
+
         <div formArrayName="variants">
           @for (variante of variantesFormArray.controls; track $index) {
             <div

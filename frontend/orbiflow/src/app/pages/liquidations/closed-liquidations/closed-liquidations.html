@@ -1,6 +1,6 @@
-<div class="container mt-4" style="max-width: 900px">
+<div class="container p-5">
   <h1 class="h1-title mb-1" style="color: #1f2937">Periodos de Liquidación Cerrados</h1>
-  <p class="text-muted mb-4">Historial de liquidaciones de retiro</p>
+  <p class="h2-subtitle mb-4">Historial de liquidaciones de retiro</p>
 
   @if (isLoading) {
     <div class="text-center my-5">
@@ -52,7 +52,7 @@
 
                       <div class="text-muted text-center" style="flex: 1; font-size: 0.95rem">
                         Total Liquidado:
-                        <strong style="color: var(--verde-petroleo)">
+                        <strong style="color: var(--verde-selva)">
                           {{
                             periodTotals[period.id!]
                               ? '$' + formatCurrency(periodTotals[period.id!])
