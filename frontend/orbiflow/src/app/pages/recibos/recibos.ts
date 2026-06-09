@@ -13,7 +13,7 @@ import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
 import { UserService } from '../../services/user-service';
 import { numeroALetras } from '../../shared/utils/numeroALetras';
 import { formatCurrency } from '../../shared/utils/formatCurrency';
-import { Loader } from "../../components/loader/loader";
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-recibos',
@@ -48,13 +48,23 @@ export class Recibos {
     this.loading = true;
 
     const user = this.authService.currentUser();
-    if (!user) return;
+    
+    if (!user) {
+      this.loading = false;
+      return;
+    }
 
     this.associateService.getAssociateByUser(user.id).subscribe((associate) => {
-      if (associate.length === 0) return;
+      if (!associate || associate.length === 0) {
+        this.retirementsList = [];
+        this.loading = false;
+        this.cdr.detectChanges()
+        return;
+      }
       const associateId = associate[0].id;
       this.retirementService.getRetirementsByAssociate(associateId).subscribe((retirements) => {
         this.retirementsList = retirements;
+
         this.liquidationService.getPeriods().subscribe((periods) => {
           this.periodsList = periods;
           this.loading = false;
@@ -140,7 +150,6 @@ export class Recibos {
                     next: (retirementsByLiquidation) => {
                       const retirementsByLiquidationData = retirementsByLiquidation.find(
                         (r) => r.id === retirement.id,
-                        
                       );
 
                       // Enviar data al retiremetsPDF
