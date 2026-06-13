@@ -246,6 +246,10 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
             'applied_hour_value', 'applied_cap_pct',
             'status',
         ]
+        extra_kwargs = {
+            'applied_hour_value': {'required': False},
+            'applied_cap_pct': {'required': False},
+        }
 
     def validate_month(self, value):
         if value < 1 or value > 12:
@@ -256,6 +260,23 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
         if value < 2000 or value > 2100:
             raise serializers.ValidationError("Año fuera de rango razonable.")
         return value
+
+    @staticmethod
+    def _get_active_config():
+        config = GlobalConfiguration.objects.order_by('-change_date').first()
+        if config is None:
+            raise serializers.ValidationError(
+                'No hay configuración global vigente. Configure el valor hora y el tope antes de crear un período.'
+            )
+        return config
+
+    def create(self, validated_data):
+        validated_data.pop('applied_hour_value', None)
+        validated_data.pop('applied_cap_pct', None)
+        config = self._get_active_config()
+        validated_data['applied_hour_value'] = config.hour_value
+        validated_data['applied_cap_pct'] = config.cap_percentage
+        return super().create(validated_data)
 
 
 class LiquidationItemSerializer(serializers.ModelSerializer):

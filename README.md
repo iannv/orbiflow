@@ -50,7 +50,7 @@ Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `
 3. Asignar variantes al asociado              POST /api/associate-variants/
 
 --- Pre-Liquidaciones ---
-4. Crear el período (congela valor hora/tope) POST /api/liquidations/
+4. Crear el período (congela valor hora/tope desde la config) POST /api/liquidations/
 5. Simulación al vuelo (Stateless)            POST /api/liquidations/{id}/simulate/
 6. Cargar horas trabajadas definitivas (bulk) POST /api/liquidations/{id}/upload-hours/
 

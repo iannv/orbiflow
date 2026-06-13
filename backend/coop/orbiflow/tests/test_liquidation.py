@@ -20,6 +20,7 @@ from rest_framework.test import APITestCase
 
 from orbiflow.models.identity import User, Associate
 from orbiflow.models.rules import Module, Variant, AssociateVariant
+from orbiflow.models.audit import GlobalConfiguration
 from orbiflow.models.core import LiquidationPeriod, RetirementDetail, LiquidationItem
 from orbiflow.services.liquidation import (
     LiquidationCalculator,
@@ -342,6 +343,11 @@ class LiquidationAPITests(APITestCase):
         )
 
     def test_period_crud(self):
+        GlobalConfiguration.objects.create(
+            hour_value=Decimal('5000.00'),
+            cap_percentage=Decimal('35.00'),
+            user=self.admin,
+        )
         url = reverse('liquidation-list')
         response = self.client.post(url, {
             'month': 7, 'year': 2025,
@@ -349,10 +355,19 @@ class LiquidationAPITests(APITestCase):
             'applied_cap_pct': '25.00',
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['applied_hour_value'], '5000.00')
+        self.assertEqual(response.data['applied_cap_pct'], '35.00')
 
         list_response = self.client.get(url)
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(list_response.data), 2)
+
+    def test_period_create_requires_global_config(self):
+        url = reverse('liquidation-list')
+        response = self.client.post(url, {
+            'month': 8, 'year': 2025,
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_period_url_has_trailing_slash(self):
         list_response = self.client.get('/api/liquidations/')
