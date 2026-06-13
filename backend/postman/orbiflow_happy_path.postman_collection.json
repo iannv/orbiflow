@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "2fb15352-746e-435f-b368-008bd3948863",
 		"name": "OrbiFlow - Happy Path (Liquidación)",
-		"description": "Camino feliz completo del Motor de Liquidación de OrbiFlow:\n\n1. Login\n2. Configuración Global (valor hora + tope)\n3. Carga masiva de Módulos + Variantes\n4. Creación de un Asociado (User + Associate)\n5. Asignación de Variantes al Asociado\n6. Creación del Periodo de Liquidación\n7. Carga masiva de Horas\n8. Ejecución del Motor (definitivo)\n9. Resumen del periodo (recibo)\n\nPre-requisito: backend levantado y un superusuario existente. Configurá las variables `admin_username` y `admin_password` antes de correr.\n\nNota: `base_url` ya incluye el prefijo `/api` para mantener consistencia con la colección completa y el entorno Orbiflow - local.",
+		"description": "Camino feliz completo del Motor de Liquidación de OrbiFlow:\n\n1. Login\n2. Configuración Global (valor hora + tope)\n3. Carga masiva de Módulos + Variantes\n4. Creación de un Asociado (User + Associate)\n5. Asignación de Variantes al Asociado\n6. Creación del Periodo de Liquidación\n7. Carga masiva de Horas\n8. Ejecución del Motor (definitivo)\n9. Resumen del periodo (recibo)\n\nPre-requisito: backend levantado y un superusuario existente. Importá también `postmanEnv.json` (entorno Orbiflow - local) y seleccionarlo antes de correr. Configurá `admin_username` y `admin_password` si difieren del default.\n\nEl paso 1 guarda `access_token` y `refresh_token` en el entorno activo y en variables de colección, igual que la colección completa.\n\nNota: `base_url` ya incluye el prefijo `/api`.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "19669280"
 	},
@@ -17,7 +17,12 @@
 						"exec": [
 							"pm.test('Login OK', () => pm.response.to.have.status(200));",
 							"const json = pm.response.json();",
-							"pm.collectionVariables.set('access_token', json.access);",
+							"if (json.access) {",
+							"    pm.environment.set('access_token', json.access);",
+							"    pm.environment.set('refresh_token', json.refresh);",
+							"    pm.collectionVariables.set('access_token', json.access);",
+							"    pm.collectionVariables.set('refresh_token', json.refresh);",
+							"}",
 							"pm.test('Trae access token', () => pm.expect(json.access).to.be.a('string').and.not.empty);"
 						]
 					}
@@ -49,7 +54,7 @@
 						""
 					]
 				},
-				"description": "Obtiene el access/refresh token JWT y lo guarda como variable de colección."
+				"description": "Obtiene el access/refresh token JWT y los guarda en el entorno activo y en variables de colección."
 			},
 			"response": []
 		},
@@ -546,6 +551,11 @@
 		},
 		{
 			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
 			"value": "",
 			"type": "string"
 		},
