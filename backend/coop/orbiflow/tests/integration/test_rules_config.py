@@ -1,9 +1,9 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from ..models.identity import User
-from ..models.audit import GlobalConfiguration, AuditLog
-from ..models.rules import Module, Variant
+from orbiflow.models.identity import User
+from orbiflow.models.audit import GlobalConfiguration, AuditLog
+from orbiflow.models.rules import Module, Variant
 
 class RulesAndConfigTests(APITestCase):
     def setUp(self):

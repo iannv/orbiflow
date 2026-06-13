@@ -4,8 +4,8 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework import status
 
-from ..models.identity import User, Associate
-from ..models.core import LiquidationPeriod, RetirementDetail
+from orbiflow.models.identity import User, Associate
+from orbiflow.models.core import LiquidationPeriod, RetirementDetail
 
 
 class PermissionTests(APITestCase):
