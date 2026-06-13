@@ -257,8 +257,8 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
         return value
 
     def validate_year(self, value):
-        if value < 2000 or value > 2100:
-            raise serializers.ValidationError("Año fuera de rango razonable.")
+        if value < 1900 or value > 2999:
+            raise serializers.ValidationError("El año debe estar entre 1900 y 2999.")
         return value
 
     @staticmethod
