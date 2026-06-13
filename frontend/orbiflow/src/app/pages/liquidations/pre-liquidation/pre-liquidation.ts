@@ -137,8 +137,6 @@ export class PreLiquidationComponent implements OnInit {
     const payload = {
       month: this.newPeriodMonth,
       year: this.newPeriodYear,
-      applied_hour_value: this.globalHourValue,
-      applied_cap_pct: this.globalCapPct,
       status: 'open' as const
     };
 

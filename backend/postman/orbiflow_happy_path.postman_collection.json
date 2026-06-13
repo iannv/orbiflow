@@ -322,7 +322,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"month\": 12,\n  \"year\": 2025,\n  \"applied_hour_value\": \"100.00\",\n  \"applied_cap_pct\": \"30.00\"\n}"
+					"raw": "{\n  \"month\": 12,\n  \"year\": 2025\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/liquidations/",
@@ -334,7 +334,7 @@
 						""
 					]
 				},
-				"description": "Define el periodo a liquidar congelando el valor hora y el tope vigentes."
+				"description": "Define el periodo a liquidar. El valor hora y el tope vigentes se congelan automáticamente desde la última configuración global (paso de configuración); no se envían en el body."
 			},
 			"response": []
 		},

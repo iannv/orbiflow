@@ -1128,7 +1128,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"month\": 12,\n    \"year\": 2025,\n    \"applied_hour_value\": \"100.00\",\n    \"applied_cap_pct\": \"30.00\"\n}",
+							"raw": "{\n    \"month\": 12,\n    \"year\": 2025\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1145,7 +1145,7 @@
 								""
 							]
 						},
-						"description": "Crea un periodo congelando valor hora y tope (%)."
+						"description": "Crea un periodo. El valor hora y el tope (%) se congelan automáticamente desde la última configuración global vigente (POST /api/config/); no se toman del body. Requiere al menos una configuración cargada."
 					},
 					"response": []
 				},
