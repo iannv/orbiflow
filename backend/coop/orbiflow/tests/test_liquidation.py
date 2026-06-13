@@ -369,6 +369,32 @@ class LiquidationAPITests(APITestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_period_year_must_match_frontend_range(self):
+        GlobalConfiguration.objects.create(
+            hour_value=Decimal('5000.00'),
+            cap_percentage=Decimal('35.00'),
+            user=self.admin,
+        )
+        url = reverse('liquidation-list')
+
+        for valid_year in (1900, 1999, 2500, 2999):
+            with self.subTest(year=valid_year):
+                response = self.client.post(url, {
+                    'month': 1,
+                    'year': valid_year,
+                }, format='json')
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+                LiquidationPeriod.objects.filter(month=1, year=valid_year).delete()
+
+        for invalid_year in (1899, 3000):
+            with self.subTest(year=invalid_year):
+                response = self.client.post(url, {
+                    'month': 1,
+                    'year': invalid_year,
+                }, format='json')
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertIn('year', response.data)
+
     def test_period_url_has_trailing_slash(self):
         list_response = self.client.get('/api/liquidations/')
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
