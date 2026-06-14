@@ -178,6 +178,11 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['year', 'month', 'status']
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     @staticmethod
     def _validate_associate_ids(associate_ids: list) -> None:
         """

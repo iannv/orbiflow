@@ -10,11 +10,12 @@ import { formatPercentage } from '../../../shared/utils/formatPercentage';
 
 import { Modal } from '../../../components/modal/modal';
 import { Toast } from '../../../components/toast/toast';
+import { Loader } from '../../../components/loader/loader';
 
 @Component({
   selector: 'app-liquidation',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, Toast],
+  imports: [CommonModule, FormsModule, Modal, Toast, Loader],
   templateUrl: './liquidation.html',
   styleUrls: ['./liquidation.css']
 })
@@ -29,9 +30,11 @@ export class LiquidationComponent implements OnInit {
 
   // Prevención de transacciones duplicadas
   isProcessing = false;
+  isLoadingData = false;
   private toastTimeoutId: any;
 
   isConfirmModalOpen = false;
+  isRevertModalOpen = false;
   isDetailsModalOpen = false;
 
   mostrarToast = false;
@@ -83,14 +86,18 @@ export class LiquidationComponent implements OnInit {
   onPeriodChange() {
     this.summary = null;
     this.associatesCalculations = [];
-    this.cdr.detectChanges();
+    if (this.selectedPeriodId) {
+      this.onLoadData();
+    } else {
+      this.cdr.detectChanges();
+    }
   }
 
- onLoadData() {
+  onLoadData() {
     if (!this.selectedPeriodId) return;
-    if (this.isProcessing) return; // Bloqueo preventivo
+    if (this.isLoadingData || this.isProcessing) return;
 
-    this.isProcessing = true;
+    this.isLoadingData = true;
     this.summary = null;
     this.associatesCalculations = [];
     
@@ -125,14 +132,15 @@ export class LiquidationComponent implements OnInit {
             }
           };
 
-          this.isProcessing = false;
+          this.isLoadingData = false;
           this.cdr.detectChanges(); 
         });
       },
       error: (err) => {
         console.error('Error al previsualizar cálculos', err);
         this.lanzarToast('Error', 'No se pudieron simular los detalles.');
-        this.isProcessing = false;
+        this.isLoadingData = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -144,6 +152,46 @@ export class LiquidationComponent implements OnInit {
 
   closeConfirmModal() {
     this.isConfirmModalOpen = false;
+  }
+
+  openRevertModal() {
+    if (!this.selectedPeriodId) return;
+    this.isRevertModalOpen = true;
+  }
+
+  closeRevertModal() {
+    this.isRevertModalOpen = false;
+  }
+
+  onConfirmRevert() {
+    if (!this.selectedPeriodId || this.isProcessing) return;
+
+    this.isProcessing = true;
+    const periodId = Number(this.selectedPeriodId);
+
+    this.liquidationService.updatePeriodStatus(periodId, 'open').subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          this.isRevertModalOpen = false;
+          this.isProcessing = false;
+          this.lanzarToast(
+            'Período reabierto',
+            'El período volvió a pre-liquidación. Podés corregir las horas y marcarlo como revisado nuevamente.',
+          );
+          setTimeout(() => {
+            this.router.navigate(['/liquidaciones/pre-liquidation'], {
+              queryParams: { periodId },
+            });
+          }, 1500);
+        });
+      },
+      error: (err) => {
+        console.error('Error al devolver el periodo', err);
+        this.lanzarToast('Error', 'No se pudo devolver el período a pre-liquidación.');
+        this.isProcessing = false;
+        this.isRevertModalOpen = false;
+      },
+    });
   }
 
   openDetailsModal(calcItem: any) {

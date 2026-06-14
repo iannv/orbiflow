@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { AssociateService } from '../../../services/associate-service'; 
 import { LiquidationPeriod } from '../../../interfaces/Liquidation';
@@ -12,11 +12,12 @@ import { formatPercentage } from '../../../shared/utils/formatPercentage';
 import { Modal } from '../../../components/modal/modal';
 import { Toast } from '../../../components/toast/toast';
 import { Primary } from '../../../components/button/primary/primary';
+import { Loader } from '../../../components/loader/loader';
 
 @Component({
   selector: 'app-pre-liquidation',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, Toast, Primary],
+  imports: [CommonModule, FormsModule, Modal, Toast, Primary, Loader],
   templateUrl: './pre-liquidation.html',
   styleUrls: ['./pre-liquidation.css']
 })
@@ -33,7 +34,8 @@ export class PreLiquidationComponent implements OnInit {
   diasHabiles: number = 20; 
   simulationResults: any[] = []; 
   selectedSimulationDetail: any = null; 
-  dataLoaded: boolean = false; 
+  dataLoaded: boolean = false;
+  isLoadingData = false;
 
   //  Bloqueo de peticiones en paralelo
   isProcessing = false; 
@@ -69,15 +71,21 @@ export class PreLiquidationComponent implements OnInit {
     { valor: 11, nombre: 'Noviembre' }, { valor: 12, nombre: 'Diciembre' }
   ];
 
+  private pendingPeriodId: number | null = null;
+
   constructor(
     private liquidationService: LiquidationService,
     private associateService: AssociateService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit() {
-    this.loadOpenPeriods();
+    this.route.queryParams.subscribe((params) => {
+      this.pendingPeriodId = params['periodId'] ? Number(params['periodId']) : null;
+      this.loadOpenPeriods();
+    });
   }
   
   // Control de Modales
@@ -165,9 +173,13 @@ export class PreLiquidationComponent implements OnInit {
     this.liquidationService.getPeriods('open').subscribe({
       next: (res) => {
         this.periods = res;
-        this.cdr.detectChanges(); 
+        if (this.pendingPeriodId && res.some((p) => p.id === this.pendingPeriodId)) {
+          this.selectedPeriodId = this.pendingPeriodId;
+          this.onLoadData();
+        }
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error("Error al cargar periodos.", err)
+      error: (err) => console.error('Error al cargar periodos.', err),
     });
   }
 
@@ -176,38 +188,76 @@ export class PreLiquidationComponent implements OnInit {
     this.dataLoaded = false;
     this.associates = [];
     this.simulationResults = [];
-    this.cdr.detectChanges();
+    if (this.selectedPeriodId) {
+      this.onLoadData();
+    } else {
+      this.cdr.detectChanges();
+    }
   }
 
   onLoadData() {
-    if (!this.selectedPeriodId) return;
+    if (!this.selectedPeriodId || this.isLoadingData) return;
 
     const currentPeriod = this.getSelectedPeriodParams();
     if (!currentPeriod) return;
-    
+
+    const periodId = Number(this.selectedPeriodId);
+    this.isLoadingData = true;
+    this.dataLoaded = false;
+
     this.associateService.getAssociates().subscribe({
       next: (res) => {
         // Filtrado por Fecha de Alta
         this.associates = res.filter((assoc: any) => {
           if (!assoc.entry_date) return true;
-          const [yearStr, monthStr] = assoc.entry_date.split('-'); 
+          const [yearStr, monthStr] = assoc.entry_date.split('-');
           const entryYear = parseInt(yearStr, 10);
           const entryMonth = parseInt(monthStr, 10);
-          return entryYear < currentPeriod.year || 
+          return entryYear < currentPeriod.year ||
                  (entryYear === currentPeriod.year && entryMonth <= currentPeriod.month);
         });
 
-        // valores por defecto de los asociados
-        this.associates.forEach(a => {
-          this.hoursData[a.id] = 0;
-          this.selectedAssociates[a.id] = true;
+        this.liquidationService.getRetirementsByLiquidation(periodId).subscribe({
+          next: (retirements) => {
+            const savedHours: { [associateId: number]: number } = {};
+            retirements.forEach((r: any) => {
+              savedHours[r.associate] = r.hours_worked;
+            });
+            const hasSavedData = retirements.length > 0;
+
+            this.associates.forEach((a) => {
+              if (hasSavedData) {
+                this.selectedAssociates[a.id] = savedHours[a.id] !== undefined;
+                this.hoursData[a.id] = savedHours[a.id] ?? 0;
+              } else {
+                this.selectedAssociates[a.id] = true;
+                this.hoursData[a.id] = 0;
+              }
+            });
+
+            this.dataLoaded = true;
+            this.simulationResults = [];
+            this.isLoadingData = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Error al cargar horas guardadas.', err);
+            this.associates.forEach((a) => {
+              this.hoursData[a.id] = 0;
+              this.selectedAssociates[a.id] = true;
+            });
+            this.dataLoaded = true;
+            this.simulationResults = [];
+            this.isLoadingData = false;
+            this.cdr.detectChanges();
+          },
         });
-        
-        this.dataLoaded = true;
-        this.simulationResults = []; 
-        this.cdr.detectChanges(); 
       },
-      error: (err) => console.error("Error al cargar socios.", err)
+      error: (err) => {
+        console.error('Error al cargar socios.', err);
+        this.isLoadingData = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -264,6 +314,26 @@ export class PreLiquidationComponent implements OnInit {
   getAssociateName(associateId: number): string {
     const associate = this.associates.find(a => a.id === associateId);
     return associate ? associate.full_name : `Socio #${associateId}`;
+  }
+
+  get allAssociatesSelected(): boolean {
+    return (
+      this.associates.length > 0 &&
+      this.associates.every((a) => this.selectedAssociates[a.id])
+    );
+  }
+
+  get someAssociatesSelected(): boolean {
+    const selected = this.associates.filter((a) => this.selectedAssociates[a.id]).length;
+    return selected > 0 && selected < this.associates.length;
+  }
+
+  toggleSelectAll(): void {
+    const selectAll = !this.allAssociatesSelected;
+    this.associates.forEach((a) => {
+      this.selectedAssociates[a.id] = selectAll;
+    });
+    this.cdr.detectChanges();
   }
 
   onMarkAsReviewed() {

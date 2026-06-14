@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
 import { PreLiquidationComponent } from './pre-liquidation';
@@ -23,7 +23,8 @@ describe('PreLiquidationComponent', () => {
       simulateLiquidation: vi.fn().mockReturnValue(of([{ associate_id: 10, total_amount: 150000, cap_adjustment: 0 }])),
       uploadHours: vi.fn().mockReturnValue(of({ success: true })),
       updatePeriodStatus: vi.fn().mockReturnValue(of({ success: true })),
-      deletePeriod: vi.fn().mockReturnValue(of({ success: true }))
+      deletePeriod: vi.fn().mockReturnValue(of({ success: true })),
+      getRetirementsByLiquidation: vi.fn().mockReturnValue(of([])),
     };
 
     mockAssociateService = {
@@ -38,7 +39,8 @@ describe('PreLiquidationComponent', () => {
       providers: [
         provideRouter([]),
         { provide: LiquidationService, useValue: mockLiquidationService },
-        { provide: AssociateService, useValue: mockAssociateService }
+        { provide: AssociateService, useValue: mockAssociateService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
       ]
     }).compileComponents();
 
@@ -77,16 +79,38 @@ it('debe invalidar el formulario y alertar si el año ingresado es incorrecto', 
   // ::: Batch 3: Lógica de carga y filtrado de asociados :::
 
   it('debe filtrar la nómina excluyendo a los asociados ingresados en meses posteriores al periodo', () => {
-    // Se simula la selección del periodo de Junio 2026 (mes 6, año 2026)
     component.selectedPeriodId = 1;
-
-    // Se acciona la carga de datos
     component.onLoadData();
 
-    // Se audita que solo se liste al "Asociado Antiguo" (2025) y se excluya al "Futuro" (Agosto 2026)
     expect(component.associates.length).toBe(1);
     expect(component.associates[0].id).toBe(10);
     expect(component.dataLoaded).toBe(true);
+    expect(mockLiquidationService.getRetirementsByLiquidation).toHaveBeenCalledWith(1);
+  });
+
+  it('debe precargar las horas guardadas y mantener la seleccion previa al reabrir', () => {
+    mockLiquidationService.getRetirementsByLiquidation.mockReturnValue(
+      of([{ associate: 10, hours_worked: 160 }]),
+    );
+
+    component.selectedPeriodId = 1;
+    component.onLoadData();
+
+    expect(component.hoursData[10]).toBe(160);
+    expect(component.selectedAssociates[10]).toBe(true);
+  });
+
+  it('debe seleccionar y deseleccionar todos con el checkbox maestro', () => {
+    component.selectedPeriodId = 1;
+    component.onLoadData();
+
+    expect(component.allAssociatesSelected).toBe(true);
+
+    component.toggleSelectAll();
+    expect(component.allAssociatesSelected).toBe(false);
+
+    component.toggleSelectAll();
+    expect(component.allAssociatesSelected).toBe(true);
   });
 
   // ::: Batch 4: Lógica matemática del autocompletado :::

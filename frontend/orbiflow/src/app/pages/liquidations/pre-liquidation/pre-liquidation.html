@@ -16,16 +16,28 @@
 
   <div class="card p-4 mb-4 shadow-sm border-0">
     <div class="row align-items-end pb-2">
-      <div class="col-md-4 mb-3 mb-md-0 position-relative">
+      <div class="col-md-5 mb-3 mb-md-0 position-relative">
         <label class="form-label fw-bold">Elija un periodo:</label>
-        <select
-          class="form-select form-select-bg"
-          [(ngModel)]="selectedPeriodId"
-          (ngModelChange)="onPeriodChange()"
-        >
-          <option [ngValue]="null" disabled>Seleccione...</option>
-          <option *ngFor="let p of periods" [value]="p.id">{{ p.month }}/{{ p.year }}</option>
-        </select>
+        <div class="d-flex gap-2 align-items-center">
+          <select
+            class="form-select form-select-bg m-0 flex-grow-1"
+            [(ngModel)]="selectedPeriodId"
+            (ngModelChange)="onPeriodChange()"
+          >
+            <option [ngValue]="null" disabled>Seleccione...</option>
+            <option *ngFor="let p of periods" [ngValue]="p.id">{{ p.month }}/{{ p.year }}</option>
+          </select>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm m-0 px-2 flex-shrink-0"
+            (click)="onLoadData()"
+            [disabled]="!selectedPeriodId || isLoadingData || isProcessing"
+            title="Actualizar nómina"
+            aria-label="Actualizar nómina"
+          >
+            ↻
+          </button>
+        </div>
 
         <small
           class="text-danger position-absolute"
@@ -57,20 +69,14 @@
           placeholder="Total del mes"
         />
       </div>
-
-      <div class="col-md-5 d-flex gap-2">
-        <button
-          class="btn btn-outline-primary"
-          (click)="onLoadData()"
-          [disabled]="!selectedPeriodId"
-        >
-          Cargar Datos
-        </button>
-      </div>
     </div>
   </div>
 
-  <div class="card shadow-sm border-0 p-3 mb-4" *ngIf="dataLoaded">
+  @if (isLoadingData) {
+    <app-loader></app-loader>
+  }
+
+  <div class="card shadow-sm border-0 p-3 mb-4" *ngIf="dataLoaded && !isLoadingData">
     <h5 class="mb-3">Validación de carga:</h5>
 
     <div class="alert alert-info d-flex align-items-center py-2 mb-3" style="font-size: 0.85rem">
@@ -86,7 +92,7 @@
     <div class="alert alert-warning d-flex align-items-start py-2 mb-3" style="font-size: 0.85rem">
       <div class="me-2 fw-bold">Flujo de simulación:</div>
       <div>
-        1. <strong>Destilde</strong> a los asociados que no participan en este periodo.<br />
+        1. Revise la nómina y destilde a quienes no liquidan (opcional).<br />
         2. Haga clic en <strong>Autocompletar Horas</strong> (o cárguelas manualmente).<br />
         3. Haga clic en <strong>Validar y Simular</strong>.<br />
         4. Si está de acuerdo con los montos, haga clic en <strong>Aprobar Revisión</strong> para
@@ -103,7 +109,18 @@
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th style="width: 50px" class="text-center">Sel.</th>
+            <th style="width: 50px" class="text-center">
+              <input
+                class="form-check-input m-0"
+                type="checkbox"
+                [checked]="allAssociatesSelected"
+                [indeterminate]="someAssociatesSelected"
+                (change)="toggleSelectAll()"
+                [disabled]="simulationResults.length > 0"
+                title="Seleccionar / quitar todos"
+                aria-label="Seleccionar todos los asociados"
+              />
+            </th>
             <th>#</th>
             <th>Asociado</th>
             <th>Jornada</th>

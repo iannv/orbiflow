@@ -62,22 +62,18 @@ describe('LiquidationComponent', () => {
 
   // ::: Batch 2: Lógica Matemática de la Auditoría :::
 
-  it('debe realizar el Dry-Run, solicitar los cálculos al backend y sumar correctamente los totales del resumen', () => {
+  it('debe realizar el Dry-Run al seleccionar un periodo y sumar correctamente los totales del resumen', () => {
+    component.onPeriodChange();
     component.selectedPeriodId = 5;
-    
-    // Se acciona la petición de "Cargar Datos"
-    component.onLoadData();
+    component.onPeriodChange();
 
-    // Se verifica que se haya llamado al endpoint de cálculo en modo lectura (true)
     expect(mockLiquidationService.calculate).toHaveBeenCalledWith(5, true);
-
-    // Se audita la exactitud matemática del resumen totalizador
     expect(component.summary).not.toBeNull();
     expect(component.summary?.retirements_count).toBe(2);
-    expect(component.summary?.totals.base_amount).toBe('200000.00'); // 100k + 100k
-    expect(component.summary?.totals.additional_amount).toBe('70000.00'); // 20k + 50k
-    expect(component.summary?.totals.cap_adjustment).toBe('10000.00'); // 0 + 10k
-    expect(component.summary?.totals.total_amount).toBe('260000.00'); // 120k + 140k
+    expect(component.summary?.totals.base_amount).toBe('200000.00');
+    expect(component.summary?.totals.additional_amount).toBe('70000.00');
+    expect(component.summary?.totals.cap_adjustment).toBe('10000.00');
+    expect(component.summary?.totals.total_amount).toBe('260000.00');
   });
 
   // ::: Batch 3: Flujo Crítico de Cierre Definitivo (Transaccionalidad) :::
@@ -124,6 +120,26 @@ describe('LiquidationComponent', () => {
 
     // Se verifica la inmutabilidad de la acción bloqueada
     expect(spyCalculate).not.toHaveBeenCalled();
+  });
+
+  it('debe devolver el periodo a pre-liquidacion y redirigir con el query param', () => {
+    vi.useFakeTimers();
+
+    const spyUpdateStatus = vi.spyOn(mockLiquidationService, 'updatePeriodStatus');
+    const spyNavigate = vi.spyOn(router, 'navigate');
+
+    component.selectedPeriodId = 5;
+    component.onConfirmRevert();
+
+    expect(spyUpdateStatus).toHaveBeenCalledWith(5, 'open');
+    expect(component.isRevertModalOpen).toBe(false);
+
+    vi.advanceTimersByTime(1500);
+    expect(spyNavigate).toHaveBeenCalledWith(['/liquidaciones/pre-liquidation'], {
+      queryParams: { periodId: 5 },
+    });
+
+    vi.useRealTimers();
   });
 
   it('debe abrir y cerrar los modales de desglose individual de asociados', () => {

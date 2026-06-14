@@ -195,6 +195,50 @@ class LiquidationAPITests(APITestCase):
         calc_response = self.client.post(calc_url, {'test_mode': True}, format='json')
         self.assertEqual(calc_response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_reviewed_period_can_revert_to_open(self):
+        self.period.status = 'reviewed'
+        self.period.save()
+
+        url = reverse('liquidation-detail', kwargs={'pk': self.period.id})
+        response = self.client.patch(url, {'status': 'open'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'open')
+        self.period.refresh_from_db()
+        self.assertEqual(self.period.status, 'open')
+
+    def test_revert_to_open_creates_audit_log(self):
+        self.period.status = 'reviewed'
+        self.period.save()
+
+        url = reverse('liquidation-detail', kwargs={'pk': self.period.id})
+        self.client.patch(url, {'status': 'open'}, format='json')
+
+        log = AuditLog.objects.filter(action='REVERT_LIQUIDATION_PERIOD').first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.previous_data['status'], 'reviewed')
+        self.assertEqual(log.new_data['status'], 'open')
+        self.assertEqual(log.previous_data['period_id'], self.period.id)
+
+    def test_closed_period_cannot_change_status(self):
+        self.period.status = 'closed'
+        self.period.save()
+
+        url = reverse('liquidation-detail', kwargs={'pk': self.period.id})
+        response = self.client.patch(url, {'status': 'open'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('status', response.data)
+
+    def test_invalid_status_transition_open_to_closed(self):
+        self.assertEqual(self.period.status, 'open')
+
+        url = reverse('liquidation-detail', kwargs={'pk': self.period.id})
+        response = self.client.patch(url, {'status': 'closed'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('status', response.data)
+
 
 class SimulateAPITests(APITestCase):
     """Tests del endpoint POST /api/liquidations/{id}/simulate/."""

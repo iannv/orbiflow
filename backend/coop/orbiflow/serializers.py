@@ -239,6 +239,12 @@ class ModuleSerializer(serializers.ModelSerializer):
 class LiquidationPeriodSerializer(serializers.ModelSerializer):
     """CRUD de periodos de liquidación (mes/año, valor hora y tope vigentes)."""
 
+    ALLOWED_STATUS_TRANSITIONS = {
+        'open': {'reviewed'},
+        'reviewed': {'open', 'closed'},
+        'closed': set(),
+    }
+
     class Meta:
         model = LiquidationPeriod
         fields = [
@@ -277,6 +283,51 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
         validated_data['applied_hour_value'] = config.hour_value
         validated_data['applied_cap_pct'] = config.cap_percentage
         return super().create(validated_data)
+
+    @classmethod
+    def _validate_status_transition(cls, current_status, new_status):
+        allowed = cls.ALLOWED_STATUS_TRANSITIONS.get(current_status, set())
+        if new_status not in allowed:
+            raise serializers.ValidationError({
+                'status': (
+                    f'No se puede cambiar el estado de "{current_status}" a "{new_status}". '
+                    f'Transiciones permitidas: {", ".join(sorted(allowed)) or "ninguna"}.'
+                ),
+            })
+
+    def update(self, instance, validated_data):
+        new_status = validated_data.get('status')
+        if new_status is not None and new_status != instance.status:
+            self._validate_status_transition(instance.status, new_status)
+            previous_status = instance.status
+            instance = super().update(instance, validated_data)
+
+            request = self.context.get('request')
+            user = request.user if request and request.user.is_authenticated else None
+            action = (
+                'REVERT_LIQUIDATION_PERIOD'
+                if previous_status == 'reviewed' and new_status == 'open'
+                else 'UPDATE_LIQUIDATION_PERIOD_STATUS'
+            )
+            AuditLog.objects.create(
+                user=user,
+                action=action,
+                previous_data={
+                    'period_id': instance.id,
+                    'month': instance.month,
+                    'year': instance.year,
+                    'status': previous_status,
+                },
+                new_data={
+                    'period_id': instance.id,
+                    'month': instance.month,
+                    'year': instance.year,
+                    'status': new_status,
+                },
+            )
+            return instance
+
+        return super().update(instance, validated_data)
 
 
 class LiquidationItemSerializer(serializers.ModelSerializer):
