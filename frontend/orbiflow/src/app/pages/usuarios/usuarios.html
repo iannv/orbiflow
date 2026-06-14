@@ -38,7 +38,7 @@
           </button>
         }
       </div>
-  
+
       <!-- Filtrar -->
       <div class="filter-row">
         <div>
@@ -95,7 +95,7 @@
         }
       </div>
     </section>
-  
+
     <!-- Modal -->
     <app-modal
       [isOpen]="isModalOpen"
@@ -117,20 +117,20 @@
               (checkedChange)="userForm.get('is_active')?.setValue($event)"
             ></app-switch>
           </div>
-  
+
           <div id="form-div">
             <div class="form-div">
               <div>
                 <label for="first_name"> Nombre </label>
                 <input type="text" formControlName="first_name" required />
               </div>
-  
+
               <div>
                 <label for="last_name"> Apellido </label>
                 <input type="text" formControlName="last_name" required />
               </div>
             </div>
-  
+
             <div class="form-div">
               <div>
                 <label for="email"> Email </label>
@@ -141,7 +141,7 @@
                 <input type="text" formControlName="username" required />
               </div>
             </div>
-  
+
             <div class="form-div">
               @if (modalMode === 'create') {
                 <div>
@@ -168,7 +168,7 @@
                 </div>
               }
             </div>
-  
+
             <label for="rol"> Rol </label>
             <app-select
               name="rol"
@@ -180,7 +180,7 @@
                 <option [value]="role.value">{{ role.label }}</option>
               }
             </app-select>
-  
+
             <div class="form-div-check" [class.form-div-check--locked]="isCoopMemberLocked">
               <input
                 type="checkbox"
@@ -190,7 +190,7 @@
               />
               <label for="is_coop_member"> Es miembro de la cooperativa </label>
             </div>
-  
+
             @if (needsLegajoWarning && modalMode === 'create') {
               <p class="warning">
                 Atención: los usuarios con rol "Asociado" o "Tesorero" requieren un legajo asociado.
@@ -199,35 +199,39 @@
               </p>
             }
           </div>
-  
+
           <!-- Validaciones -->
+          @if (mggeError) {
+            <p class="error">{{mggeError}}</p>
+          }
+
           @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
             @if (userForm.get('first_name')?.errors?.['required']) {
               <p class="error">El nombre es obligatorio</p>
             }
           }
-  
+
           @if (userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched) {
             @if (userForm.get('last_name')?.errors?.['required']) {
               <p class="error">El apellido es obligatorio</p>
             }
           }
-  
+
           @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
             @if (userForm.get('email')?.errors?.['required']) {
               <p class="error">El email es obligatorio</p>
             }
-            @if (userForm.get('email')?.errors?.['email']) {
+            @if (userForm.get('email')?.errors?.['email'] || userForm.get('email')?.errors?.['pattern']) {
               <p class="error">El email no es válido</p>
             }
           }
-  
+
           @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
             @if (userForm.get('username')?.errors?.['required']) {
               <p class="error">El usuario es obligatorio</p>
             }
           }
-  
+
           @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
             @if (userForm.get('password')?.errors?.['required']) {
               <p class="error">La contraseña es obligatoria</p>
@@ -243,7 +247,7 @@
               </p>
             }
           }
-  
+
           @if (userForm.get('repeatPassword')?.touched) {
             @if (userForm.get('repeatPassword')?.errors?.['required']) {
               <p class="error">Debe repetir la contraseña</p>
@@ -255,7 +259,7 @@
               <p class="error">Las contraseñas no coinciden</p>
             }
           }
-  
+
           @if (userForm.get('roleControl')?.invalid && userForm.get('roleControl')?.touched) {
             @if (userForm.get('roleControl')?.errors?.['required']) {
               <p class="error">El rol es obligatorio</p>
@@ -264,7 +268,7 @@
         </form>
       }
     </app-modal>
-  
+
     <!-- Usuarios registrados -->
     @if (userList.length === 0) {
       <p class="fw200">Aún no hay usuarios registrados. Registre uno nuevo</p>
@@ -292,7 +296,7 @@
                         >
                       </div>
                     </div>
-  
+
                     <div class="div-actions">
                       <app-action
                         btnImg="assets/editar.png"
@@ -306,14 +310,16 @@
                   </div>
                 </app-base-card>
               }
-  
+
               <!-- Paginator -->
               @if (totalPages > 1) {
                 <nav id="nav-paginator">
                   <ul class="pagination justify-content-center">
                     <!-- Anterior -->
                     <li class="page-item" [class.disabled]="currentPage === 1">
-                      <button class="page-link" (click)="changePage(currentPage - 1)">&laquo;</button>
+                      <button class="page-link" (click)="changePage(currentPage - 1)">
+                        &laquo;
+                      </button>
                     </li>
                     <!-- Números -->
                     @for (page of [].constructor(totalPages); let i = $index; track i) {
@@ -325,7 +331,9 @@
                     }
                     <!-- Siguiente -->
                     <li class="page-item" [class.disabled]="currentPage === totalPages">
-                      <button class="page-link" (click)="changePage(currentPage + 1)">&raquo;</button>
+                      <button class="page-link" (click)="changePage(currentPage + 1)">
+                        &raquo;
+                      </button>
                     </li>
                   </ul>
                 </nav>
@@ -335,7 +343,7 @@
         }
       </section>
     }
-  
+
     <!-- Permisos por rol -->
     <section id="section-permisos-rol">
       <app-base-card title="Permisos por Rol" subtitle="Accesos definidos en el sistema">
