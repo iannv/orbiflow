@@ -81,6 +81,10 @@ export class PageAsociados implements OnInit {
   selectedAssociate: Associate | null = null;
   availableUsers: User[] = [];
   modulesCatalog: ModuleCatalog[] = [];
+  
+  // ──  Referencia global de módulos ──
+  allModules: ModuleCatalog[] = []; 
+
   formData: CreateAssociatePayload = this.emptyForm();
   emergencyContactInput = ''; // campo aparte: el backend espera un objeto JSON
   selectedUserEmail = '';     // solo lectura, se autocompleta al elegir usuario
@@ -101,7 +105,11 @@ export class PageAsociados implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadAssociates();
+    //  Se Carg el catálogo de módulos primero para poder filtrar visualmente 
+    this.associateService.getModules().subscribe((mods) => {
+      this.allModules = Array.isArray(mods) ? mods : [];
+      this.loadAssociates();
+    });
   }
 
   // ── Carga de la lista de asociados ──
@@ -348,9 +356,10 @@ export class PageAsociados implements OnInit {
 
     this.associateService.getModules().subscribe({
       next: (modules) => {
-        this.modulesCatalog = (Array.isArray(modules) ? modules : []).filter(
-          (x) => x.is_active,
-        );
+        // Se quita el filter para que la vista renderice los inactivos
+        this.modulesCatalog = Array.isArray(modules) ? modules : [];
+        this.allModules = this.modulesCatalog; // Se mantiene la referencia global actualizada
+
         // Copia los IDs ya asignados como punto de partida del estado temporal
         this.pendingVariantIds = new Set(
           associate.variants?.map((v) => v.variant) ?? [],
@@ -397,6 +406,10 @@ export class PageAsociados implements OnInit {
   isModuleActive(modId: number): boolean {
     const mod = this.modulesCatalog.find((m) => m.id === modId);
     if (!mod) return false;
+
+    // Si el módulo globalmente está inactivo, se inactiva en el modal
+    if (!mod.is_active) return false;
+
     return mod.variants.some((v) => this.pendingVariantIds.has(v.id));
   }
 
@@ -824,7 +837,14 @@ export class PageAsociados implements OnInit {
     if (!associate.variants || associate.variants.length === 0) {
       return [];
     }
-    const moduleNames = associate.variants.map((v) => v.module_name);
+
+    // Filtramos las variantes para mostrar solo las que pertenecen a módulos activos
+    const activeVariants = associate.variants.filter((v) => {
+      const mod = this.allModules.find((m) => m.name === v.module_name);
+      return mod ? mod.is_active : false;
+    });
+
+    const moduleNames = activeVariants.map((v) => v.module_name);
     return [...new Set(moduleNames)];
   }
 
