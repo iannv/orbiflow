@@ -2,49 +2,31 @@ import os
 import sys
 
 
-def _first_env(*keys: str) -> str:
+def _optional_env(*keys: str) -> str | None:
     for key in keys:
         value = os.getenv(key, "").strip()
         if value:
             return value
-    return ""
-
-
-def _neon_branch_from_django_env() -> str:
-    django_env = os.getenv("DJANGO_ENV", "local")
-    return {
-        "local": "local",
-        "sandbox": "develop",
-        "production": "main",
-    }.get(django_env, django_env)
+    return None
 
 
 def is_render_deploy() -> bool:
-    return _first_env("RENDER", "RENDER_SERVICE_NAME", "RENDER_EXTERNAL_HOSTNAME") != ""
+    return _optional_env("RENDER", "RENDER_SERVICE_NAME", "RENDER_EXTERNAL_HOSTNAME") is not None
 
 
-def deployment() -> str:
-    return "render" if is_render_deploy() else "local"
-
-
-def git_branch() -> str:
-    # Solo el deploy en Render conoce la rama de GitHub; en Docker local no aplica.
-    return _first_env("RENDER_GIT_BRANCH", "GIT_BRANCH") or "local"
-
-
-def neon_branch() -> str:
-    return _first_env("NEON_BRANCH") or _neon_branch_from_django_env()
+def git_branch() -> str | None:
+    return _optional_env("RENDER_GIT_BRANCH", "GIT_BRANCH")
 
 
 def backend_label() -> str:
-    service = _first_env("RENDER_SERVICE_NAME", "BACKEND_SERVICE")
+    service = _optional_env("RENDER_SERVICE_NAME", "BACKEND_SERVICE")
     if service:
         return service
 
     if not is_render_deploy():
         return "localhost:8000"
 
-    external_host = _first_env("RENDER_EXTERNAL_HOSTNAME")
+    external_host = _optional_env("RENDER_EXTERNAL_HOSTNAME")
     if external_host:
         return external_host
 
@@ -53,14 +35,11 @@ def backend_label() -> str:
     return first_host or "unknown"
 
 
-def runtime_info(*, status: str, database: str) -> dict:
+def runtime_info(*, status: str) -> dict:
     return {
         "status": status,
-        "database": database,
-        "deployment": deployment(),
         "git_branch": git_branch(),
         "backend": backend_label(),
-        "neon_branch": neon_branch(),
     }
 
 
@@ -69,7 +48,7 @@ def log_runtime_info() -> None:
         return
 
     try:
-        payload = runtime_info(status="starting", database="unknown")
+        payload = runtime_info(status="starting")
         print(f"[OrbiFlow] Entorno {payload}", flush=True)
     except Exception as exc:
         print(f"[OrbiFlow] No se pudo loguear el entorno: {exc}", flush=True)
