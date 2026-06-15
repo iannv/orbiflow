@@ -21,7 +21,7 @@ import {
 } from '@angular/forms';
 import { Toast } from '../../components/toast/toast';
 import { Switch } from '../../components/button/switch/switch';
-import { Loader } from "../../components/loader/loader";
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-usuarios',
@@ -37,8 +37,8 @@ import { Loader } from "../../components/loader/loader";
     Select,
     Toast,
     Switch,
-    Loader
-],
+    Loader,
+  ],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
@@ -95,7 +95,14 @@ export class Usuarios implements OnInit {
           ],
         ],
         repeatPassword: [''],
-        email: ['', [Validators.required, Validators.email]],
+        email: [
+          '',
+          [
+            Validators.required,
+            Validators.email,
+            Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/),
+          ],
+        ],
         roleControl: ['', Validators.required],
         is_coop_member: [false],
         is_active: [true],
@@ -179,7 +186,10 @@ export class Usuarios implements OnInit {
   }
 
   // Crear nuevo usuario
+  mggeError = '';
   createUser() {
+    this.mggeError = '';
+
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       return;
@@ -198,20 +208,29 @@ export class Usuarios implements OnInit {
       date_joined: new Date().toISOString().split('T')[0],
     };
     const roleRequiresLegajo = this.needsLegajoWarning;
+    const exists = this.userList.some(
+      (user) => user.username.toLowerCase() === newUser.username.toLowerCase(),
+    );
+    if (exists) {
+      this.mggeError = 'El nombre de usuario ya se encuentra registrado';
+      return;
+    }
     this.userService.createUser(newUser).subscribe({
       next: () => {
         const subtitle = roleRequiresLegajo
           ? 'Usuario creado. Recordá crear su legajo en la sección de Asociados.'
           : 'El usuario ha sido creado exitosamente';
         this.lanzarToast('Usuario creado', subtitle);
+        this.mggeError = '';
         this.closeModal();
         this.getUsers();
       },
       error: (err) => {
-        console.error(err);
+        console.log('ERROR COMPLETO:', err);
+        console.log('ERROR BODY:', err.error);
+        this.mggeError = JSON.stringify(err.error);
       },
     });
-    this.getUsers();
   }
 
   // Actualizar usuario
@@ -236,8 +255,20 @@ export class Usuarios implements OnInit {
     if (formValue.password) {
       updateData.password = formValue.password;
     }
+
+    const exists = this.userList.some(
+      (u) =>
+        u.id !== this.selectedUser?.id &&
+        u.username.toLowerCase() === formValue.username.toLowerCase(),
+    );
+    if (exists) {
+      this.mggeError = 'El nombre de usuario ya se encuentra registrado';
+      return;
+    }
+    
     this.userService.updateUser(this.selectedUser.id, updateData).subscribe(() => {
       this.lanzarToast('Usuario actualizado', 'Los cambios se guardaron correctamente');
+      this.mggeError = '';
       this.closeModal();
       this.getUsers();
     });
@@ -337,6 +368,7 @@ export class Usuarios implements OnInit {
   // Cerrar modal y resetear formulario
   closeModal() {
     this.isModalOpen = false;
+    this.mggeError = '';
     this.userForm.reset({
       is_coop_member: false,
       is_active: true,
