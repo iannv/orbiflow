@@ -1267,7 +1267,7 @@
 								""
 							]
 						},
-						"description": "Sube las horas trabajadas del mes (puede llamarse en lote)."
+						"description": "Sincroniza la nómina del periodo: crea/actualiza un RetirementDetail por cada entrada y elimina los asociados ausentes del payload (incluidos sus LiquidationItem). Respuesta: `{ period_id, received, created, updated, deleted }`."
 					},
 					"response": []
 				},

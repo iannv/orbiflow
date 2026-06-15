@@ -129,6 +129,117 @@ class LiquidationAPITests(APITestCase):
         response = self.client.post(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def _create_second_associate(self):
+        user = User.objects.create_user(
+            username='socio2', email='s2@coop.test', first_name='Luis', last_name='Miguel',
+        )
+        return Associate.objects.create(
+            user=user,
+            dni='20000002',
+            cbu='0000000000000000000021',
+            entry_date=date(2023, 1, 1),
+            personal_email='luis.personal@coop.test',
+            phone_number='457',
+            address='Calle 3',
+        )
+
+    def test_upload_hours_removes_associates_not_in_payload(self):
+        """La nómina del periodo debe quedar exactamente igual al payload enviado."""
+        second = self._create_second_associate()
+        url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
+
+        first_response = self.client.post(url, {
+            'entries': [
+                {'associate_id': self.associate.id, 'hours_worked': 160},
+                {'associate_id': second.id, 'hours_worked': 120},
+            ],
+        }, format='json')
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(first_response.data['created'], 2)
+        self.assertEqual(
+            RetirementDetail.objects.filter(liquidation=self.period).count(), 2,
+        )
+
+        second_response = self.client.post(url, {
+            'entries': [{'associate_id': self.associate.id, 'hours_worked': 176}],
+        }, format='json')
+        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_response.data['updated'], 1)
+        self.assertEqual(second_response.data['deleted'], 1)
+
+        remaining = RetirementDetail.objects.filter(liquidation=self.period)
+        self.assertEqual(remaining.count(), 1)
+        self.assertEqual(remaining.get().associate_id, self.associate.id)
+        self.assertEqual(remaining.get().hours_worked, 176)
+        self.assertFalse(
+            RetirementDetail.objects.filter(liquidation=self.period, associate=second).exists(),
+        )
+
+    def test_upload_hours_deletes_liquidation_items_on_removed_associate(self):
+        """Al sacar un asociado de la nómina, sus ítems de liquidación también se eliminan."""
+        second = self._create_second_associate()
+        url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
+        self.client.post(url, {
+            'entries': [
+                {'associate_id': self.associate.id, 'hours_worked': 160},
+                {'associate_id': second.id, 'hours_worked': 120},
+            ],
+        }, format='json')
+
+        module = Module.objects.create(name='Presentismo Sync', calculation_type='simple')
+        variant = Variant.objects.create(
+            module=module, name='Completo', type='percentage', value=Decimal('10.00'),
+        )
+        AssociateVariant.objects.create(associate=second, variant=variant)
+
+        calc_url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
+        self.client.post(calc_url, {'test_mode': False}, format='json')
+        self.assertEqual(
+            LiquidationItem.objects.filter(
+                retirement__liquidation=self.period,
+                retirement__associate=second,
+            ).count(),
+            1,
+        )
+
+        self.client.post(url, {
+            'entries': [{'associate_id': self.associate.id, 'hours_worked': 160}],
+        }, format='json')
+
+        self.assertFalse(
+            RetirementDetail.objects.filter(liquidation=self.period, associate=second).exists(),
+        )
+        self.assertEqual(LiquidationItem.objects.filter(retirement__associate=second).count(), 0)
+
+    def test_reapprove_after_revert_excludes_deselected_associate(self):
+        """Flujo: aprobar → revertir → re-aprobar sin un socio → calculate no lo incluye."""
+        second = self._create_second_associate()
+        upload_url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
+        detail_url = reverse('liquidation-detail', kwargs={'pk': self.period.id})
+        calc_url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
+
+        self.client.post(upload_url, {
+            'entries': [
+                {'associate_id': self.associate.id, 'hours_worked': 160},
+                {'associate_id': second.id, 'hours_worked': 120},
+            ],
+        }, format='json')
+        self.client.patch(detail_url, {'status': 'reviewed'}, format='json')
+
+        revert_response = self.client.patch(detail_url, {'status': 'open'}, format='json')
+        self.assertEqual(revert_response.status_code, status.HTTP_200_OK)
+
+        self.client.post(upload_url, {
+            'entries': [{'associate_id': self.associate.id, 'hours_worked': 160}],
+        }, format='json')
+        self.client.patch(detail_url, {'status': 'reviewed'}, format='json')
+
+        calc_response = self.client.post(calc_url, {'test_mode': True}, format='json')
+        self.assertEqual(calc_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(calc_response.data['retirements_count'], 1)
+        associate_ids = {r['associate_id'] for r in calc_response.data['retirements']}
+        self.assertEqual(associate_ids, {self.associate.id})
+
     def test_calculate_test_mode_does_not_persist(self):
         RetirementDetail.objects.create(
             liquidation=self.period, associate=self.associate, hours_worked=160,

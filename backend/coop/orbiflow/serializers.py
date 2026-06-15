@@ -364,8 +364,13 @@ class BulkHoursSerializer(serializers.Serializer):
     """
     Payload para `POST /api/liquidations/{id}/upload-hours/`.
 
+    Sincroniza la nómina del periodo: crea/actualiza un `RetirementDetail` por cada
+    entrada y elimina los asociados que ya no figuren en `entries`.
+
     Ejemplo:
         {"entries": [{"associate_id": 1, "hours_worked": 160}, ...]}
+
+    Respuesta: `{period_id, received, created, updated, deleted}`.
     """
     entries = HoursEntrySerializer(many=True)
 

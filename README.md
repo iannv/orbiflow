@@ -14,7 +14,7 @@ OrbiFlow modela ese dominio con piezas configurables:
 
 | Pieza | Para qué sirve |
 | --- | --- |
-| **Módulo** | Concepto liquidable (Presentismo, Antigüedad, Viáticos…). Define cómo se calcula (`simple` o `seniority`) y si entra al tope. |
+| **Módulo** | Concepto liquidable (Presentismo, Antigüedad, Viáticos…). Define cómo se calcula (`simple` o `seniority`(x antiguedad)) y si entra al tope. |
 | **Variante** | Opción concreta dentro de un módulo (porcentaje vs. monto fijo, con un valor). |
 | **AssociateVariant** | Asignación: qué variante de qué módulo le aplica a cada asociado. |
 | **GlobalConfiguration** | Valor hora y tope (%) vigentes. Cada cambio queda versionado. |
@@ -53,6 +53,7 @@ Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `
 4. Crear el período (congela valor hora/tope desde la config) POST /api/liquidations/
 5. Simulación al vuelo (Stateless)            POST /api/liquidations/{id}/simulate/
 6. Cargar horas trabajadas definitivas (bulk) POST /api/liquidations/{id}/upload-hours/
+   → sincroniza la nómina del periodo (elimina asociados ausentes del payload)
 
 --- Liquidaciones (Cierre) ---
 7. Auditoría de cierre                        POST /api/liquidations/{id}/calculate/  test_mode=true
@@ -63,7 +64,7 @@ Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `
                                               GET  /api/retirements/
 ```
 
-La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memoria RAM, sin tocar la base de datos. Una vez aprobada la revisión, se cargan las horas definitivas (paso 6). Ya en la etapa de cierre, el paso 7 llama al motor de cálculo en modo lectura (test_mode=true) para auditar los totales en pantalla, previo a la ejecución definitiva del paso 8 (test_mode=false) que impacta y genera los recibos reales en la base de datos.
+La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memoria RAM, sin tocar la base de datos. Una vez aprobada la revisión, se cargan las horas definitivas (paso 6): el payload define la nómina completa del periodo; los asociados que no figuren en `entries` se eliminan de la base (incluidos sus ítems de liquidación previos). Ya en la etapa de cierre, el paso 7 llama al motor de cálculo en modo lectura (test_mode=true) para auditar los totales en pantalla, previo a la ejecución definitiva del paso 8 (test_mode=false) que impacta y genera los recibos reales en la base de datos.
 
 ---
 
@@ -71,7 +72,7 @@ La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memori
 
 | | URL |
 | --- | --- |
-| **Frontend (UI Angular)** | <https://orbiflow-git-develop-orbicoop.vercel.app> |
+| **Frontend (UI Angular)** | <https://orbiflow.vercel.app/> |
 | **Backend (Django admin)** | <https://orbiflow-backend-sandbox.onrender.com/admin/> |
 | **API docs (Swagger)** | <https://orbiflow-backend-sandbox.onrender.com/api/docs/> |
 | **Healthcheck** | <https://orbiflow-backend-sandbox.onrender.com/api/health/> |
