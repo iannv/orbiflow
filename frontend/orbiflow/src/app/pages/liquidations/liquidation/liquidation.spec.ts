@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
 import { LiquidationComponent } from './liquidation';
@@ -18,10 +18,12 @@ describe('LiquidationComponent', () => {
     // Se configuran los mocks del backend
     mockLiquidationService = {
       getPeriods: vi.fn().mockReturnValue(of([{ id: 5, month: 7, year: 2026, applied_hour_value: '5000', applied_cap_pct: '30' }])),
-      calculate: vi.fn().mockReturnValue(of([
-        { associate_id: 1, base_amount: '100000', additional_amount: '20000', cap_adjustment: '0', total_amount: '120000' },
-        { associate_id: 2, base_amount: '100000', additional_amount: '50000', cap_adjustment: '10000', total_amount: '140000' }
-      ])),
+      calculate: vi.fn().mockReturnValue(of({
+        retirements: [
+          { associate_id: 1, base_amount: '100000', additional_amount: '20000', cap_adjustment: '0', total_amount: '120000' },
+          { associate_id: 2, base_amount: '100000', additional_amount: '50000', cap_adjustment: '10000', total_amount: '140000' },
+        ],
+      })),
       updatePeriodStatus: vi.fn().mockReturnValue(of({ success: true }))
     };
 
@@ -37,7 +39,8 @@ describe('LiquidationComponent', () => {
       providers: [
         provideRouter([]),
         { provide: LiquidationService, useValue: mockLiquidationService },
-        { provide: AssociateService, useValue: mockAssociateService }
+        { provide: AssociateService, useValue: mockAssociateService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
       ]
     }).compileComponents();
 
@@ -62,22 +65,18 @@ describe('LiquidationComponent', () => {
 
   // ::: Batch 2: Lógica Matemática de la Auditoría :::
 
-  it('debe realizar el Dry-Run, solicitar los cálculos al backend y sumar correctamente los totales del resumen', () => {
+  it('debe realizar el Dry-Run al seleccionar un periodo y sumar correctamente los totales del resumen', () => {
+    component.onPeriodChange();
     component.selectedPeriodId = 5;
-    
-    // Se acciona la petición de "Cargar Datos"
-    component.onLoadData();
+    component.onPeriodChange();
 
-    // Se verifica que se haya llamado al endpoint de cálculo en modo lectura (true)
     expect(mockLiquidationService.calculate).toHaveBeenCalledWith(5, true);
-
-    // Se audita la exactitud matemática del resumen totalizador
     expect(component.summary).not.toBeNull();
     expect(component.summary?.retirements_count).toBe(2);
-    expect(component.summary?.totals.base_amount).toBe('200000.00'); // 100k + 100k
-    expect(component.summary?.totals.additional_amount).toBe('70000.00'); // 20k + 50k
-    expect(component.summary?.totals.cap_adjustment).toBe('10000.00'); // 0 + 10k
-    expect(component.summary?.totals.total_amount).toBe('260000.00'); // 120k + 140k
+    expect(component.summary?.totals.base_amount).toBe('200000.00');
+    expect(component.summary?.totals.additional_amount).toBe('70000.00');
+    expect(component.summary?.totals.cap_adjustment).toBe('10000.00');
+    expect(component.summary?.totals.total_amount).toBe('260000.00');
   });
 
   // ::: Batch 3: Flujo Crítico de Cierre Definitivo (Transaccionalidad) :::
@@ -124,6 +123,49 @@ describe('LiquidationComponent', () => {
 
     // Se verifica la inmutabilidad de la acción bloqueada
     expect(spyCalculate).not.toHaveBeenCalled();
+  });
+
+  it('debe devolver el periodo a pre-liquidacion y redirigir con el query param', () => {
+    vi.useFakeTimers();
+
+    const spyUpdateStatus = vi.spyOn(mockLiquidationService, 'updatePeriodStatus');
+    const spyNavigate = vi.spyOn(router, 'navigate');
+
+    component.selectedPeriodId = 5;
+    component.onConfirmRevert();
+
+    expect(spyUpdateStatus).toHaveBeenCalledWith(5, 'open');
+    expect(component.isRevertModalOpen).toBe(false);
+
+    vi.advanceTimersByTime(1500);
+    expect(spyNavigate).toHaveBeenCalledWith(['/liquidaciones/pre-liquidation'], {
+      queryParams: { periodId: 5 },
+    });
+
+    vi.useRealTimers();
+  });
+
+  it('debe preseleccionar el periodo y ejecutar el dry-run cuando llega periodId por query param', async () => {
+    TestBed.resetTestingModule();
+
+    await TestBed.configureTestingModule({
+      imports: [LiquidationComponent, FormsModule],
+      providers: [
+        provideRouter([]),
+        { provide: LiquidationService, useValue: mockLiquidationService },
+        { provide: AssociateService, useValue: mockAssociateService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({ periodId: '5' }) } },
+      ],
+    }).compileComponents();
+
+    const queryFixture = TestBed.createComponent(LiquidationComponent);
+    const queryComponent = queryFixture.componentInstance;
+    queryFixture.detectChanges();
+
+    expect(queryComponent.selectedPeriodId).toBe(5);
+    expect(mockLiquidationService.calculate).toHaveBeenCalledWith(5, true);
+    expect(queryComponent.summary).not.toBeNull();
+    expect(queryComponent.summary?.retirements_count).toBe(2);
   });
 
   it('debe abrir y cerrar los modales de desglose individual de asociados', () => {

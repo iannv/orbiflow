@@ -13,24 +13,37 @@
           >Liquidación del Mes: Seleccione un periodo 'En Revisión'</label
         >
 
-        <div class="d-flex gap-3 align-items-center mt-2">
+        <div class="d-flex gap-2 align-items-center mt-2 flex-wrap">
           <select
-            class="form-select form-select-bg w-50 m-0"
+            class="form-select form-select-bg m-0"
+            style="min-width: 180px; max-width: 220px"
             [(ngModel)]="selectedPeriodId"
             (ngModelChange)="onPeriodChange()"
           >
             <option [ngValue]="null" disabled>Seleccione un periodo...</option>
-            <option *ngFor="let p of reviewedPeriods" [value]="p.id">
+            <option *ngFor="let p of reviewedPeriods" [ngValue]="p.id">
               {{ p.month }}/{{ p.year }}
             </option>
           </select>
 
           <button
-            class="btn btn-outline-primary m-0"
+            type="button"
+            class="btn btn-outline-secondary btn-sm m-0 px-2"
             (click)="onLoadData()"
-            [disabled]="!selectedPeriodId"
+            [disabled]="!selectedPeriodId || isLoadingData || isProcessing"
+            title="Actualizar auditoría"
+            aria-label="Actualizar auditoría"
           >
-            Cargar Datos
+            ↻
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-warning btn-sm m-0"
+            (click)="openRevertModal()"
+            [disabled]="!selectedPeriodId || isLoadingData || isProcessing"
+          >
+            Devolver a pre-liquidación
           </button>
         </div>
 
@@ -45,7 +58,11 @@
     </div>
   </div>
 
-  <div *ngIf="summary" class="mt-4">
+  @if (isLoadingData) {
+    <app-loader></app-loader>
+  }
+
+  <div *ngIf="summary && !isLoadingData" class="mt-4">
     <h4 class="fw600 text-muted mb-3" style="font-size: 1.1rem">Resumen de Totales Mensuales</h4>
 
     <div class="row mb-4">
@@ -166,6 +183,17 @@
     </div>
   </div>
 </div>
+
+<app-modal
+  [isOpen]="isRevertModalOpen"
+  title="¿Devolver el período a pre-liquidación?"
+  subtitle="El período volverá al estado Abierto para que puedas corregir las horas. Deberás simularlo y marcarlo como revisado nuevamente antes de cerrarlo. El valor hora y tope congelados del período no cambian."
+  size="md"
+  primaryBtnText="Devolver a pre-liquidación"
+  (close)="closeRevertModal()"
+  (primaryBtnClick)="onConfirmRevert()"
+  (secondaryBtnClick)="closeRevertModal()"
+></app-modal>
 
 <app-modal
   [isOpen]="isConfirmModalOpen"

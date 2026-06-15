@@ -408,7 +408,12 @@
 					"exec": [
 						"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
 						"const json = pm.response.json();",
-						"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));"
+						"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));",
+						"pm.test('Respuesta incluye contadores de sync', () => {",
+						"  pm.expect(json).to.have.property('created');",
+						"  pm.expect(json).to.have.property('updated');",
+						"  pm.expect(json).to.have.property('deleted');",
+						"});"
 					]
 				}
 			}
@@ -437,7 +442,7 @@
 					""
 				]
 			},
-			"description": "Persiste las horas trabajadas en la base de datos. Llamar una vez confirmada la revisión."
+			"description": "Sincroniza la nómina del periodo: persiste las horas de los asociados enviados en `entries` y elimina de la base a quienes ya no figuren. Llamar una vez confirmada la revisión (o al re-aprobar tras devolver el periodo a pre-liquidación). Respuesta: `{ period_id, received, created, updated, deleted }`."
 		},
 		"response": []
 	},

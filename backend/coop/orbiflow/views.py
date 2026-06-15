@@ -167,7 +167,7 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     CRUD de Periodos de Liquidación + acciones del Motor de Liquidación.
 
     Acciones extra:
-      * POST  /api/liquidations/{id}/upload-hours/  -> carga masiva de horas (persiste en DB).
+      * POST  /api/liquidations/{id}/upload-hours/  -> sincroniza nómina y horas (persiste en DB).
       * POST  /api/liquidations/{id}/simulate/      -> simulación en memoria (sin persistir).
       * POST  /api/liquidations/{id}/calculate/     -> ejecuta el motor (persiste si test_mode=false).
       * GET   /api/liquidations/{id}/summary/       -> resumen con totales.
@@ -177,6 +177,11 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     serializer_class = LiquidationPeriodSerializer
     permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['year', 'month', 'status']
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     @staticmethod
     def _validate_associate_ids(associate_ids: list) -> None:
@@ -199,8 +204,8 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     def upload_hours(self, request, pk=None):
         """
         Recibe un JSON masivo `{"entries": [{"associate_id": x, "hours_worked": h}, ...]}`
-        y crea/actualiza un RetirementDetail (con montos en cero) por asociado
-        para este periodo, listo para que el motor de liquidación lo procese.
+        y sincroniza la nómina del periodo: crea/actualiza un RetirementDetail por
+        cada asociado enviado y elimina los que ya no figuren en el payload.
         """
         period = self.get_object()
         if period.status == 'closed':
@@ -230,12 +235,20 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
                 else:
                     updated += 1
 
+            deleted, _ = (
+                RetirementDetail.objects
+                .filter(liquidation=period)
+                .exclude(associate_id__in=associate_ids)
+                .delete()
+            )
+
         return Response(
             {
                 "period_id": period.id,
                 "received": len(entries),
                 "created": created,
                 "updated": updated,
+                "deleted": deleted,
             },
             status=status.HTTP_200_OK,
         )
