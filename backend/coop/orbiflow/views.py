@@ -21,16 +21,19 @@ from .serializers import (
 from .services.liquidation import LiquidationCalculator
 
 
+from .runtime_info import runtime_info
+
+
 def healthcheck(_request):
     try:
         connection.ensure_connection()
     except Exception:
         return JsonResponse(
-            {"status": "error", "database": "unavailable"},
+            runtime_info(status="error", database="unavailable"),
             status=503,
         )
 
-    return JsonResponse({"status": "ok", "database": "connected"})
+    return JsonResponse(runtime_info(status="ok", database="connected"))
 
 
  
