@@ -73,6 +73,19 @@ FRONTEND_URL = os.getenv('FRONTEND_URL')
 if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL.strip())
 
+CORS_EXTRA_ORIGINS = os.getenv('CORS_EXTRA_ORIGINS', '')
+if CORS_EXTRA_ORIGINS:
+    CORS_ALLOWED_ORIGINS.extend(
+        origin.strip()
+        for origin in CORS_EXTRA_ORIGINS.split(',')
+        if origin.strip()
+    )
+
+# Permite deploys de Vercel (prod, develop y previews) sin listar cada URL.
+CORS_ALLOWED_ORIGIN_REGEXES = []
+if env_bool('CORS_ALLOW_VERCEL_ORIGINS', default=True):
+    CORS_ALLOWED_ORIGIN_REGEXES.append(r'^https://.*\.vercel\.app$')
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

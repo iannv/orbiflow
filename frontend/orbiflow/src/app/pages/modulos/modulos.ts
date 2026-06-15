@@ -2,27 +2,40 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { ModulosService } from '../../services/modulos-service';
 import { Modulo } from '../../interfaces/Modulo';
-
 import { BaseCard } from '../../components/base-card/base-card';
 import { Primary } from '../../components/button/primary/primary';
 import { Action } from '../../components/button/action/action';
 import { Chip } from '../../components/chip/chip';
 import { Modal } from '../../components/modal/modal';
 import { Toast } from '../../components/toast/toast';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../shared/utils/formatPercentage';
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-modulos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BaseCard, Primary, Action, Chip, Modal, Toast],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    BaseCard,
+    Primary,
+    Action,
+    Chip,
+    Modal,
+    Toast,
+    Loader,
+  ],
   templateUrl: './modulos.html',
   styleUrl: './modulos.css',
 })
 export class Modulos implements OnInit {
   modulosList: Modulo[] = [];
   moduloForm!: FormGroup;
+
+  loading = true;
 
   // Estados de Modales
   isModalOpen = false;
@@ -36,6 +49,12 @@ export class Modulos implements OnInit {
   mostrarToast = false;
   toastTitle = '';
   toastSubtitle = '';
+
+  mgeError = '';
+
+  //utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
 
   private modulosService = inject(ModulosService);
   private fb = inject(FormBuilder);
@@ -78,16 +97,18 @@ export class Modulos implements OnInit {
   }
 
   cargarModulos(): void {
+    this.loading = true;
     this.modulosService.getModulos().subscribe({
       next: (data) => {
         this.modulosList = data;
+        this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar módulos', err),
     });
   }
 
-  // --- LÓGICA DE MODALES Y FORMULARIOS ---
+  // Lógica de modales y formularios
 
   openModal(): void {
     this.moduloEnEdicion = null;
@@ -132,17 +153,29 @@ export class Modulos implements OnInit {
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.mgeError = '';
   }
 
   guardarModulo(): void {
-    
     // Validaciones
     if (this.variantesFormArray.length === 0) {
-      this.lanzarToast(
-        'Atención',
-        'Debe agregar al menos una variante al módulo para realizar cálculos.',
-      );
-      return; 
+      this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
+      return;
+    }
+
+    // Verificador de exclusividad (Regla de Negocio)
+    const isExclusive = this.moduloForm.get('is_exclusive')?.value;
+    let defaultsCount = 0;
+
+    this.variantesFormArray.controls.forEach((control) => {
+      if (control.get('is_default')?.value) {
+        defaultsCount++;
+      }
+    });
+
+    if (isExclusive && defaultsCount > 1) {
+      this.mgeError = 'Un módulo exclusivo solo puede tener UNA variante asignada por defecto.';
+      return;
     }
 
     let errorPorcentaje = false;
@@ -151,25 +184,19 @@ export class Modulos implements OnInit {
       const valor = control.get('value')?.value;
 
       if (tipo === 'percentage' && valor > 100) {
-        control.get('value')?.setErrors({ max: true }); 
+        control.get('value')?.setErrors({ max: true });
         errorPorcentaje = true;
       }
     });
 
     if (errorPorcentaje) {
-      this.lanzarToast(
-        'Valor incorrecto',
-        'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
-      );
-      return; 
+      this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
+      return;
     }
 
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
-      this.lanzarToast(
-        'Formulario incompleto',
-        'Por favor, complete todos los campos obligatorios.',
-      );
+      this.mgeError = 'Por favor, complete todos los campos obligatorios.';
       return;
     }
 
@@ -228,7 +255,7 @@ export class Modulos implements OnInit {
     return 'Hubo un problema de conexión con el servidor.';
   }
 
-  // --- LÓGICA DE ELIMINACIÓN ---
+  //  Lógica de eliminación
 
   confirmarEliminacion(id: number | undefined): void {
     if (!id) return;
@@ -256,7 +283,7 @@ export class Modulos implements OnInit {
     });
   }
 
-  // --- FEEDBACK VISUAL ---
+  // Feedback visual
 
   toggleEstadoModulo(event: Event, modulo: Modulo): void {
     const checkbox = event.target as HTMLInputElement;
@@ -282,6 +309,19 @@ export class Modulos implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  manejarExclusividadPorDefecto(indexCambiado: number): void {
+    const isExclusive = this.moduloForm.get('is_exclusive')?.value;
+    const varianteCambiada = this.variantesFormArray.at(indexCambiado);
+
+    if (isExclusive && varianteCambiada.get('is_default')?.value === true) {
+      this.variantesFormArray.controls.forEach((control, i) => {
+        if (i !== indexCambiado) {
+          control.get('is_default')?.setValue(false, { emitEvent: false });
+        }
+      });
+    }
   }
 
   lanzarToast(titulo: string, subtitulo: string): void {

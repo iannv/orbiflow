@@ -4,21 +4,42 @@ Guía para desarrolladores del proyecto. Para una introducción al producto, ver
 
 ## Índice
 
-1. [Requisitos](#1-requisitos)
-2. [Variables de entorno (`.env.*`)](#2-variables-de-entorno-env)
-3. [Comandos del Makefile](#3-comandos-del-makefile)
-4. [Flujo de trabajo local](#4-flujo-de-trabajo-local)
-5. [Tests](#5-tests)
-6. [Migraciones de base de datos](#6-migraciones-de-base-de-datos)
-7. [Conexión a Postgres con pgAdmin](#7-conexión-a-postgres-con-pgadmin)
-8. [Motor de liquidación](#8-motor-de-liquidación)
-9. [Modelo de datos](#9-modelo-de-datos)
-10. [Roles y autorizaciones](#10-roles-y-autorizaciones)
-11. [API REST](#11-api-rest)
-12. [Colecciones Postman](#12-colecciones-postman)
-13. [Diagramas de clases](#13-diagramas-de-clases)
-14. [Despliegue](#14-despliegue)
-15. [Workflow de git](#15-workflow-de-git)
+- [OrbiFlow · Documentación técnica](#orbiflow--documentación-técnica)
+  - [Índice](#índice)
+  - [1. Requisitos](#1-requisitos)
+  - [2. Variables de entorno (`.env.*`)](#2-variables-de-entorno-env)
+    - [Cómo funciona](#cómo-funciona)
+    - [Crear los archivos](#crear-los-archivos)
+    - [Cómo identifica el backend a qué entorno corre](#cómo-identifica-el-backend-a-qué-entorno-corre)
+  - [3. Comandos del Makefile](#3-comandos-del-makefile)
+  - [4. Flujo de trabajo local](#4-flujo-de-trabajo-local)
+    - [Verificar a qué base está apuntando el backend](#verificar-a-qué-base-está-apuntando-el-backend)
+    - [Ver tráfico HTTP en tiempo real](#ver-tráfico-http-en-tiempo-real)
+  - [5. Tests](#5-tests)
+    - [Estructura de los tests del backend](#estructura-de-los-tests-del-backend)
+    - [CI](#ci)
+  - [6. Migraciones de base de datos](#6-migraciones-de-base-de-datos)
+  - [7. Conexión a Postgres con pgAdmin](#7-conexión-a-postgres-con-pgadmin)
+    - [Local (`make build-local`)](#local-make-build-local)
+    - [Sandbox / Producción (Neon)](#sandbox--producción-neon)
+  - [8. Motor de liquidación](#8-motor-de-liquidación)
+    - [Fórmula](#fórmula)
+    - [Flujo end-to-end](#flujo-end-to-end)
+  - [9. Modelo de datos](#9-modelo-de-datos)
+  - [10. Roles y autorizaciones](#10-roles-y-autorizaciones)
+    - [Rutas del frontend por rol](#rutas-del-frontend-por-rol)
+    - [API de liquidaciones para asociados](#api-de-liquidaciones-para-asociados)
+    - [Membresía vs. rol vs. flags de Django](#membresía-vs-rol-vs-flags-de-django)
+  - [11. API REST](#11-api-rest)
+    - [Endpoints de documentación](#endpoints-de-documentación)
+    - [Probar endpoints protegidos en Swagger](#probar-endpoints-protegidos-en-swagger)
+  - [12. Colecciones Postman](#12-colecciones-postman)
+  - [13. Diagramas de clases](#13-diagramas-de-clases)
+  - [14. Desploy](#14-desploy)
+    - [Backend (Render)](#backend-render)
+    - [Frontend (Vercel)](#frontend-vercel)
+      - [Configuraciones de Angular y qué backend usa cada una](#configuraciones-de-angular-y-qué-backend-usa-cada-una)
+  - [15. Workflow de git](#15-workflow-de-git)
 
 ---
 
@@ -26,15 +47,13 @@ Guía para desarrolladores del proyecto. Para una introducción al producto, ver
 
 - **Docker** y **Docker Compose** v2 (`docker compose`, no `docker-compose`)
 - **make**
-- Una cuenta en [Neon](https://neon.tech) si vas a tocar las bases sandbox o prod
-
-No hace falta instalar Python, Node ni Postgres en la máquina — todo corre en contenedores.
 
 ---
 
 ## 2. Variables de entorno (`.env.*`)
 
 El backend lee sus variables de un `.env.<entorno>`. Hay tres entornos y un mecanismo único que elige cuál cargar.
+Solicitar a un admin los archivos: **`.env.local`**, **`.env.sandbox`** y **`.env.prod`**.
 
 ### Cómo funciona
 
@@ -169,19 +188,33 @@ Internamente:
 2. Corre `python manage.py test --keepdb` contra esa DB (Django tests con DB reutilizable para acelerar).
 3. Corre `npx ng test --watch=false` del frontend (Vitest single-run, no se queda en watch mode).
 
+### Estructura de los tests del backend
+
+Los tests del backend viven en `backend/coop/orbiflow/tests/`, separados en dos
+subpaquetes según su alcance:
+
+```
+orbiflow/tests/
+├── unit/     
+└── integration/ 
+```
+
+- **`unit/`**: No hacen requests HTTP.
+- **`integration/`**: pegan contra los endpoints reales de Django usando `APIClient` de DRF. Incluye `LiquidationFullFlowAPITests`, que recorre el camino feliz completo.
+
+Para correr un subconjunto:
+
+```bash
+# Solo unit
+docker compose run --rm backend python manage.py test orbiflow.tests.unit --keepdb
+
+# Solo integration
+docker compose run --rm backend python manage.py test orbiflow.tests.integration --keepdb
+```
+
 ### CI
 
 Hay un workflow en `.github/workflows/tests.yml` que corre `make tests` en cada push a `develop` y en cada PR contra `develop`/`main`. Si la DB no llega a `healthy` en 50 segundos, el job falla explícitamente con los logs del contenedor.
-
-### Estado actual de los tests del frontend
-
-Hay 14 specs, en su mayoría son los "should create" autogenerados por Angular CLI. Los specs de páginas que disparan HTTP en `ngOnInit` ya tienen `provideHttpClient()` + `provideHttpClientTesting()` para evitar requests reales durante los tests.
-
-Si vas a sumar tests "de verdad", arrancá por:
-
-- Servicios HTTP (`auth.service`, `liquidation-service`, etc.) usando `HttpTestingController`.
-- Auth interceptor.
-- Componentes de login y de hub de liquidaciones.
 
 ---
 
@@ -193,8 +226,9 @@ Si modificás un `models.py`:
 make makemigrations   # genera el archivo de migración
 make migrate          # lo aplica en el entorno activo
 ```
-
-Las migraciones se aplican contra **el entorno activo** (el que está corriendo). Si estás con `make build-sandbox`, `make migrate` modifica Neon Sandbox. Cuidado.
+> [!WARNING]
+> Las migraciones se aplican contra **el entorno activo** (el que está corriendo). Si estás con `make build-sandbox`, `make migrate` modifica
+> Neon Sandbox. Cuidado.
 
 Importante: **siempre commiteá el archivo de migración generado** junto con el cambio del modelo.
 
@@ -212,7 +246,7 @@ Procedimiento común en pgAdmin 4: **Servers → Register → Server…**, pesta
 | Port | `5433` |
 | Maintenance database | `orbiflow_db` |
 | Username | `admin` |
-| Password | el que pusiste en `.env.local` |
+| Password | se encuentra en `.env.local` |
 
 > El puerto es **5433** (mapeo del compose), no 5432.
 
@@ -220,11 +254,11 @@ Procedimiento común en pgAdmin 4: **Servers → Register → Server…**, pesta
 
 | Campo | Valor |
 | --- | --- |
-| Host | `ep-<...>.neon.tech` (de tu `.env.sandbox` o `.env.prod`) |
+| Host | `ep-<...>.neon.tech` (se encuentra en `.env.sandbox` o `.env.prod`) |
 | Port | `5432` |
 | Maintenance database | `neondb` |
 | Username | `neondb_owner` |
-| Password | de tu `.env.*` |
+| Password | se encuentra en `.env.*` |
 | Parameters → `sslmode` | `require` |
 
 Para confirmar contra qué te conectaste, una vez en pgAdmin:
@@ -267,19 +301,32 @@ Todos los montos se manejan como `Decimal` y se cuantizan a 2 decimales con `ROU
 ### Flujo end-to-end
 
 ```text
-1. Login (JWT)               POST /api/auth/login/
-2. Configuración global      POST /api/config/             { hour_value, cap_pct }
-3. Módulos y variantes       POST /api/modules/  + POST /api/variants/
-                             (alternativa bulk: POST /api/modules/bulk/)
-4. Alta de Asociados         POST /api/users/  + POST /api/associates/
-5. Asignar variantes         POST /api/associate-variants/
-6. Crear periodo             POST /api/liquidations/         { year, month }
-7. Cargar horas (masivo)     POST /api/liquidations/{id}/upload-hours/
-                             { "entries": [{ "associate_id": 1, "hours_worked": 160 }] }
-8a. Dry-run                  POST /api/liquidations/{id}/calculate/  { "test_mode": true }
-8b. Ejecución definitiva     POST /api/liquidations/{id}/calculate/  { "test_mode": false }
-9. Resumen / recibos         GET  /api/liquidations/{id}/summary/
-                             GET  /api/retirements/?liquidation={id}
+1.  Login (JWT)               POST /api/auth/login/
+2.  Configuración global      POST /api/config/             { hour_value, cap_pct }
+3.  Módulos y variantes       POST /api/modules/  + POST /api/variants/
+                              (alternativa bulk: POST /api/modules/bulk/)
+4.  Alta de Asociados         POST /api/users/  + POST /api/associates/
+5.  Asignar variantes         POST /api/associate-variants/
+6.  Crear periodo             POST /api/liquidations/         { year, month }
+                              → congela applied_hour_value y applied_cap_pct desde
+                                la última GlobalConfiguration (no se toman del body).
+
+--- Pre-liquidación (pantalla de revisión) ---
+
+7.  Simular (en memoria)      POST /api/liquidations/{id}/simulate/
+                              { "entries": [{ "associate_id": 1, "hours_worked": 160 }] }
+                              → devuelve desglose sin tocar la DB; puede repetirse N veces.
+8.  Aprobar revisión          POST /api/liquidations/{id}/upload-hours/
+                              { "entries": [...] }              ← sincroniza nómina y horas en DB
+                              PATCH /api/liquidations/{id}/     { "status": "reviewed" }
+
+--- Cierre de liquidación ---
+
+9.  Ejecución definitiva      POST /api/liquidations/{id}/calculate/  { "test_mode": false }
+                              → persiste RetirementDetail + LiquidationItem; registra AuditLog.
+                              PATCH /api/liquidations/{id}/            { "status": "closed" }
+10. Resumen / recibos         GET  /api/liquidations/{id}/summary/
+                              GET  /api/retirements/?liquidation={id}
 ```
 
 ---
@@ -310,7 +357,35 @@ Los roles en código: `admin`, `treasurer` y `associate`.
 | --- | --- | --- |
 | **Admin** (`admin`) | Personal técnico o IT. | Acceso total. Crear, leer, actualizar y eliminar cualquier recurso. |
 | **Tesorero** (`treasurer`) | Miembro de la cooperativa encargado de la administración financiera. | Operativo amplio. Gestiona liquidaciones, asociados, módulos, variantes y configuración global. No puede borrar usuarios `admin`. |
-| **Asociado** (`associate`) | Miembro de la cooperativa. | Sólo lectura. Listar liquidaciones, recibos, usuarios y asociados. Detalle sólo de **sus propios** datos. No accede a módulos, variantes ni configuración. |
+| **Asociado** (`associate`) | Miembro de la cooperativa. | Solo lectura. **No** accede al módulo `/liquidaciones` ni a módulos, variantes ni configuración. En pantalla ve `/recibos` (propios), `/archivo-cooperativo` (auditoría colectiva de periodos cerrados) y `/perfil`. Directorio de usuarios/asociados en listado; detalle solo de **sus** datos. Ver [rutas](#rutas-del-frontend-por-rol) y [API](#api-de-liquidaciones-para-asociados). |
+
+### Rutas del frontend por rol
+
+`roleGuard` en `app.routes.ts` y el menú lateral (`sidenav.ts`) aplican lo mismo:
+
+| Ruta | Admin | Tesorero | Asociado |
+| --- | --- | --- | --- |
+| `/panel`, `/perfil` | Sí | Sí | Sí |
+| `/usuarios`, `/modulos` | Sí | No | No |
+| `/asociados`, `/configuracion-general` | Sí | Sí | No |
+| `/liquidaciones` (hub, pre-liquidación, liquidación, **cerradas**) | Sí | Sí | **No** |
+| `/recibos` | Sí | Sí | Sí (propios) |
+| `/archivo-cooperativo` | Sí | Sí | Sí |
+
+El asociado **no** tiene pantalla de liquidaciones operativas ni el listado de cerradas bajo `/liquidaciones/closed-liquidations`. La auditoría colectiva equivalente es **`/archivo-cooperativo`**, que reutiliza `app-closed-periods-panel` con selector de periodos.
+
+### API de liquidaciones para asociados
+
+El asociado **no gestiona** liquidaciones (sin POST/PATCH en periodos). A nivel API solo hay **lectura acotada** para alimentar archivo cooperativo y, de forma auxiliar, la vista de recibos (etiquetas de mes/año y PDF).
+
+Regla en `backend/coop/orbiflow/liquidation_access.py`, aplicada en `LiquidationPeriodViewSet.get_queryset()` (listado, detalle, `summary/` y `retirements/` del periodo):
+
+| Rol | `GET /api/liquidations/` (y lectura por id) |
+| --- | --- |
+| **Admin / tesorero** | Todos los periodos (filtros opcionales: `?status=`, `?year=`, `?month=`). |
+| **Asociado** | Solo periodos `closed` con `(year, month)` **≥** mes/año de `Associate.entry_date` (inclusive). Periodos anteriores o no cerrados → **404** en detalle/summary. |
+
+En `/archivo-cooperativo` el frontend aplica el mismo criterio en el selector (mínimo según ingreso). Eso **no** implica acceso al módulo Liquidaciones de la app.
 
 ### Membresía vs. rol vs. flags de Django
 
@@ -329,8 +404,6 @@ Reglas de membresía:
 - `role = associate` → `is_coop_member` **debe** ser `true`.
 - `role = treasurer` → `is_coop_member` **debe** ser `true`.
 - `role = admin` → `is_coop_member` queda libre (personal técnico externo).
-
-> `is_staff` **no** representa membresía cooperativa; sólo el acceso al panel `/admin/` de Django.
 
 ---
 
@@ -362,7 +435,7 @@ En `backend/postman/` hay:
 | --- | --- |
 | `postmanEnv.json` | Variables (`base_url`, `access_token`, IDs que se populan solos). |
 | `orbiflow_happy_path.postman_collection.json` | Camino feliz completo: del login a la liquidación. Importala y corré las requests en orden. |
-| `orbiflow_full.postman_collection.json` | Todos los endpoints, para pruebas puntuales. |
+| `orbiflow_full.postman_collection.json` | Todos los endpoints, para pruebas puntuales. Incluye carpeta **Permisos Asociado (Archivo Cooperativo)** para validar el filtrado de liquidaciones por `entry_date`. |
 
 Los scripts de test de cada request van completando las variables (`access_token`, `associate_id`, `period_id`, etc.) automáticamente.
 
@@ -380,7 +453,7 @@ Genera `orbiflow_core.png` con el modelo de la app `orbiflow`.
 
 ---
 
-## 14. Despliegue
+## 14. Desploy
 
 ### Backend (Render)
 
@@ -400,7 +473,9 @@ Variables de entorno mínimas en Render:
 - `DJANGO_DEBUG` → `false` en prod, `true` en sandbox si querés páginas de error con detalle
 - `DJANGO_ALLOWED_HOSTS` → el host de Render
 - `DATABASE_URL` → connection string completa de Neon con `?sslmode=require`
-- `FRONTEND_URL` → URL del frontend en Vercel (se agrega a `CORS_ALLOWED_ORIGINS`)
+- `FRONTEND_URL` → URL principal del frontend en Vercel (se agrega a `CORS_ALLOWED_ORIGINS`)
+- `CORS_EXTRA_ORIGINS` → (opcional) orígenes adicionales separados por coma
+- `CORS_ALLOW_VERCEL_ORIGINS` → `true` por defecto; habilita `https://*.vercel.app` (prod, develop y previews)
 
 El entrypoint corre `python manage.py collectstatic --noinput` antes de gunicorn. **Whitenoise** sirve los estáticos del admin de Django.
 
@@ -414,20 +489,38 @@ El entrypoint corre `python manage.py collectstatic --noinput` antes de gunicorn
 | Production Branch | `main` |
 | Preview Branches | resto (incluye `develop`) |
 
-El archivo [`frontend/orbiflow/vercel.json`](../frontend/orbiflow/vercel.json) define rewrites SPA (`/*` → `/index.html`) para que Angular Router funcione en hard refresh.
+El archivo [`frontend/vercel.json`](../frontend/vercel.json) define rewrites SPA (`/*` → `/index.html`) para que Angular Router funcione en hard refresh.
 
 #### Configuraciones de Angular y qué backend usa cada una
 
-| Modo | Archivo de env Angular | URL del backend |
+Hay **dos formas** de correr el frontend; no confundirlas con `make build-local` / `make build-sandbox`:
+
+**1. Desarrollo local con Docker** (`make build-local`, `make build-sandbox` o `make build-prod`)
+
+El contenedor frontend ejecuta `npm start` → `ng serve` con configuración **`development`** (default de `serve` en `angular.json`). Siempre usa `environment.ts`:
+
+| Comando Make | Archivo env Angular | URL que usa el frontend | Qué cambia en realidad |
+| --- | --- | --- | --- |
+| `make build-local` | `environment.ts` | `http://localhost:8000/api` | Backend + Postgres **local** (`.env.local`) |
+| `make build-sandbox` | `environment.ts` | `http://localhost:8000/api` | Backend local apuntando a Neon **sandbox** (`.env.sandbox`) |
+| `make build-prod` | `environment.ts` | `http://localhost:8000/api` | Backend local apuntando a Neon **prod** (`.env.prod`) |
+
+El frontend **no** pasa a Render en ninguno de esos casos: siempre habla con el backend del contenedor en el puerto 8000. Lo que cambia entre targets Make es la **base de datos del backend**, no el `environment.*` de Angular.
+
+**2. Build estático desplegado** (`ng build`, p. ej. en Vercel)
+
+| Configuración Angular | Archivo de env | URL del backend |
 | --- | --- | --- |
-| `development` (default de `ng serve`) | `environment.ts` | `http://localhost:8000/api` |
-| `sandbox` (default de `ng build`) | `environment.sandbox.ts` | `orbiflow-backend-sandbox.onrender.com/api` |
-| `production` | `environment.production.ts` | `orbiflow-backend-prod.onrender.com/api` |
+| `development` (solo si se pide explícitamente en build) | `environment.ts` | `http://localhost:8000/api` |
+| `sandbox` (**default** de `ng build` en `angular.json`) | `environment.sandbox.ts` | `https://orbiflow-backend-sandbox.onrender.com/api` |
+| `production` | `environment.production.ts` | `https://orbiflow-backend-prod.onrender.com/api` |
 
-Vercel preview de `develop` usa `sandbox` (default). Cuando se quiera promover a producción real con `orbiflow-backend-prod`, hay dos opciones:
+Vercel preview de `develop` usa `npm run build` → configuración **sandbox** por defecto. Para producción real con `orbiflow-backend-prod`:
 
-1. Cambiar `defaultConfiguration` en `angular.json` a `"production"`.
-2. En el dashboard de Vercel, setear el build command de la Production Branch a `npm run build -- --configuration=production`.
+1. Cambiar `defaultConfiguration` en `angular.json` a `"production"`, o
+2. En Vercel, build command de la Production Branch: `npm run build -- --configuration=production`.
+
+> Si corrés `ng serve --configuration=sandbox` a mano (sin Docker), el frontend sí apuntaría a Render sandbox; el `Dockerfile` del frontend **no** hace eso.
 
 ---
 
@@ -473,4 +566,4 @@ Vercel preview de `develop` usa `sandbox` (default). Cuando se quiera promover a
 
 Pattern de mensaje de commit (estilo del repo):
 
-- `feat: ...`, `fix: ...`, `refactor: ...`, `docs: ...`, `chore: ...`
+- `feat: ...`, `fix: ...`, `refactor: ...`, `docs: ...`

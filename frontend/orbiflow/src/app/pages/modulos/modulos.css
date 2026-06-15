@@ -1,3 +1,7 @@
+.error {
+  color: var(--rojo);
+}
+
 #section-title {
   display: flex;
   flex-direction: column;
@@ -50,7 +54,6 @@
   flex-direction: column;
   gap: 0.2rem;
 }
-
 
 .btn-switch {
   cursor: pointer;

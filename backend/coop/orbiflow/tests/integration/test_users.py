@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from ..models.identity import User
+from orbiflow.models.identity import User
 
 class UserTests(APITestCase):
     def setUp(self):

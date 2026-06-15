@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "2fb15352-746e-435f-b368-008bd3948863",
 		"name": "OrbiFlow - Happy Path (Liquidación)",
-		"description": "Camino feliz completo del Motor de Liquidación de OrbiFlow:\n\n1. Login\n2. Configuración Global (valor hora + tope)\n3. Carga masiva de Módulos + Variantes\n4. Creación de un Asociado (User + Associate)\n5. Asignación de Variantes al Asociado\n6. Creación del Periodo de Liquidación\n7. Carga masiva de Horas\n8. Ejecución del Motor (definitivo)\n9. Resumen del periodo (recibo)\n\nPre-requisito: backend levantado y un superusuario existente. Configurá las variables `admin_username` y `admin_password` antes de correr.\n\nNota: `base_url` ya incluye el prefijo `/api` para mantener consistencia con la colección completa y el entorno Orbiflow - local.",
+		"description": "Camino feliz completo del Motor de Liquidación de OrbiFlow:\n\n1. Login\n2. Configuración Global (valor hora + tope)\n3. Carga masiva de Módulos + Variantes\n4. Creación de un Asociado (User + Associate)\n5. Asignación de Variantes al Asociado\n6. Creación del Periodo de Liquidación\n7. Carga masiva de Horas\n8. Ejecución del Motor (definitivo)\n9. Resumen del periodo (recibo)\n\nPre-requisito: backend levantado y un superusuario existente. Importá también `postmanEnv.json` (entorno Orbiflow - local) y seleccionarlo antes de correr. Configurá `admin_username` y `admin_password` si difieren del default.\n\nEl paso 1 guarda `access_token` y `refresh_token` en el entorno activo y en variables de colección, igual que la colección completa.\n\nNota: `base_url` ya incluye el prefijo `/api`.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "19669280"
 	},
@@ -11,13 +11,28 @@
 			"name": "1. Login",
 			"event": [
 				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Sufijo único por corrida (módulos, usuario, asociado).",
+							"pm.collectionVariables.set('run_suffix', String(Date.now()).slice(-6));"
+						]
+					}
+				},
+				{
 					"listen": "test",
 					"script": {
 						"type": "text/javascript",
 						"exec": [
 							"pm.test('Login OK', () => pm.response.to.have.status(200));",
 							"const json = pm.response.json();",
-							"pm.collectionVariables.set('access_token', json.access);",
+							"if (json.access) {",
+							"    pm.environment.set('access_token', json.access);",
+							"    pm.environment.set('refresh_token', json.refresh);",
+							"    pm.collectionVariables.set('access_token', json.access);",
+							"    pm.collectionVariables.set('refresh_token', json.refresh);",
+							"}",
 							"pm.test('Trae access token', () => pm.expect(json.access).to.be.a('string').and.not.empty);"
 						]
 					}
@@ -49,7 +64,7 @@
 						""
 					]
 				},
-				"description": "Obtiene el access/refresh token JWT y lo guarda como variable de colección."
+				"description": "Obtiene el access/refresh token JWT y los guarda en el entorno activo y en variables de colección."
 			},
 			"response": []
 		},
@@ -122,7 +137,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n  {\n    \"name\": \"Presentismo\",\n    \"description\": \"Bono por asistencia\",\n    \"calculation_type\": \"simple\",\n    \"applies_to_cap\": false,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"Completo\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": true},\n      {\"name\": \"Parcial\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false}\n    ]\n  },\n  {\n    \"name\": \"Antigüedad\",\n    \"description\": \"Plus por años en la cooperativa\",\n    \"calculation_type\": \"seniority\",\n    \"applies_to_cap\": true,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"1% por año\", \"type\": \"percentage\", \"value\": \"1.00\", \"is_default\": true}\n    ]\n  },\n   {\n        \"name\": \"Seniority\",\n        \"description\": \"Categoría según experiencia técnica\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Junior\", \"type\": \"percentage\", \"value\": \"2.00\", \"is_default\": true },\n            { \"name\": \"Semi-Senior\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false },\n            { \"name\": \"Senior\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Formación\",\n        \"description\": \"Títulos académicos obtenidos\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": false,\n        \"variants\": [\n            { \"name\": \"Título de Grado\", \"type\": \"percentage\", \"value\": \"3.00\", \"is_default\": false },\n            { \"name\": \"Posgrado / MBA\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Viáticos\",\n        \"description\": \"Compensación fija por traslado\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Lejos de oficina\", \"type\": \"fixed_amount\", \"value\": \"5000.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Personas a cargo\",\n        \"description\": \"Adicional por grupo familiar\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"1 persona\", \"type\": \"percentage\", \"value\": \"15.00\", \"is_default\": false },\n            { \"name\": \"2 personas\", \"type\": \"percentage\", \"value\": \"25.00\", \"is_default\": false },\n            { \"name\": \"3 o más personas\", \"type\": \"percentage\", \"value\": \"30.00\", \"is_default\": false }\n        ]\n    }\n]"
+					"raw": "[\n  {\n    \"name\": \"Presentismo_{{run_suffix}}\",\n    \"description\": \"Bono por asistencia\",\n    \"calculation_type\": \"simple\",\n    \"applies_to_cap\": false,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"Completo\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": true},\n      {\"name\": \"Parcial\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false}\n    ]\n  },\n  {\n    \"name\": \"Antigüedad_{{run_suffix}}\",\n    \"description\": \"Plus por años en la cooperativa\",\n    \"calculation_type\": \"seniority\",\n    \"applies_to_cap\": true,\n    \"is_exclusive\": true,\n    \"is_active\": true,\n    \"variants\": [\n      {\"name\": \"1% por año\", \"type\": \"percentage\", \"value\": \"1.00\", \"is_default\": true}\n    ]\n  },\n   {\n        \"name\": \"Seniority_{{run_suffix}}\",\n        \"description\": \"Categoría según experiencia técnica\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Junior\", \"type\": \"percentage\", \"value\": \"2.00\", \"is_default\": true },\n            { \"name\": \"Semi-Senior\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false },\n            { \"name\": \"Senior\", \"type\": \"percentage\", \"value\": \"10.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Formación_{{run_suffix}}\",\n        \"description\": \"Títulos académicos obtenidos\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": false,\n        \"variants\": [\n            { \"name\": \"Título de Grado\", \"type\": \"percentage\", \"value\": \"3.00\", \"is_default\": false },\n            { \"name\": \"Posgrado / MBA\", \"type\": \"percentage\", \"value\": \"5.00\", \"is_default\": false }\n        ]\n    },\n     {\n        \"name\": \"Viáticos_{{run_suffix}}\",\n        \"description\": \"Compensación fija por traslado\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": false,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"Lejos de oficina\", \"type\": \"fixed_amount\", \"value\": \"5000.00\", \"is_default\": false }\n        ]\n    },\n    {\n        \"name\": \"Personas a cargo_{{run_suffix}}\",\n        \"description\": \"Adicional por grupo familiar\",\n        \"calculation_type\": \"simple\",\n        \"applies_to_cap\": true,\n        \"is_exclusive\": true,\n        \"variants\": [\n            { \"name\": \"1 persona\", \"type\": \"percentage\", \"value\": \"15.00\", \"is_default\": false },\n            { \"name\": \"2 personas\", \"type\": \"percentage\", \"value\": \"25.00\", \"is_default\": false },\n            { \"name\": \"3 o más personas\", \"type\": \"percentage\", \"value\": \"30.00\", \"is_default\": false }\n        ]\n    }\n]"
 				},
 				"url": {
 					"raw": "{{base_url}}/modules/bulk/",
@@ -135,7 +150,7 @@
 						""
 					]
 				},
-				"description": "Crea dos módulos (uno simple con tope, uno seniority) cada uno con su variante."
+				"description": "Crea 6 módulos con nombres únicos por corrida (`_{{run_suffix}}`). Los IDs se guardan en variables para los pasos 6a/6b."
 			},
 			"response": []
 		},
@@ -322,7 +337,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"month\": 12,\n  \"year\": 2025,\n  \"applied_hour_value\": \"100.00\",\n  \"applied_cap_pct\": \"30.00\"\n}"
+					"raw": "{\n  \"month\": 12,\n  \"year\": 2025\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/liquidations/",
@@ -334,55 +349,105 @@
 						""
 					]
 				},
-				"description": "Define el periodo a liquidar congelando el valor hora y el tope vigentes."
+				"description": "Define el periodo a liquidar. El valor hora y el tope vigentes se congelan automáticamente desde la última configuración global (paso de configuración); no se envían en el body."
 			},
 			"response": []
 		},
-		{
-			"name": "8. Carga Masiva de Horas",
-			"event": [
+	{
+		"name": "8. Simulación en Memoria",
+		"event": [
+			{
+				"listen": "test",
+				"script": {
+					"type": "text/javascript",
+					"exec": [
+						"pm.test('Simulación OK', () => pm.response.to.have.status(200));",
+						"const json = pm.response.json();",
+						"pm.test('Es dry-run', () => pm.expect(json.test_mode).to.eql(true));",
+						"pm.test('Devuelve al menos 1 recibo', () => pm.expect(json.retirements_count).to.be.at.least(1));",
+						"pm.test('Montos presentes', () => pm.expect(json.retirements[0]).to.have.property('total_amount'));"
+					]
+				}
+			}
+		],
+		"request": {
+			"method": "POST",
+			"header": [
 				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
-							"const json = pm.response.json();",
-							"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));"
-						]
-					}
+					"key": "Content-Type",
+					"value": "application/json"
 				}
 			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/liquidations/{{period_id}}/upload-hours/",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"liquidations",
-						"{{period_id}}",
-						"upload-hours",
-						""
-					]
-				},
-				"description": "Sube las horas trabajadas del mes para todos los asociados (acepta lote completo)."
+			"body": {
+				"mode": "raw",
+				"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
 			},
-			"response": []
+			"url": {
+				"raw": "{{base_url}}/liquidations/{{period_id}}/simulate/",
+				"host": [
+					"{{base_url}}"
+				],
+				"path": [
+					"liquidations",
+					"{{period_id}}",
+					"simulate",
+					""
+				]
+			},
+			"description": "Simula el cálculo en memoria sin guardar nada en la base. Llamar antes de aprobar la revisión para previsualizar los montos."
 		},
-		{
-			"name": "9. Ejecutar Motor (definitivo)",
+		"response": []
+	},
+	{
+		"name": "9. Carga Masiva de Horas",
+		"event": [
+			{
+				"listen": "test",
+				"script": {
+					"type": "text/javascript",
+					"exec": [
+						"pm.test('Horas cargadas', () => pm.response.to.have.status(200));",
+						"const json = pm.response.json();",
+						"pm.test('Procesó al menos 1 asociado', () => pm.expect(json.received).to.be.at.least(1));",
+						"pm.test('Respuesta incluye contadores de sync', () => {",
+						"  pm.expect(json).to.have.property('created');",
+						"  pm.expect(json).to.have.property('updated');",
+						"  pm.expect(json).to.have.property('deleted');",
+						"});"
+					]
+				}
+			}
+		],
+		"request": {
+			"method": "POST",
+			"header": [
+				{
+					"key": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"body": {
+				"mode": "raw",
+				"raw": "{\n  \"entries\": [\n    {\"associate_id\": {{associate_id}}, \"hours_worked\": 160}\n  ]\n}"
+			},
+			"url": {
+				"raw": "{{base_url}}/liquidations/{{period_id}}/upload-hours/",
+				"host": [
+					"{{base_url}}"
+				],
+				"path": [
+					"liquidations",
+					"{{period_id}}",
+					"upload-hours",
+					""
+				]
+			},
+			"description": "Sincroniza la nómina del periodo: persiste las horas de los asociados enviados en `entries` y elimina de la base a quienes ya no figuren. Llamar una vez confirmada la revisión (o al re-aprobar tras devolver el periodo a pre-liquidación). Respuesta: `{ period_id, received, created, updated, deleted }`."
+		},
+		"response": []
+	},
+	{
+		"name": "10. Ejecutar Motor (definitivo)",
 			"event": [
 				{
 					"listen": "test",
@@ -425,8 +490,8 @@
 			},
 			"response": []
 		},
-		{
-			"name": "10. Resumen / Recibo del Periodo",
+	{
+		"name": "11. Resumen / Recibo del Periodo",
 			"event": [
 				{
 					"listen": "test",
@@ -476,6 +541,7 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"// Fallback si se corre desde el paso 3 sin haber pasado por el login.",
 					"if (!pm.collectionVariables.get('run_suffix')) {",
 					"    pm.collectionVariables.set('run_suffix', String(Date.now()).slice(-6));",
 					"}"
@@ -501,6 +567,11 @@
 		},
 		{
 			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
 			"value": "",
 			"type": "string"
 		},

@@ -1,5 +1,7 @@
 import { LiquidationSummary } from '../../interfaces/Liquidation';
 import { LOGO_ORBIFLOW } from '../../../assets/logo-orbiflow';
+import { formatCurrency } from '../utils/formatCurrency';
+import { formatPercentage } from '../utils/formatPercentage';
 
 function getAssociateName(associateData: any, associatesMap: { [id: number]: string }): string {
   if (!associateData) return 'Socio Desconocido';
@@ -30,46 +32,80 @@ export function buildLiquidacionConsolidadaTemplate(
   // Cargar los asociados
   summary.retirements.forEach((item) => {
     const name = getAssociateName(item.associate || item.associate_id, associatesMap);
-    const capAdj = +item.cap_adjustment > 0 ? `-$${item.cap_adjustment}` : '$0.00';
+
+    const capAdj =
+      +item.cap_adjustment > 0 ? `-$${formatCurrency(item.cap_adjustment || 0)}` : '$0,00';
 
     tableBody.push([
       { text: name, margin: [0, 5, 0, 0] },
-      { text: `$${item.base_amount}`, alignment: 'right', margin: [0, 5, 0, 0] },
-      { text: `$${item.additional_amount}`, alignment: 'right', margin: [0, 5, 0, 0] },
-      { text: capAdj, alignment: 'right', color: +item.cap_adjustment > 0 ? 'red' : 'black', margin: [0, 5, 0, 0] },
-      { text: `$${item.total_amount}`, alignment: 'right', bold: true, color: '#0f766e', margin: [0, 5, 0, 0] },
+      {
+        text: `$${formatCurrency(item.base_amount || 0)}`,
+        alignment: 'right',
+        margin: [0, 5, 0, 0],
+      },
+      {
+        text: `$${formatCurrency(item.additional_amount || 0)}`,
+        alignment: 'right',
+        margin: [0, 5, 0, 0],
+      },
+      {
+        text: capAdj,
+        alignment: 'right',
+        color: +item.cap_adjustment > 0 ? 'red' : 'black',
+        margin: [0, 5, 0, 0],
+      },
+      {
+        text: `$${formatCurrency(item.total_amount || 0)}`,
+        alignment: 'right',
+        bold: true,
+        color: '#0f766e',
+        margin: [0, 5, 0, 0],
+      },
     ]);
 
-    let conceptosText = item.items && item.items.length > 0 
-      ? item.items.map((d: any) => `${d.module_name}: +$${d.calculated_value}`).join('\n')
-      : 'Sin conceptos aplicados';
+    // conceptos individuales
+    let conceptosText =
+      item.items && item.items.length > 0
+        ? item.items
+            .map((d: any) => `${d.module_name}: +$${formatCurrency(d.calculated_value || 0)}`)
+            .join('\n')
+        : 'Sin conceptos aplicados';
 
     tableBody.push([
       {
         colSpan: 5,
-        fillColor: '#fafafa', 
-        margin: [10, 5, 10, 10], 
+        fillColor: '#fafafa',
+        margin: [10, 5, 10, 10],
         columns: [
-
           {
             width: '*',
             text: [
+              //  Horas Liquidadas
+              { text: 'Cálculo Base:\n', fontSize: 9, bold: true, color: '#4b5563' },
+              { text: `Horas Liquidadas: ${item.hours_worked || 0} hs\n\n`, fontSize: 9, color: '#6b7280' },
+              
+              //  Conceptos
               { text: 'Conceptos Aplicados:\n', fontSize: 9, bold: true, color: '#4b5563' },
-              { text: conceptosText, fontSize: 9, color: '#6b7280' }
-            ]
+              { text: conceptosText, fontSize: 9, color: '#6b7280' },
+            ],
           },
-
           {
             width: '*',
             text: [
               { text: 'Descuentos:\n', fontSize: 9, bold: true, color: '#4b5563' },
-              { text: `Ajuste por Tope: ${capAdj}`, fontSize: 9, color: +item.cap_adjustment > 0 ? 'red' : '#6b7280' }
-            ]
-          }
-        ]
+              {
+                text: `Ajuste por Tope: ${capAdj}`,
+                fontSize: 9,
+                color: +item.cap_adjustment > 0 ? 'red' : '#6b7280',
+              },
+            ],
+          },
+        ],
       },
-
-      '', '', '', '' 
+      '',
+      '',
+      '',
+      '',
     ]);
   });
 
@@ -90,6 +126,15 @@ export function buildLiquidacionConsolidadaTemplate(
               { text: 'CUIT: 00-00000000-0\n', fontSize: 12, color: '#4b5563' },
               { text: 'Mitre 900 - CABA\n', fontSize: 12, color: '#4b5563' },
               { text: `Periodo Fiscal: ${monthName} ${summary.period.year}\n`, style: 'subheader' },
+
+              {
+                text: `Valor Hora Aplicado: $${formatCurrency(summary.period.applied_hour_value || 0)}  |  Tope: ${formatPercentage(summary.period.applied_cap_pct || 0)}%\n`,
+                fontSize: 10,
+                bold: true,
+                color: '#0f766e',
+                margin: [0, 2, 0, 4],
+              },
+
               {
                 text: `Fecha de Emisión: ${new Date().toLocaleDateString()}`,
                 fontSize: 10,
@@ -109,12 +154,72 @@ export function buildLiquidacionConsolidadaTemplate(
         },
         layout: 'lightHorizontalLines',
       },
-      { text: 'Resumen Global', style: 'subheader', margin: [0, 20, 0, 5] },
+      { text: 'Resumen Global', style: 'subheader', margin: [0, 20, 0, 10] },
       {
         columns: [
-          { text: `Retiro Base Total: $${summary.totals.base_amount}` },
-          { text: `Adicionales: $${summary.totals.additional_amount}` },
-          { text: `Total Pagado: $${summary.totals.total_amount}`, bold: true, color: '#0f766e' },
+          { width: '*', text: '' },
+          {
+            width: 280,
+            layout: {
+              hLineWidth: function (i: number, node: any) {
+                return i === node.table.body.length - 1 ? 1 : 0;
+              },
+              vLineWidth: function () {
+                return 0;
+              },
+              hLineColor: function () {
+                return '#e5e7eb';
+              },
+              paddingTop: function () {
+                return 4;
+              },
+              paddingBottom: function () {
+                return 4;
+              },
+            },
+            table: {
+              widths: ['*', 'auto'],
+              body: [
+                [
+                  { text: 'Retiro Base Total', color: '#4b5563' },
+                  {
+                    text: `$${formatCurrency(summary.totals.base_amount || 0)}`,
+                    alignment: 'right',
+                  },
+                ],
+                [
+                  { text: 'Adicionales', color: '#4b5563' },
+                  {
+                    text: `+$${formatCurrency(summary.totals.additional_amount || 0)}`,
+                    alignment: 'right',
+                  },
+                ],
+                ...(+summary.totals.cap_adjustment > 0
+                  ? [
+                      [
+                        { text: 'Ajuste por Tope', color: '#ef4444' },
+                        {
+                          text: `-$${formatCurrency(summary.totals.cap_adjustment || 0)}`,
+                          alignment: 'right',
+                          color: '#ef4444',
+                        },
+                      ],
+                    ]
+                  : []),
+                [
+                  { text: 'Total Pagado', bold: true, fontSize: 12, margin: [0, 4, 0, 0] },
+                  {
+                    text: `$${formatCurrency(summary.totals.total_amount || 0)}`,
+                    alignment: 'right',
+                    bold: true,
+                    fontSize: 12,
+                    color: '#0f766e',
+                    margin: [0, 4, 0, 0],
+                  },
+                ],
+              ],
+            },
+          },
         ],
       },
     ],

@@ -1073,7 +1073,7 @@
 								""
 							]
 						},
-						"description": "Lista los periodos de liquidación. Filtros: ?year=&month=&status="
+						"description": "Lista periodos de liquidación. Filtros: ?year=&month=&status=\n\n**Admin/tesorero:** todos los periodos.\n**Asociado:** solo periodos `closed` desde su mes de ingreso (`entry_date`, inclusive). Ver carpeta «Permisos Asociado (Archivo Cooperativo)»."
 					},
 					"response": []
 				},
@@ -1128,7 +1128,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"month\": 12,\n    \"year\": 2025,\n    \"applied_hour_value\": \"100.00\",\n    \"applied_cap_pct\": \"30.00\"\n}",
+							"raw": "{\n    \"month\": 12,\n    \"year\": 2025\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1145,7 +1145,7 @@
 								""
 							]
 						},
-						"description": "Crea un periodo congelando valor hora y tope (%)."
+						"description": "Crea un periodo. El valor hora y el tope (%) se congelan automáticamente desde la última configuración global vigente (POST /api/config/); no se toman del body. Requiere al menos una configuración cargada."
 					},
 					"response": []
 				},
@@ -1267,7 +1267,52 @@
 								""
 							]
 						},
-						"description": "Sube las horas trabajadas del mes (puede llamarse en lote)."
+						"description": "Sincroniza la nómina del periodo: crea/actualiza un RetirementDetail por cada entrada y elimina los asociados ausentes del payload (incluidos sus LiquidationItem). Respuesta: `{ period_id, received, created, updated, deleted }`."
+					},
+					"response": []
+				},
+				{
+					"name": "Simular Liquidación (sin persistir)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entries\": [\n        {\"associate_id\": 1, \"hours_worked\": 160}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/liquidations/1/simulate/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"1",
+								"simulate",
+								""
+							]
+						},
+						"description": "Simulación en memoria: calcula montos para los asociados enviados en el payload sin tocar la base de datos. No requiere haber llamado a upload-hours/ previamente."
 					},
 					"response": []
 				},
@@ -1483,6 +1528,197 @@
 								""
 							]
 						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permisos Asociado (Archivo Cooperativo)",
+			"description": "Valida el filtrado de liquidaciones para rol `associate` (archivo cooperativo). Usar credenciales sandbox: usuario `associate`. Tras el login, el token queda en `access_token`.",
+			"item": [
+				{
+					"name": "1. Login Asociado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.test('Login OK', () => pm.response.to.have.status(200));",
+									"if (response.access) {",
+									"    pm.environment.set('access_token', response.access);",
+									"    pm.environment.set('refresh_token', response.refresh);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"associate\",\n    \"password\": \"HZ#peQ6$3!tVq6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login",
+								""
+							]
+						},
+						"description": "Sandbox: usuario `associate`. En local, ajustá username/password según tu seed."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Listar cerrados (asociado)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200', () => pm.response.to.have.status(200));",
+									"const data = pm.response.json();",
+									"if (Array.isArray(data) && data.length) {",
+									"    data.forEach(p => pm.expect(p.status).to.eql('closed'));",
+									"    pm.environment.set('period_id', data[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/?status=closed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								""
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "closed"
+								}
+							]
+						},
+						"description": "El asociado solo recibe periodos cerrados desde su mes de ingreso. Guarda el primer `period_id` accesible."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Summary periodo accesible",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Summary accesible → 200', () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/{{period_id}}/summary/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"{{period_id}}",
+								"summary",
+								""
+							]
+						},
+						"description": "Usa `period_id` del paso anterior. Debe responder 200."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Summary periodo anterior al ingreso (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Periodo previo al ingreso → 404', () => pm.response.to.have.status(404));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/liquidations/{{period_id_before_entry}}/summary/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"liquidations",
+								"{{period_id_before_entry}}",
+								"summary",
+								""
+							]
+						},
+						"description": "Definí en el entorno `period_id_before_entry` con un periodo **cerrado** anterior al `entry_date` del asociado. Debe responder **404**."
 					},
 					"response": []
 				}

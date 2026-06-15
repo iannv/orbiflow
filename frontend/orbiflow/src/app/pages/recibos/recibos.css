@@ -1,3 +1,7 @@
+.error {
+  color: var(--rojo);
+}
+
 /* Section retiros anuales */
 a {
   text-decoration: none;

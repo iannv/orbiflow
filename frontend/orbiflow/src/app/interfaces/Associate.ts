@@ -26,6 +26,7 @@ export interface Associate {
   full_name: string;
   years_in_coop: number; // entero calculado en el backend (días / 365)
   is_deleted: boolean;
+  is_active: boolean;
   variants: AssociateVariant[];
 }
 

@@ -11,6 +11,7 @@ export class Chip {
   @Input() name: string = '';
   @Input() backgroundColor: string = '';
   @Input() colorName: string = '';
+  @Input() fontSize: string = '';
   @Input() badgeActive: boolean = false;
 
   @Output() click = new EventEmitter();

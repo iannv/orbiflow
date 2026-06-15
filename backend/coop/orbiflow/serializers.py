@@ -239,6 +239,12 @@ class ModuleSerializer(serializers.ModelSerializer):
 class LiquidationPeriodSerializer(serializers.ModelSerializer):
     """CRUD de periodos de liquidación (mes/año, valor hora y tope vigentes)."""
 
+    ALLOWED_STATUS_TRANSITIONS = {
+        'open': {'reviewed'},
+        'reviewed': {'open', 'closed'},
+        'closed': set(),
+    }
+
     class Meta:
         model = LiquidationPeriod
         fields = [
@@ -246,6 +252,10 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
             'applied_hour_value', 'applied_cap_pct',
             'status',
         ]
+        extra_kwargs = {
+            'applied_hour_value': {'required': False},
+            'applied_cap_pct': {'required': False},
+        }
 
     def validate_month(self, value):
         if value < 1 or value > 12:
@@ -253,9 +263,71 @@ class LiquidationPeriodSerializer(serializers.ModelSerializer):
         return value
 
     def validate_year(self, value):
-        if value < 2000 or value > 2100:
-            raise serializers.ValidationError("Año fuera de rango razonable.")
+        if value < 1900 or value > 2999:
+            raise serializers.ValidationError("El año debe estar entre 1900 y 2999.")
         return value
+
+    @staticmethod
+    def _get_active_config():
+        config = GlobalConfiguration.objects.order_by('-change_date').first()
+        if config is None:
+            raise serializers.ValidationError(
+                'No hay configuración global vigente. Configure el valor hora y el tope antes de crear un período.'
+            )
+        return config
+
+    def create(self, validated_data):
+        validated_data.pop('applied_hour_value', None)
+        validated_data.pop('applied_cap_pct', None)
+        config = self._get_active_config()
+        validated_data['applied_hour_value'] = config.hour_value
+        validated_data['applied_cap_pct'] = config.cap_percentage
+        return super().create(validated_data)
+
+    @classmethod
+    def _validate_status_transition(cls, current_status, new_status):
+        allowed = cls.ALLOWED_STATUS_TRANSITIONS.get(current_status, set())
+        if new_status not in allowed:
+            raise serializers.ValidationError({
+                'status': (
+                    f'No se puede cambiar el estado de "{current_status}" a "{new_status}". '
+                    f'Transiciones permitidas: {", ".join(sorted(allowed)) or "ninguna"}.'
+                ),
+            })
+
+    def update(self, instance, validated_data):
+        new_status = validated_data.get('status')
+        if new_status is not None and new_status != instance.status:
+            self._validate_status_transition(instance.status, new_status)
+            previous_status = instance.status
+            instance = super().update(instance, validated_data)
+
+            request = self.context.get('request')
+            user = request.user if request and request.user.is_authenticated else None
+            action = (
+                'REVERT_LIQUIDATION_PERIOD'
+                if previous_status == 'reviewed' and new_status == 'open'
+                else 'UPDATE_LIQUIDATION_PERIOD_STATUS'
+            )
+            AuditLog.objects.create(
+                user=user,
+                action=action,
+                previous_data={
+                    'period_id': instance.id,
+                    'month': instance.month,
+                    'year': instance.year,
+                    'status': previous_status,
+                },
+                new_data={
+                    'period_id': instance.id,
+                    'month': instance.month,
+                    'year': instance.year,
+                    'status': new_status,
+                },
+            )
+            return instance
+
+        return super().update(instance, validated_data)
 
 
 class LiquidationItemSerializer(serializers.ModelSerializer):
@@ -292,8 +364,13 @@ class BulkHoursSerializer(serializers.Serializer):
     """
     Payload para `POST /api/liquidations/{id}/upload-hours/`.
 
+    Sincroniza la nómina del periodo: crea/actualiza un `RetirementDetail` por cada
+    entrada y elimina los asociados que ya no figuren en `entries`.
+
     Ejemplo:
         {"entries": [{"associate_id": 1, "hours_worked": 160}, ...]}
+
+    Respuesta: `{period_id, received, created, updated, deleted}`.
     """
     entries = HoursEntrySerializer(many=True)
 

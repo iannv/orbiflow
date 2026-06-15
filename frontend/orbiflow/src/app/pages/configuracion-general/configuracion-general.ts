@@ -6,13 +6,16 @@ import { BaseCard } from '../../components/base-card/base-card';
 import { Action } from '../../components/button/action/action';
 import { Primary } from '../../components/button/primary/primary';
 import { Modal } from '../../components/modal/modal';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { formatPercentage } from '../../shared/utils/formatPercentage';
+import { Loader } from "../../components/loader/loader";
 
 type EditMode = 'hour' | 'cap' | 'both';
 
 @Component({
   selector: 'app-configuracion-general',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, BaseCard, Action, Primary, Modal],
+  imports: [CommonModule, ReactiveFormsModule, BaseCard, Action, Primary, Modal, Loader],
   templateUrl: './configuracion-general.html',
   styleUrl: './configuracion-general.css'
 })
@@ -25,6 +28,11 @@ export class ConfiguracionGeneral implements OnInit {
   currentConfig = signal<GlobalConfig | null>(null);
   lastModification = signal<GlobalConfig | null>(null); 
   isLoading = signal<boolean>(true);
+  isSaving = signal<boolean>(false);
+
+  //utilidades
+  formatCurrency = formatCurrency;
+  formatPercentage = formatPercentage;
 
   // Control de Modales
   isEditModalOpen = signal(false);
@@ -63,7 +71,7 @@ export class ConfiguracionGeneral implements OnInit {
     });
   }
 
-  // --- Lógica del Modal de Edición ---
+  //  Lógica del Modal de Edición
   openEditModal(mode: EditMode) {
     this.editingField.set(mode);
     const current = this.currentConfig();
@@ -91,23 +99,41 @@ export class ConfiguracionGeneral implements OnInit {
       return; 
     }
 
+    const current = this.currentConfig();
+    const formHourValue = Number(this.configForm.value.hour_value);
+    const formCapPct = Number(this.configForm.value.cap_percentage);
+
+    // Si los valores enviados son exactamente iguales a los que ya están en la BD, no se guardan los datos.
+    if (current && 
+        Number(current.hour_value) === formHourValue && 
+        Number(current.cap_percentage) === formCapPct) {
+      this.closeEditModal();
+      return;
+    }
+
+    // Evitar Spam Clicks (Doble submit)
+    if (this.isSaving()) return;
+    this.isSaving.set(true);
+
     const payload = {
-      hour_value: this.configForm.value.hour_value.toString(),
-      cap_percentage: this.configForm.value.cap_percentage.toString()
+      hour_value: formHourValue.toString(),
+      cap_percentage: formCapPct.toString()
     };
 
     this.configService.createConfig(payload).subscribe({
       next: () => {
         this.loadConfigs(); 
         this.closeEditModal();
+        this.isSaving.set(false); 
       },
       error: (err) => {
         console.error('Error guardando configuración', err);
+        this.isSaving.set(false); 
       }
     });
   }
 
-  // --- Lógica del Modal de Historial ---
+  //  Lógica del Modal de Historial
   openHistoryModal() {
     this.isHistoryModalOpen.set(true);
   }

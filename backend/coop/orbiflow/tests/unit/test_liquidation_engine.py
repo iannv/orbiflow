@@ -1,5 +1,9 @@
 """
-Tests del Motor de Liquidación de OrbiFlow.
+Tests unitarios del Motor de Liquidación de OrbiFlow.
+
+Ejercitan la lógica de cálculo directamente sobre el servicio
+`LiquidationCalculator` y el helper `calculate_seniority_years`, sin pasar
+por la API REST.
 
 Cubre:
     * Cálculo Base (horas * valor hora).
@@ -8,14 +12,10 @@ Cubre:
     * Validación de Topes y persistencia del cap_adjustment.
     * Modo dry-run (test_mode=True) no persiste.
     * Modo final (test_mode=False) persiste RetirementDetail + LiquidationItem.
-    * Carga masiva de horas por endpoint.
-    * CRUD del periodo de liquidación.
 """
 from datetime import date
 from decimal import Decimal
 
-from django.urls import reverse
-from rest_framework import status
 from rest_framework.test import APITestCase
 
 from orbiflow.models.identity import User, Associate
@@ -313,134 +313,63 @@ class LiquidationEngineUnitTests(APITestCase):
         self.assertEqual(retirement.total_amount, Decimal('17600.00'))
         self.assertEqual(retirement.items.count(), 1)
 
+    # ---- Casos borde ---- #
 
-class LiquidationAPITests(APITestCase):
-    """Tests E2E sobre los endpoints del motor."""
+    def test_zero_hours_produces_zero_amounts(self):
+        """Sin horas trabajadas, el retiro base y el total deben ser cero."""
+        self._create_retirement(hours=0)
 
-    def setUp(self):
-        self.admin = User.objects.create_superuser(
-            username='admin', password='admin123', email='admin@coop.test', role='admin',
-        )
-        self.client.force_authenticate(user=self.admin)
+        result = LiquidationCalculator(self.period).run(test_mode=True)
+        retirement = result['retirements'][0]
 
-        self.assoc_user = User.objects.create_user(
-            username='socio1', email='s1@coop.test', first_name='Ana', last_name='Pérez',
-        )
-        self.associate = Associate.objects.create(
-            user=self.assoc_user,
-            dni='20000001',
-            cbu='0000000000000000000020',
-            entry_date=date(2023, 1, 1),
-            personal_email='ana.personal@coop.test',
-            phone_number='456',
-            address='Calle 2',
-        )
-        self.period = LiquidationPeriod.objects.create(
-            month=6, year=2025,
-            applied_hour_value=Decimal('200.00'),
+        self.assertEqual(retirement['base_amount'], '0.00')
+        self.assertEqual(retirement['additional_amount'], '0.00')
+        self.assertEqual(retirement['total_amount'], '0.00')
+
+    def test_percentage_rounds_half_up(self):
+        """
+        El motor cuantiza a 2 decimales con ROUND_HALF_UP.
+
+        valor hora $33,33 × 10 hs = $333,30 base.
+        Variante 15% -> 333,30 × 15 / 100 = 49,995 -> redondea a $50,00.
+        """
+        period = LiquidationPeriod.objects.create(
+            month=11, year=2024,
+            applied_hour_value=Decimal('33.33'),
             applied_cap_pct=Decimal('30.00'),
         )
-
-    def test_period_crud(self):
-        url = reverse('liquidation-list')
-        response = self.client.post(url, {
-            'month': 7, 'year': 2025,
-            'applied_hour_value': '250.00',
-            'applied_cap_pct': '25.00',
-        }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        list_response = self.client.get(url)
-        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(list_response.data), 2)
-
-    def test_period_url_has_trailing_slash(self):
-        list_response = self.client.get('/api/liquidations/')
-        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
-
-    def test_upload_hours_creates_retirement_records(self):
-        url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
-        payload = {'entries': [
-            {'associate_id': self.associate.id, 'hours_worked': 160},
-        ]}
-        response = self.client.post(url, payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['created'], 1)
-        self.assertEqual(response.data['updated'], 0)
-        self.assertTrue(
-            RetirementDetail.objects.filter(
-                liquidation=self.period, associate=self.associate, hours_worked=160,
-            ).exists()
-        )
-
-    def test_upload_hours_rejects_unknown_associate(self):
-        url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
-        payload = {'entries': [{'associate_id': 99999, 'hours_worked': 160}]}
-        response = self.client.post(url, payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_calculate_test_mode_does_not_persist(self):
-        RetirementDetail.objects.create(
-            liquidation=self.period, associate=self.associate, hours_worked=160,
-        )
-        url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
-        response = self.client.post(url, {'test_mode': True}, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(response.data['test_mode'])
-        self.assertEqual(LiquidationItem.objects.count(), 0)
-
-    def test_calculate_final_mode_persists(self):
-        module = Module.objects.create(name='Presentismo', calculation_type='simple')
+        module = Module.objects.create(name='Redondeo', calculation_type='simple')
         variant = Variant.objects.create(
-            module=module, name='Completo', type='percentage', value=Decimal('10.00'),
+            module=module, name='15%', type='percentage', value=Decimal('15.00'),
         )
         AssociateVariant.objects.create(associate=self.associate, variant=variant)
         RetirementDetail.objects.create(
-            liquidation=self.period, associate=self.associate, hours_worked=160,
+            liquidation=period, associate=self.associate, hours_worked=10,
         )
 
-        url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
-        response = self.client.post(url, {'test_mode': False}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertFalse(response.data['test_mode'])
+        result = LiquidationCalculator(period).run(test_mode=True)
+        retirement = result['retirements'][0]
 
-        retirement = RetirementDetail.objects.get(
-            liquidation=self.period, associate=self.associate,
+        self.assertEqual(retirement['base_amount'], '333.30')
+        self.assertEqual(retirement['additional_amount'], '50.00')
+        self.assertEqual(retirement['total_amount'], '383.30')
+
+    def test_inactive_module_variant_is_ignored(self):
+        """Las variantes de un módulo con is_active=False no se computan."""
+        module = Module.objects.create(
+            name='Bono Suspendido', calculation_type='simple', is_active=False,
         )
-        self.assertEqual(retirement.base_amount, Decimal('32000.00'))
-        self.assertEqual(retirement.additional_amount, Decimal('3200.00'))
-        self.assertEqual(retirement.total_amount, Decimal('35200.00'))
-        self.assertEqual(retirement.items.count(), 1)
-
-    def test_calculate_without_hours_returns_400(self):
-        url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
-        response = self.client.post(url, {'test_mode': True}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_summary_returns_totals(self):
-        RetirementDetail.objects.create(
-            liquidation=self.period, associate=self.associate,
-            hours_worked=160, base_amount=Decimal('32000.00'),
-            additional_amount=Decimal('3200.00'),
-            total_amount=Decimal('35200.00'),
+        variant = Variant.objects.create(
+            module=module, name='20%', type='percentage', value=Decimal('20.00'),
         )
-        url = reverse('liquidation-summary', kwargs={'pk': self.period.id})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['retirements_count'], 1)
-        self.assertEqual(response.data['totals']['total_amount'], '35200.00')
+        AssociateVariant.objects.create(associate=self.associate, variant=variant)
+        self._create_retirement(hours=160)
 
-    def test_closed_period_blocks_upload_and_calculate(self):
-        self.period.status = 'closed'
-        self.period.save()
+        result = LiquidationCalculator(self.period).run(test_mode=True)
+        retirement = result['retirements'][0]
 
-        upload_url = reverse('liquidation-upload-hours', kwargs={'pk': self.period.id})
-        upload_response = self.client.post(upload_url, {
-            'entries': [{'associate_id': self.associate.id, 'hours_worked': 160}]
-        }, format='json')
-        self.assertEqual(upload_response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        calc_url = reverse('liquidation-calculate', kwargs={'pk': self.period.id})
-        calc_response = self.client.post(calc_url, {'test_mode': True}, format='json')
-        self.assertEqual(calc_response.status_code, status.HTTP_400_BAD_REQUEST)
+        # base 16000 sin adicionales: el módulo inactivo no aporta nada.
+        self.assertEqual(retirement['base_amount'], '16000.00')
+        self.assertEqual(retirement['additional_amount'], '0.00')
+        self.assertEqual(retirement['total_amount'], '16000.00')
+        self.assertEqual(len(retirement['items']), 0)

@@ -12,10 +12,12 @@ import { PdfGeneratorService } from '../../services/pdf-service';
 import { retirementPDF } from '../../shared/pdf-templates/retirementsPDF';
 import { UserService } from '../../services/user-service';
 import { numeroALetras } from '../../shared/utils/numeroALetras';
+import { formatCurrency } from '../../shared/utils/formatCurrency';
+import { Loader } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-recibos',
-  imports: [BaseCard, Primary],
+  imports: [BaseCard, Primary, Loader],
   templateUrl: './recibos.html',
   styleUrl: './recibos.css',
 })
@@ -23,6 +25,8 @@ export class Recibos {
   retirementsList: Retirement[] = [];
   periodsList: LiquidationPeriod[] = [];
   yearList: number[] = [];
+  formatCurrency = formatCurrency;
+  loading = true;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -41,16 +45,29 @@ export class Recibos {
 
   // Obtener recibos de un asociado
   getRetirements() {
+    this.loading = true;
+
     const user = this.authService.currentUser();
-    if (!user) return;
+    
+    if (!user) {
+      this.loading = false;
+      return;
+    }
 
     this.associateService.getAssociateByUser(user.id).subscribe((associate) => {
-      if (associate.length === 0) return;
+      if (!associate || associate.length === 0) {
+        this.retirementsList = [];
+        this.loading = false;
+        this.cdr.detectChanges()
+        return;
+      }
       const associateId = associate[0].id;
       this.retirementService.getRetirementsByAssociate(associateId).subscribe((retirements) => {
         this.retirementsList = retirements;
+
         this.liquidationService.getPeriods().subscribe((periods) => {
           this.periodsList = periods;
+          this.loading = false;
           this.getYears();
           this.cdr.detectChanges();
         });
@@ -104,8 +121,10 @@ export class Recibos {
       });
   }
 
-  // ABRIR Y VISUALIZAR RECIBO
-  viewPDF(retirement: Retirement) {
+  // FUNCION PARA DATA DEL RECIBO
+  data: any = {};
+  totalAmount: any;
+  generateDataRetirement(retirement: Retirement, callback: (data: any) => void) {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
 
@@ -121,8 +140,8 @@ export class Recibos {
 
             // Mes y año de la liquidación
             this.liquidationService.getPeriods().subscribe({
-              next: (liquidation) => {
-                const liquidationData = liquidation.find((p) => p.id === retirement.liquidation);
+              next: (liquidations) => {
+                const liquidationData = liquidations.find((p) => p.id === retirement.liquidation);
 
                 // Conceptos
                 this.liquidationService
@@ -133,9 +152,8 @@ export class Recibos {
                         (r) => r.id === retirement.id,
                       );
 
-                      const totalToStringData = numeroALetras(Number(retirement.total_amount));
-
                       // Enviar data al retiremetsPDF
+                      const totalToStringData = numeroALetras(Number(retirement.total_amount));
                       const data = {
                         associate: associateData,
                         retirement: retirement,
@@ -143,9 +161,9 @@ export class Recibos {
                         liquidation: liquidationData,
                         retirementsByLiquidation: retirementsByLiquidationData,
                         totalToString: totalToStringData,
+                        totalFormatted: formatCurrency(retirement.total_amount),
                       };
-                      const pdf = retirementPDF(data);
-                      this.pdfService.abrirEnPestania(pdf);
+                      callback(data);
                     },
                   });
               },
@@ -156,8 +174,20 @@ export class Recibos {
     });
   }
 
+  // Abrir y visualizar recibo
+  viewPDF(retirement: Retirement) {
+    this.generateDataRetirement(retirement, (data) => {
+      const pdf = retirementPDF(data);
+      this.pdfService.abrirEnPestania(pdf);
+    });
+  }
+
   // Descargar recibo en PDF
-  // downloadPDF() {}
-
-
+  downloadPDF(retirement: Retirement) {
+    this.generateDataRetirement(retirement, (data) => {
+      const pdf = retirementPDF(data);
+      const pdfName = `Recibo_${this.getPeriod(retirement)}_${data.associate.full_name}`;
+      this.pdfService.descargar(pdf, pdfName);
+    });
+  }
 }
