@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 
 import { API_BASE_URL } from '../api/api.config';
 
+interface RuntimeInfo {
+  status?: string;
+  git_branch?: string | null;
+  backend?: string;
+}
+
 function safeConsole(
   level: 'info' | 'warn',
   message: string,
@@ -18,25 +24,31 @@ function safeConsole(
   }
 }
 
+function buildLogPayload(info: RuntimeInfo) {
+  return {
+    apiUrl: API_BASE_URL,
+    backend: info.backend,
+    git_branch: info.git_branch,
+    status: info.status,
+  };
+}
+
 export function logRuntimeEnvironment(http: HttpClient): void {
   try {
-    http.get(`${API_BASE_URL}/health/`).subscribe({
+    http.get<RuntimeInfo>(`${API_BASE_URL}/health/`).subscribe({
       next: (info) =>
-        safeConsole('info', '[OrbiFlow] Entorno', {
-          apiUrl: API_BASE_URL,
-          ...info,
-        }),
+        safeConsole('info', '[OrbiFlow] Entorno', buildLogPayload(info)),
       error: (err) =>
         safeConsole('warn', '[OrbiFlow] No se pudo obtener el entorno', {
           apiUrl: API_BASE_URL,
-          reason: 'health_unreachable',
+          status: 'error',
           detail: err?.message ?? err,
         }),
     });
   } catch (err) {
     safeConsole('warn', '[OrbiFlow] No se pudo obtener el entorno', {
       apiUrl: API_BASE_URL,
-      reason: 'log_failed',
+      status: 'error',
       detail: err instanceof Error ? err.message : err,
     });
   }

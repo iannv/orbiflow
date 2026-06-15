@@ -29,11 +29,11 @@ def healthcheck(_request):
         connection.ensure_connection()
     except Exception:
         return JsonResponse(
-            runtime_info(status="error", database="unavailable"),
+            runtime_info(status="error"),
             status=503,
         )
 
-    return JsonResponse(runtime_info(status="ok", database="connected"))
+    return JsonResponse(runtime_info(status="ok"))
 
 
  
