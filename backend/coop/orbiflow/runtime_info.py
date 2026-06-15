@@ -14,10 +14,6 @@ def is_render_deploy() -> bool:
     return _optional_env("RENDER", "RENDER_SERVICE_NAME", "RENDER_EXTERNAL_HOSTNAME") is not None
 
 
-def git_branch() -> str | None:
-    return _optional_env("RENDER_GIT_BRANCH", "GIT_BRANCH")
-
-
 def backend_label() -> str:
     service = _optional_env("RENDER_SERVICE_NAME", "BACKEND_SERVICE")
     if service:
@@ -38,7 +34,6 @@ def backend_label() -> str:
 def runtime_info(*, status: str) -> dict:
     return {
         "status": status,
-        "git_branch": git_branch(),
         "backend": backend_label(),
     }
 
