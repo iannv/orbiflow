@@ -169,8 +169,10 @@ it('debe aprobar la revisión, guardar horas, cambiar el estado y redirigir así
     // Se simula el paso temporal exacto del setTimeout (3500ms) 
     vi.advanceTimersByTime(3500);
 
-    // Se verifica la correcta redirección a la siguiente pantalla
-    expect(spyNavigate).toHaveBeenCalledWith(['/liquidaciones']);
+    // Se verifica la correcta redirección a la pantalla de liquidación del periodo
+    expect(spyNavigate).toHaveBeenCalledWith(['/liquidaciones/liquidation'], {
+      queryParams: { periodId: 1 },
+    });
 
     // 3. Se devuelve el reloj a la normalidad para no afectar otros tests
     vi.useRealTimers();

@@ -362,6 +362,7 @@ export class PreLiquidationComponent implements OnInit {
         // si se guardaron bien, se cambia el estado del periodo
         this.liquidationService.updatePeriodStatus(this.selectedPeriodId!, 'reviewed').subscribe({
           next: () => {
+            const periodId = Number(this.selectedPeriodId);
             this.lanzarToast('Revisión Aprobada', 'El periodo se ha marcado como REVISADO.');
             this.loadOpenPeriods(); 
             this.dataLoaded = false;
@@ -371,7 +372,9 @@ export class PreLiquidationComponent implements OnInit {
             this.cdr.detectChanges(); 
 
             setTimeout(() => {
-              this.router.navigate(['/liquidaciones']); 
+              this.router.navigate(['/liquidaciones/liquidation'], {
+                queryParams: { periodId },
+              });
             }, 3500);
           },
           error: (err: any) => {

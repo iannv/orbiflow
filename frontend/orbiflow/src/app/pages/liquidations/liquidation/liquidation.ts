@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LiquidationService } from '../../../services/liquidation-service';
 import { LiquidationPeriod, LiquidationSummary } from '../../../interfaces/Liquidation';
 import { AssociateService } from '../../../services/associate-service';
@@ -50,9 +50,15 @@ export class LiquidationComponent implements OnInit {
   private ngZone = inject(NgZone); 
   private associateService = inject(AssociateService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  private pendingPeriodId: number | null = null;
 
   ngOnInit() {
-    this.loadReviewedPeriods();
+    this.route.queryParams.subscribe((params) => {
+      this.pendingPeriodId = params['periodId'] ? Number(params['periodId']) : null;
+      this.loadReviewedPeriods();
+    });
     this.cargarMapaAsociados();
   }
 
@@ -61,6 +67,10 @@ export class LiquidationComponent implements OnInit {
       next: (res) => {
         this.ngZone.run(() => {
           this.reviewedPeriods = res;
+          if (this.pendingPeriodId && res.some((p) => p.id === this.pendingPeriodId)) {
+            this.selectedPeriodId = this.pendingPeriodId;
+            this.onLoadData();
+          }
           this.cdr.detectChanges(); 
         });
       },

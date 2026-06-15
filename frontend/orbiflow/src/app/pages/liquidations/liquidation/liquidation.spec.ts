@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
 import { LiquidationComponent } from './liquidation';
@@ -18,10 +18,12 @@ describe('LiquidationComponent', () => {
     // Se configuran los mocks del backend
     mockLiquidationService = {
       getPeriods: vi.fn().mockReturnValue(of([{ id: 5, month: 7, year: 2026, applied_hour_value: '5000', applied_cap_pct: '30' }])),
-      calculate: vi.fn().mockReturnValue(of([
-        { associate_id: 1, base_amount: '100000', additional_amount: '20000', cap_adjustment: '0', total_amount: '120000' },
-        { associate_id: 2, base_amount: '100000', additional_amount: '50000', cap_adjustment: '10000', total_amount: '140000' }
-      ])),
+      calculate: vi.fn().mockReturnValue(of({
+        retirements: [
+          { associate_id: 1, base_amount: '100000', additional_amount: '20000', cap_adjustment: '0', total_amount: '120000' },
+          { associate_id: 2, base_amount: '100000', additional_amount: '50000', cap_adjustment: '10000', total_amount: '140000' },
+        ],
+      })),
       updatePeriodStatus: vi.fn().mockReturnValue(of({ success: true }))
     };
 
@@ -37,7 +39,8 @@ describe('LiquidationComponent', () => {
       providers: [
         provideRouter([]),
         { provide: LiquidationService, useValue: mockLiquidationService },
-        { provide: AssociateService, useValue: mockAssociateService }
+        { provide: AssociateService, useValue: mockAssociateService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
       ]
     }).compileComponents();
 
@@ -140,6 +143,29 @@ describe('LiquidationComponent', () => {
     });
 
     vi.useRealTimers();
+  });
+
+  it('debe preseleccionar el periodo y ejecutar el dry-run cuando llega periodId por query param', async () => {
+    TestBed.resetTestingModule();
+
+    await TestBed.configureTestingModule({
+      imports: [LiquidationComponent, FormsModule],
+      providers: [
+        provideRouter([]),
+        { provide: LiquidationService, useValue: mockLiquidationService },
+        { provide: AssociateService, useValue: mockAssociateService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({ periodId: '5' }) } },
+      ],
+    }).compileComponents();
+
+    const queryFixture = TestBed.createComponent(LiquidationComponent);
+    const queryComponent = queryFixture.componentInstance;
+    queryFixture.detectChanges();
+
+    expect(queryComponent.selectedPeriodId).toBe(5);
+    expect(mockLiquidationService.calculate).toHaveBeenCalledWith(5, true);
+    expect(queryComponent.summary).not.toBeNull();
+    expect(queryComponent.summary?.retirements_count).toBe(2);
   });
 
   it('debe abrir y cerrar los modales de desglose individual de asociados', () => {
