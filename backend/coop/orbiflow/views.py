@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .liquidation_access import filter_liquidation_periods_for_user
 from .permissions import IsElevatedRoleOrReadOnly, CanManageUsersAndProtectAdmin, IsAdminOrTreasurer
 from .models.identity import User, Associate
 from .models.audit import GlobalConfiguration, AuditLog
@@ -177,6 +178,10 @@ class LiquidationPeriodViewSet(viewsets.ModelViewSet):
     serializer_class = LiquidationPeriodSerializer
     permission_classes = [IsAuthenticated, IsElevatedRoleOrReadOnly]
     filterset_fields = ['year', 'month', 'status']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return filter_liquidation_periods_for_user(qs, self.request.user)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
