@@ -4,7 +4,6 @@ import { API_BASE_URL } from '../api/api.config';
 
 interface RuntimeInfo {
   status?: string;
-  git_branch?: string | null;
   backend?: string;
 }
 
@@ -26,9 +25,9 @@ function safeConsole(
 
 function buildLogPayload(info: RuntimeInfo) {
   return {
+    host: window.location.hostname,
     apiUrl: API_BASE_URL,
     backend: info.backend,
-    git_branch: info.git_branch,
     status: info.status,
   };
 }
@@ -40,6 +39,7 @@ export function logRuntimeEnvironment(http: HttpClient): void {
         safeConsole('info', '[OrbiFlow] Entorno', buildLogPayload(info)),
       error: (err) =>
         safeConsole('warn', '[OrbiFlow] No se pudo obtener el entorno', {
+          host: window.location.hostname,
           apiUrl: API_BASE_URL,
           status: 'error',
           detail: err?.message ?? err,
@@ -47,6 +47,7 @@ export function logRuntimeEnvironment(http: HttpClient): void {
     });
   } catch (err) {
     safeConsole('warn', '[OrbiFlow] No se pudo obtener el entorno', {
+      host: window.location.hostname,
       apiUrl: API_BASE_URL,
       status: 'error',
       detail: err instanceof Error ? err.message : err,
