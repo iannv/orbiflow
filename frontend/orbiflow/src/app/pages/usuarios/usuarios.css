@@ -74,6 +74,7 @@
 .section-users-div {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 #section-users .div-user-chip div {
@@ -90,10 +91,10 @@
   margin-top: -1rem;
 }
 
-#section-users app-base-card app-base-card {
-  /* margin-top: -1rem; */
+ /* #section-users app-base-card app-base-card {
+ margin-top: -1rem; 
 }
-
+*/
 #section-users app-base-card app-base-card .div-user-chip {
   display: flex;
   flex-direction: column;
@@ -104,6 +105,22 @@
   display: flex;
   /* flex-direction: col; */
   gap: 0.5rem;
+}
+
+.coop-member-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gris-oscuro);
+  margin-left: 4rem;
 }
 
 .div-actions-group {
@@ -262,8 +279,6 @@
   cursor: pointer;
 }
 
-app-chip:active {
-}
 
 /* QUERIES */
 

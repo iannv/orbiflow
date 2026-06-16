@@ -427,6 +427,7 @@ export class Usuarios implements OnInit {
   currentPage = 1;
   itemsPerPage = 5;
   selectedRole: RolEnum | 'all' = 'all';
+  selectedCoopMember: 'all' | 'yes' | 'no' = 'all';
   badgeActive: boolean = false;
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredList.length / this.itemsPerPage));
@@ -451,13 +452,23 @@ export class Usuarios implements OnInit {
             .includes(q),
         );
       const matchesRole = this.selectedRole === 'all' || u.role === this.selectedRole;
-      return matchesSearch && matchesRole;
+      const matchesCoopMember =
+        this.selectedCoopMember === 'all' ||
+        (this.selectedCoopMember === 'yes'
+          ? Boolean(u.is_coop_member)
+          : !Boolean(u.is_coop_member));
+      return matchesSearch && matchesRole && matchesCoopMember;
     });
     this.currentPage = 1;
   }
 
   filterByRole(role: RolEnum | 'all') {
     this.selectedRole = role;
+    this.applyFilters();
+  }
+
+  filterByCoopMember(value: 'all' | 'yes' | 'no') {
+    this.selectedCoopMember = value;
     this.applyFilters();
   }
 
