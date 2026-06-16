@@ -4,6 +4,7 @@ import { BaseCard } from '../../components/base-card/base-card';
 import { Chip } from '../../components/chip/chip';
 import { Action } from '../../components/button/action/action';
 import { User } from '../../interfaces/User';
+import { AssociateService } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
 import { Primary } from '../../components/button/primary/primary';
 import { Modal } from '../../components/modal/modal';
@@ -22,6 +23,7 @@ import {
 import { Toast } from '../../components/toast/toast';
 import { Switch } from '../../components/button/switch/switch';
 import { Loader } from '../../components/loader/loader';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-usuarios',
@@ -45,11 +47,13 @@ import { Loader } from '../../components/loader/loader';
 export class Usuarios implements OnInit {
   constructor(
     private userService: UserService,
+    private associateService: AssociateService,
     private formBuilder: FormBuilder,
     private cdr: ChangeDetectorRef,
   ) {}
 
   loading = true;
+  hasAssociateUserIds = new Set<number>();
   modalMode: 'create' | 'edit' | 'delete' = 'create';
   userForm!: FormGroup;
   userList: User[] = [];
@@ -121,32 +125,50 @@ export class Usuarios implements OnInit {
   getUsers() {
     this.loading = true;
 
-    this.userService.getUsers().subscribe((users) => {
-      this.userList = users.map((user) => {
-        if (user.role === RolEnum.ADMIN) {
-          this.chipName = 'administrador';
-          this.chipColorName = 'var(--rojo)';
-          this.chipBackgroundColor = 'var(--rojo-bg)';
-        } else if (user.role === RolEnum.TREASURER) {
-          this.chipName = 'tesorero';
-          this.chipColorName = 'var(--azul)';
-          this.chipBackgroundColor = 'var(--azul-bg)';
-        } else {
-          this.chipName = 'asociado';
-          this.chipColorName = 'var(--verde-selva)';
-          this.chipBackgroundColor = 'var(--verde-bg)';
-        }
-        return {
-          ...user,
-          chipName: this.chipName,
-          chipColorName: this.chipColorName,
-          chipBackgroundColor: this.chipBackgroundColor,
-        };
-      });
-      this.filteredList = [...this.userList];
-      this.currentPage = 1;
-      this.loading = false;
-      this.cdr.detectChanges();
+    forkJoin({
+      users: this.userService.getUsers(),
+      associates: this.associateService.getAssociates(),
+    }).subscribe({
+      next: ({ users, associates }) => {
+        this.userList = users
+          .filter((user) => !user.is_superuser)
+          .map((user) => {
+            if (user.role === RolEnum.ADMIN) {
+              this.chipName = 'administrador';
+              this.chipColorName = 'var(--rojo)';
+              this.chipBackgroundColor = 'var(--rojo-bg)';
+            } else if (user.role === RolEnum.TREASURER) {
+              this.chipName = 'tesorero';
+              this.chipColorName = 'var(--azul)';
+              this.chipBackgroundColor = 'var(--azul-bg)';
+            } else {
+              this.chipName = 'asociado';
+              this.chipColorName = 'var(--verde-selva)';
+              this.chipBackgroundColor = 'var(--verde-bg)';
+            }
+            return {
+              ...user,
+              chipName: this.chipName,
+              chipColorName: this.chipColorName,
+              chipBackgroundColor: this.chipBackgroundColor,
+            };
+          });
+
+        this.hasAssociateUserIds = new Set(
+          associates
+            .map((associate) => associate.user)
+            .filter((id): id is number => typeof id === 'number'),
+        );
+
+        this.filteredList = [...this.userList];
+        this.currentPage = 1;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -405,6 +427,7 @@ export class Usuarios implements OnInit {
   currentPage = 1;
   itemsPerPage = 5;
   selectedRole: RolEnum | 'all' = 'all';
+  selectedCoopMember: 'all' | 'yes' | 'no' = 'all';
   badgeActive: boolean = false;
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredList.length / this.itemsPerPage));
@@ -429,13 +452,23 @@ export class Usuarios implements OnInit {
             .includes(q),
         );
       const matchesRole = this.selectedRole === 'all' || u.role === this.selectedRole;
-      return matchesSearch && matchesRole;
+      const matchesCoopMember =
+        this.selectedCoopMember === 'all' ||
+        (this.selectedCoopMember === 'yes'
+          ? Boolean(u.is_coop_member)
+          : !Boolean(u.is_coop_member));
+      return matchesSearch && matchesRole && matchesCoopMember;
     });
     this.currentPage = 1;
   }
 
   filterByRole(role: RolEnum | 'all') {
     this.selectedRole = role;
+    this.applyFilters();
+  }
+
+  filterByCoopMember(value: 'all' | 'yes' | 'no') {
+    this.selectedCoopMember = value;
     this.applyFilters();
   }
 

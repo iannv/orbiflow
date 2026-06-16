@@ -69,6 +69,33 @@
                   : false
               " -->
           }
+          <div class="coop-member-filter">
+            <span class="filter-label">Miembro coop.</span>
+            <app-chip
+              class="btn-filter"
+              name="Todos"
+              backgroundColor="var(--gris-blanco)"
+              colorName="var(--verde-azulado)"
+              (click)="filterByCoopMember('all')"
+              [badgeActive]="selectedCoopMember === 'all'"
+            ></app-chip>
+            <app-chip
+              class="btn-filter"
+              name="Si"
+              backgroundColor="var(--gris-blanco)"
+              colorName="var(--verde-azulado)"
+              (click)="filterByCoopMember('yes')"
+              [badgeActive]="selectedCoopMember === 'yes'"
+            ></app-chip>
+            <!-- <app-chip
+              class="btn-filter"
+              name="No"
+              backgroundColor="var(--gris-blanco)"
+              colorName="var(--verde-azulado)"
+              (click)="filterByCoopMember('no')"
+              [badgeActive]="selectedCoopMember === 'no'"
+            ></app-chip> -->
+          </div>
         </div>
         <!-- Paginator -->
         @if (totalPages > 1) {
@@ -297,15 +324,37 @@
                       </div>
                     </div>
 
-                    <div class="div-actions">
-                      <app-action
-                        btnImg="assets/editar.png"
-                        (btnClick)="openEditModal(user)"
-                      ></app-action>
-                      <app-action
-                        btnImg="assets/eliminar.png"
-                        (btnClick)="openDeleteModal(user)"
-                      ></app-action>
+                    <div class="div-actions-group">
+
+
+                      <div class="div-actions">
+                        <app-action
+                          btnImg="assets/editar.png"
+                          (btnClick)="openEditModal(user)"
+                        ></app-action>
+                        <app-action
+                          btnImg="assets/eliminar.png"
+                          (btnClick)="openDeleteModal(user)"
+                        ></app-action>
+                      </div>
+                                            @if (user.is_coop_member && user.id != null && !hasAssociateUserIds.has(user.id)) {
+                        <div class="missing-legajo-wrapper">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="missing-legajo-icon"
+                          >
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                          </svg>
+                          <span>Falta completar legajo</span>
+                        </div>
+                      }
                     </div>
                   </div>
                 </app-base-card>
