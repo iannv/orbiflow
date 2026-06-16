@@ -122,7 +122,9 @@ export class Usuarios implements OnInit {
     this.loading = true;
 
     this.userService.getUsers().subscribe((users) => {
-      this.userList = users.map((user) => {
+      this.userList = users
+      .filter((user) => !user.is_superuser)
+      .map((user) => {
         if (user.role === RolEnum.ADMIN) {
           this.chipName = 'administrador';
           this.chipColorName = 'var(--rojo)';
