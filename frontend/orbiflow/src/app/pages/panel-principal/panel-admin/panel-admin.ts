@@ -19,6 +19,7 @@ import { Loader } from "../../../components/loader/loader";
 })
 export class PanelAdmin {
   loading = true;
+  private pendingRequests = 7;
 
   asociadosActivos: number = 0;
   totalAsociados: number = 0;
@@ -52,8 +53,8 @@ export class PanelAdmin {
   ) {}
 
   ngOnInit() {
-    this.isAdmin();
-    this.isTressurer();
+    this.pendingRequests = 7;
+    this.loading = true;
 
     this.getActiveModules();
     this.getTotalModules();
@@ -68,44 +69,66 @@ export class PanelAdmin {
   }
 
   isAdmin() {
-    this.loading = false;
     return this.authService.currentUser()?.role === 'admin';
   }
 
   isTressurer() {
-    this.loading = false;
     return this.authService.currentUser()?.role === 'treasurer';
+  }
+
+  private markRequestComplete() {
+    this.pendingRequests = Math.max(0, this.pendingRequests - 1);
+    if (this.pendingRequests === 0) {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   // Obtener modulos activos
   getActiveModules() {
-    this.moduloService.getModulos().subscribe((modules) => {
-      this.modulosActivos = modules.filter((m) => m.is_active).length;
-      this.cdr.detectChanges();
+    this.moduloService.getModulos().subscribe({
+      next: (modules) => {
+        this.modulosActivos = modules.filter((m) => m.is_active).length;
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   // Obtener total de modulos (activos e inactivos)
   getTotalModules() {
-    this.moduloService.getModulos().subscribe((modules) => {
-      this.totalModulos = modules.length;
-      this.cdr.detectChanges();
+    this.moduloService.getModulos().subscribe({
+      next: (modules) => {
+        this.totalModulos = modules.length;
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   // Obtener asociados activos
   getActiveAssociates() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.asociadosActivos = users.filter((u) => u.role === 'associate' && u.is_active).length;
-      this.cdr.detectChanges();
+    this.usersService.getUsers().subscribe({
+      next: (users) => {
+        this.asociadosActivos = users.filter((u) => u.role === 'associate' && u.is_active).length;
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   // Obtener todos los asociados (activos e inactivos)
   getTotalAssociates() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.totalAsociados = users.filter((u) => u.role === 'associate').length;
-      this.cdr.detectChanges();
+    this.usersService.getUsers().subscribe({
+      next: (users) => {
+        this.totalAsociados = users.filter((u) => u.role === 'associate').length;
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
@@ -113,55 +136,74 @@ export class PanelAdmin {
   liquidacionChipColorName: string = '';
   liquidacionChipColorBg: string = '';
   getActualLiquidation() {
-    this.liquidationService.getPeriods().subscribe((period) => {
-      this.liquidacionActual = period.find((p) => p.status === 'open' || p.status === 'reviewed');
-      if (this.liquidacionActual?.status === 'open') {
-        this.estadoLiquidacion = 'Abierto';
-        this.liquidacionChipColorName = 'var(--verde-selva)';
-        this.liquidacionChipColorBg = 'var(--verde-bg)';
-      } else if (this.liquidacionActual?.status === 'reviewed') {
-        this.estadoLiquidacion = 'En revisión';
-        this.liquidacionChipColorName = 'var(--ambar)';
-        this.liquidacionChipColorBg = 'var(--ambar-bg)';
-      } else {
-        this.estadoLiquidacion = 'Cerrado';
-        this.liquidacionChipColorName = 'var(--rojo)';
-        this.liquidacionChipColorBg = 'var(--rojo-bg)';
-      }
+    this.liquidationService.getPeriods().subscribe({
+      next: (period) => {
+        this.liquidacionActual = period.find((p) => p.status === 'open' || p.status === 'reviewed');
+        if (this.liquidacionActual?.status === 'open') {
+          this.estadoLiquidacion = 'Abierto';
+          this.liquidacionChipColorName = 'var(--verde-selva)';
+          this.liquidacionChipColorBg = 'var(--verde-bg)';
+        } else if (this.liquidacionActual?.status === 'reviewed') {
+          this.estadoLiquidacion = 'En revisión';
+          this.liquidacionChipColorName = 'var(--ambar)';
+          this.liquidacionChipColorBg = 'var(--ambar-bg)';
+        } else {
+          this.estadoLiquidacion = 'Cerrado';
+          this.liquidacionChipColorName = 'var(--rojo)';
+          this.liquidacionChipColorBg = 'var(--rojo-bg)';
+        }
 
-      // Total de la liquidación
-      if (this.liquidacionActual?.id) this.getTotalRetirements(this.liquidacionActual.id);
+        if (this.liquidacionActual?.id) {
+          this.pendingRequests += 1;
+          this.getTotalRetirements(this.liquidacionActual.id);
+        }
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   // Información del sistema
   getTotalUsers() {
-    this.usersService.getUsers().subscribe((users) => {
-      this.usuariosRegistrados = users.length;
-      this.cdr.detectChanges();
+    this.usersService.getUsers().subscribe({
+      next: (users) => {
+        this.usuariosRegistrados = users.length;
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   // Última liquidación
   getLastLiquidation() {
-    this.liquidationService.getPeriods().subscribe((period) => {
-      this.ultimaLiquidacion = period
-        .filter((p) => p.status === 'closed')
-        .sort((a, b) => {
-          if (a.year !== b.year) return b.year - a.year;
-          return b.month - a.month;
-        })[0];
-      if (this.ultimaLiquidacion?.id) this.getTotalRetirements(this.ultimaLiquidacion.id);
+    this.liquidationService.getPeriods().subscribe({
+      next: (period) => {
+        this.ultimaLiquidacion = period
+          .filter((p) => p.status === 'closed')
+          .sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.month - a.month;
+          })[0];
+        if (this.ultimaLiquidacion?.id) {
+          this.pendingRequests += 1;
+          this.getTotalRetirements(this.ultimaLiquidacion.id);
+        }
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 
   getTotalRetirements(liquidationId: number) {
-    this.liquidationService.getSummary(liquidationId).subscribe((summary) => {
-      // Obtener la cantidad de recibos generados en la última liquidación cerrada
-      this.recibosGenerados = summary.retirements_count;
-      // Obtener monto total de la liquidación
-      this.totalLiquidado = formatCurrency(summary.totals.total_amount);
-      this.cdr.detectChanges();
+    this.liquidationService.getSummary(liquidationId).subscribe({
+      next: (summary) => {
+        this.recibosGenerados = summary.retirements_count;
+        this.totalLiquidado = formatCurrency(summary.totals.total_amount);
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+      complete: () => this.markRequestComplete(),
     });
   }
 }

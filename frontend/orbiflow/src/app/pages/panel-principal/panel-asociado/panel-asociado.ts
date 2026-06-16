@@ -10,12 +10,13 @@ import { LiquidationPeriod } from '../../../interfaces/Liquidation';
 import { Retirement } from '../../../interfaces/Retirement';
 import { RetirementService } from '../../../services/retirement-service';
 import { Chip } from '../../../components/chip/chip';
+import { Loader } from '../../../components/loader/loader';
 import { Associate } from '../../../interfaces/Associate';
 import { formatDate } from '../../../shared/utils/formatDate';
 
 @Component({
   selector: 'app-panel-asociado',
-  imports: [BaseCard, RouterLink, Chip],
+  imports: [BaseCard, RouterLink, Chip, Loader],
   templateUrl: './panel-asociado.html',
   styleUrl: './panel-asociado.css',
 })
@@ -34,6 +35,9 @@ export class PanelAsociado {
 
   periodStatus: LiquidationPeriod | string = 'Desconocido';
 
+  loading = true;
+  private pendingRequests = 2;
+
   role = RolEnum;
 
   constructor(
@@ -48,18 +52,50 @@ export class PanelAsociado {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
 
-    this.associateService.getAssociateByUser(currentUser.id).subscribe({
+    this.loading = true;
+    this.pendingRequests = 2;
+
+    this.loadAssociateInfo(currentUser.id);
+    this.getPeriodStatus();
+  }
+
+  private loadAssociateInfo(userId: number) {
+    this.associateService.getAssociateByUser(userId).subscribe({
       next: (associate) => {
         const associateData = associate[0];
 
         if (associateData) {
+          this.setSeniority(associateData);
           this.getLastRetirement(associateData.id);
+        } else {
+          this.markRequestComplete();
         }
       },
+      error: () => this.markRequestComplete(),
     });
+  }
 
-    this.getSeniority();
-    this.getPeriodStatus();
+  private setSeniority(associate: Associate) {
+    this.entryDate = formatDate(associate.entry_date);
+    this.seniorityYear = associate.years_in_coop;
+
+    const entryMonth = Number(this.entryDate.split('/')[1]);
+    const actualMonth = new Date().getMonth() + 1;
+    if (actualMonth >= entryMonth) {
+      this.seniorityMonth = actualMonth - entryMonth;
+    } else {
+      this.seniorityMonth = 12 - (entryMonth - actualMonth);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private markRequestComplete() {
+    this.pendingRequests = Math.max(0, this.pendingRequests - 1);
+    if (this.pendingRequests === 0) {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
   }
 
   months = [
@@ -86,6 +122,7 @@ export class PanelAsociado {
           this.lastWithdrawal = '0';
           this.dateLastWithdrawal = 'Sin registro';
           this.period = 'Sin registro';
+          this.markRequestComplete();
           return;
         }
         this.lastRetirement = retirements.sort((a, b) => b.id - a.id)[0];
@@ -97,35 +134,18 @@ export class PanelAsociado {
             if (!liquidation) {
               this.dateLastWithdrawal = 'Sin registro';
               this.period = 'Sin registro';
+              this.markRequestComplete();
               return;
             }
             this.dateLastWithdrawal = `${liquidation.month}/${liquidation.year}`;
             this.period = this.months[liquidation.month - 1];
             this.cdr.detectChanges();
+            this.markRequestComplete();
           },
+          error: () => this.markRequestComplete(),
         });
       },
-    });
-  }
-
-  // Obtener antigüedad
-  getSeniority() {
-    const userId = this.authService.currentUser()?.id;
-    if (!userId) return;
-    this.associateService.getAssociateByUser(userId).subscribe((associate) => {
-      const associateDate = associate[0];
-      this.entryDate = formatDate(associateDate.entry_date);
-      this.seniorityYear = associateDate.years_in_coop;
-
-      const entryMonth = Number(this.entryDate.split('/')[1]);
-      const actualMonth = new Date().getMonth() + 1;
-      if (actualMonth >= entryMonth) {
-        this.seniorityMonth = actualMonth - entryMonth;
-      } else {
-        this.seniorityMonth = 12 - (entryMonth - actualMonth);
-      }
-
-      this.cdr.detectChanges();
+      error: () => this.markRequestComplete(),
     });
   }
 
@@ -133,12 +153,13 @@ export class PanelAsociado {
   liquidacionChipColorName: string = '';
   liquidacionChipColorBg: string = '';
   getPeriodStatus() {
-    this.liquidationService.getPeriods().subscribe((period) => {
-      const latestPeriod = period[0];
-      this.currentPeriod = this.months[latestPeriod.month - 1];
-      this.periodStatus = latestPeriod.status;
+    this.liquidationService.getPeriods().subscribe({
+      next: (period) => {
+        const latestPeriod = period[0];
+        this.currentPeriod = this.months[latestPeriod.month - 1];
+        this.periodStatus = latestPeriod.status;
 
-      switch (this.periodStatus) {
+        switch (this.periodStatus) {
         case 'open':
           this.periodStatus = 'Abierto';
           this.liquidacionChipColorName = 'var(--verde-selva)';
@@ -161,6 +182,9 @@ export class PanelAsociado {
           this.periodStatus = 'Desconocido';
       }
       this.cdr.detectChanges();
+      this.markRequestComplete();
+    },
+    error: () => this.markRequestComplete(),
     });
   }
 }
