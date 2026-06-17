@@ -2,12 +2,17 @@
   <h1 class="h1-title">Panel Principal</h1>
   <h2 class="h2-subtitle">Sistema de Gestión Cooperativa</h2>
 
-  <section class="section-header">
-    <app-base-card>
-      <div>
-        <h3>Último retiro</h3>
-        <img src="assets/ultimo_retiro.png" alt="" />
-      </div>
+  @if (loading) {
+    <app-loader></app-loader>
+  }
+
+  @if (!loading) {
+    <section class="section-header">
+      <app-base-card>
+        <div>
+          <h3>Último retiro</h3>
+          <img src="assets/ultimo_retiro.png" alt="" />
+        </div>
       <div>
         <h4>{{ lastWithdrawal }}</h4>
         <span class="fw300">{{ dateLastWithdrawal }}</span>
@@ -114,4 +119,5 @@
       </div>
     </div>
   </section>
+  }
 </main>

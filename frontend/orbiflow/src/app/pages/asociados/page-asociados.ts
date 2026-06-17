@@ -244,7 +244,7 @@ export class PageAsociados implements OnInit {
         );
         // Permitir usuarios que sean coop members (necesitan legajo, independientemente del rol)
         this.availableUsers = users.filter(
-          (u) => u.is_coop_member && u.id != null && !linked.has(u.id) && !u.is_deleted,
+          (u) => u.is_coop_member && u.id != null && !linked.has(u.id) && !u.is_deleted && !u.is_superuser && u.username !== 'superadmin',
         );
         console.log('Available users for new associate:', this.availableUsers);
         // Abre el modal solo cuando el select ya tiene opciones cargadas
