@@ -1,7 +1,7 @@
 const { execSync } = require('child_process');
 
 // VERCEL_GIT_COMMIT_REF es la variable correcta para Vercel
-const branch = process.env.VERCEL_GIT_COMMIT_REF || 'development';
+const branch = process.env.VERCEL_GIT_COMMIT_REF || 'develop';
 const isProductionBranch = branch === 'main' || branch === 'production';
 const target = isProductionBranch ? 'production' : 'sandbox';
 
