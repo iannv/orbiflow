@@ -6,7 +6,7 @@ Sistema integral de gestión para **cooperativas de trabajo**. Permite gestionar
 
 ## ¿Qué hace OrbiFlow?
 
-Una cooperativa de trabajo paga mensualmente un **retiro** (su versión del salario) a cada asociado. El monto no es fijo: depende de las horas trabajadas, del valor hora vigente, de adicionales propios de la cooperativa (presentismo, antigüedad, viáticos, etc.) y de un tope porcentual sobre el retiro base.
+En una cooperativa de trabajo mensualmente cada asociado hace un **retiro** de excedentes. El monto no es fijo: depende de las horas trabajadas, del valor hora vigente, de adicionales propios de la cooperativa (presentismo, antigüedad, viáticos, etc.) y de un tope porcentual sobre el retiro base.
 
 Cada cooperativa define sus propias reglas y necesita poder ajustarlas en el tiempo **sin romper la trazabilidad** de liquidaciones pasadas (auditorías, reclamos, ajustes retroactivos).
 
@@ -35,9 +35,11 @@ CapAdjustment  = max(0, Σ items_topeables − TopeMaximo)
 Total          = RetiroBase + Adicionales − CapAdjustment
 ```
 
-Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `seniority`) y el tipo de variante (`percentage` o `fixed_amount`). El detalle de las cuatro combinaciones, el cálculo exacto de la antigüedad y el manejo de `Decimal`/`ROUND_HALF_UP` están en [`docs/TECHNICAL.md` § Motor de liquidación](./docs/TECHNICAL.md#8-motor-de-liquidación).
+Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `seniority`) y el tipo de variante (`percentage` o `fixed_amount`). El detalle de las cuatro combinaciones está en [`docs/TECHNICAL.md` § Motor de liquidación](./docs/TECHNICAL.md#8-motor-de-liquidación).
 
-### Flujo de un mes
+### Flujo típico de uso:
+
+Configuraciones iniciales (solo la primera vez, o cada vez que se quiera cambiar la configuración para futuros períodos):
 
 ```
 --- Configuración General ---
@@ -48,16 +50,21 @@ Cada ítem de **Adicionales** se calcula según el tipo de módulo (`simple` o `
 
 --- Gestión de Asociados --- 
 3. Asignar variantes al asociado              POST /api/associate-variants/
+```
 
+Cada mes:
+```
 --- Pre-Liquidaciones ---
 4. Crear el período (congela valor hora/tope desde la config) POST /api/liquidations/
 5. Simulación al vuelo (Stateless)            POST /api/liquidations/{id}/simulate/
 6. Cargar horas trabajadas definitivas (bulk) POST /api/liquidations/{id}/upload-hours/
    → sincroniza la nómina del periodo (elimina asociados ausentes del payload)
+   PATCH /api/liquidations/{id}/  { "status": "reviewed" }
 
 --- Liquidaciones (Cierre) ---
 7. Auditoría de cierre                        POST /api/liquidations/{id}/calculate/  test_mode=true
 8. Ejecución definitiva (persiste recibos)    POST /api/liquidations/{id}/calculate/  test_mode=false
+   PATCH /api/liquidations/{id}/  { "status": "closed" }
 
 --- Reportes ---
 9. Resumen y recibos                          GET  /api/liquidations/{id}/summary/
@@ -68,16 +75,24 @@ La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memori
 
 ---
 
-## Demo en vivo (entorno Sandbox)
+## Entornos desplegados
+
+OrbiFlow tiene dos despliegues en la nube: **sandbox** (rama `develop`) y **producción** (rama `main`). Cada uno tiene su propio frontend en Vercel, backend en Render y base de datos en Neon.
+
+> Las contraseñas de los usuarios de prueba **no están en el repositorio**; se entregan por separado en el trabajo final.
+
+### Sandbox (`develop`)
 
 | | URL |
 | --- | --- |
-| **Frontend (UI Angular)** | <https://orbiflow.vercel.app/> |
+| **Frontend (UI Angular)** | <https://orbiflow-git-develop-orbicoop.vercel.app/> |
 | **Backend (Django admin)** | <https://orbiflow-backend-sandbox.onrender.com/admin/> |
 | **API docs (Swagger)** | <https://orbiflow-backend-sandbox.onrender.com/api/docs/> |
 | **Healthcheck** | <https://orbiflow-backend-sandbox.onrender.com/api/health/> |
 
-### Usuarios de prueba (sólo sandbox-solicitar passwords a los desarrolladores)
+> El frontend sandbox es un **preview de Vercel protegido**: antes de ver la app hay que autenticarse con un usuario de Vercel autorizado. El backend y la base apuntan al entorno sandbox (Neon branch develop).
+
+#### Usuarios de prueba (sandbox)
 
 | Rol | Usuario | Password |
 | --- | --- | --- |
@@ -86,7 +101,50 @@ La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memori
 | Tesorero | `treasurer` | `*****` |
 | Asociado | `associate` | `*****` |
 
-> Estas credenciales son **sólo para el entorno sandbox** (Neon branch develop). No se usan en producción.
+
+
+### Producción (`main`)
+
+| | URL |
+| --- | --- |
+| **Frontend (UI Angular)** | <https://orbiflow.vercel.app/login> |
+| **Backend (Django admin)** | <https://orbiflow-backend-prod.onrender.com/admin/> |
+| **API docs (Swagger)** | <https://orbiflow-backend-prod.onrender.com/api/docs/> |
+| **Healthcheck** | <https://orbiflow-backend-prod.onrender.com/api/health/> |
+
+> Producción apunta al backend y la base de datos productivos en Neon. 
+
+#### Usuarios de prueba (producción)
+
+| Rol | Usuario | Password |
+| --- | --- | --- |
+| Superadmin | `superadmin` | `*****` |
+| Admin | `admin_prod` | `*****` |
+| Tesorero | `treasurer_prod` | `*****` |
+| Asociado | `associate_prod` | `*****` |
+| Asociado | `susana_asociada` | `*****` |
+| Asociado | `moria_asociada` | `*****` |
+| Asociado | `oliverio_asociado` | `*****` |
+
+> Las contraseñas **no están en el repositorio**; se entregan por separado en el trabajo final.
+
+### Documentación de la API (Swagger)
+
+La API REST se documenta con **drf-spectacular**. Además de Swagger UI (`/api/docs/`), el backend expone **Redoc** (`/api/redoc/`) y el esquema OpenAPI crudo (`/api/schema/`).
+
+| Entorno | Swagger UI | Redoc | Esquema OpenAPI |
+| --- | --- | --- | --- |
+| **Local** | <http://localhost:8000/api/docs/> | <http://localhost:8000/api/redoc/> | <http://localhost:8000/api/schema/> |
+| **Sandbox** | <https://orbiflow-backend-sandbox.onrender.com/api/docs/> | <https://orbiflow-backend-sandbox.onrender.com/api/redoc/> | <https://orbiflow-backend-sandbox.onrender.com/api/schema/> |
+| **Producción** | <https://orbiflow-backend-prod.onrender.com/api/docs/> | <https://orbiflow-backend-prod.onrender.com/api/redoc/> | <https://orbiflow-backend-prod.onrender.com/api/schema/> |
+
+Para probar endpoints protegidos en Swagger:
+
+1. `POST /api/auth/login/` con `{ "username": "...", "password": "..." }` → copiá el `access` del response.
+2. Botón **Authorize** (arriba a la derecha) → pegá `Bearer <token>`.
+3. Ejecutá cualquier endpoint con **Try it out**.
+
+Más detalle en [`docs/TECHNICAL.md` § API REST](./docs/TECHNICAL.md#11-api-rest).
 
 ---
 
@@ -108,18 +166,16 @@ La simulación del paso 5 recibe las horas y devuelve el desglose 100% en memori
 ## Arquitectura
 
 ```
+develop ──▶ Vercel preview (sandbox UI) ──▶ Render sandbox ──▶ Neon sandbox
+main    ──▶ Vercel prod (orbiflow.vercel.app) ──▶ Render prod ──▶ Neon prod
+
 ┌──────────────────┐    HTTPS   ┌──────────────────┐    SQL (TLS)   ┌────────────┐
 │   Vercel         │ ─────────▶ │   Render         │ ─────────────▶ │   Neon     │
 │   (Angular SPA)  │            │   (Django/DRF)   │                │ (Postgres) │
-│ orbiflow.vercel  │            │ orbiflow-backend │                │  sandbox / │
-│ .app             │            │ .onrender.com    │                │  prod      │
 └──────────────────┘            └──────────────────┘                └────────────┘
         ▲                                ▲
-        │ npm run build                  │ gunicorn + whitenoise
-        │                                │
+        │ ng build (sandbox / production)│ gunicorn + whitenoise
         └──────────── git push ──────────┘
-                    (develop = sandbox)
-                    (main    = production, todavía sin promover)
 ```
 
 En desarrollo local todo corre en Docker (backend + frontend + Postgres), y un solo flag elige a qué base apuntar.
@@ -180,15 +236,16 @@ exec /docker-entrypoint.sh: no such file or directory
 
 Para evitarlo agregamos un `.gitattributes` que fuerza a git a mantener los saltos de línea como LF (`\n`) en los archivos `.sh`:
 
-Si el archivo `backend/coop/docker-entrypoint.sh` **ya** te quedó con CRLF, abrilo en VS Code / Cursor → click en `CRLF` (esquina inferior derecha de la barra de estado) → elegir `LF` → guardar → `docker compose down` → volver a intentar el build.
+Si el archivo `backend/coop/docker-entrypoint.sh` **ya**  quedó con CRLF, abrirlo en VS Code / Cursor → click en `CRLF` (esquina inferior derecha de la barra de estado) → elegir `LF` → guardar → `docker compose down` → volver a intentar el build.
 
 ---
 
 ## Documentación
 
-| Archivo | Para qué |
+| Archivo / recurso | Para qué |
 | --- | --- |
 | [`docs/TECHNICAL.md`](./docs/TECHNICAL.md) | Setup detallado, Makefile, tests, migraciones, motor de liquidación, modelo de datos, roles, deploy, pgAdmin. |
+| [Swagger UI](#documentación-de-la-api-swagger) | Documentación interactiva de la API (`/api/docs/`). URLs por entorno en [Entornos desplegados](#entornos-desplegados). |
 | [`LICENSE`](./LICENSE) | Términos AGPLv3. |
 
 ## Licencia
