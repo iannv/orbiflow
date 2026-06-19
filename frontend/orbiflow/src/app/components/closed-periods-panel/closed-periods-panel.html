@@ -15,11 +15,7 @@
     <div class="period-controls period-controls--stacked">
       <label class="month-field month-field--wide">
         <span class="month-field__label">Tipo de consulta</span>
-        <select
-          class="form-select"
-          [(ngModel)]="rangeMode"
-          (ngModelChange)="onRangeModeChange()"
-        >
+        <select class="form-select" [(ngModel)]="rangeMode" (ngModelChange)="onRangeModeChange()">
           <option value="all">Todos los periodos disponibles</option>
           <option value="custom">Rango de meses</option>
         </select>
@@ -48,7 +44,11 @@
         </div>
       }
 
-      <app-primary btnImg="assets/recibos.png" name="Buscar periodos" (btnClick)="confirmMonthRange()" />
+      <app-primary
+        btnImg="assets/recibos.png"
+        name="Buscar periodos"
+        (btnClick)="confirmMonthRange()"
+      />
     </div>
     @if (isCustomRange) {
       <p class="range-example">
@@ -66,9 +66,16 @@
     <app-loader></app-loader>
   </div>
 } @else if (showMonthRangeFilter && !rangeApplied) {
-  <div class="alert alert-info mt-4">
-    Elegí el tipo de consulta arriba y pulsá <strong>Buscar periodos</strong>.
-    Podés ver <strong>Todos</strong> los periodos disponibles o filtrar por rango de meses.
+  <div
+    class="alert mt-4"
+    style="background-color: #eef2fa; border: 1px solid #b3c7ee; border-radius: 8px"
+  >
+    <strong style="color: var(--azul); font-size: 0.95rem">Nota</strong>
+    <p class="mb-0 mt-1 fw300" style="color: var(--gris-oscuro); font-size: 0.9rem">
+      Elegí el tipo de consulta arriba y pulsá
+      <strong class="fw600">"Buscar periodos"</strong>. Podés ver
+      <strong class="fw600">"Todos"</strong> los periodos disponibleso filtrar por rangos de meses.
+    </p>
   </div>
 } @else if (years.length === 0) {
   <div class="alert alert-info mt-4">No se registran periodos cerrados para la consulta.</div>
