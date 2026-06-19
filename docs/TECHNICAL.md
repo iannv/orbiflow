@@ -31,11 +31,12 @@ Guía para desarrolladores del proyecto. Para una introducción al producto, ver
     - [API de liquidaciones para asociados](#api-de-liquidaciones-para-asociados)
     - [Membresía vs. rol vs. flags de Django](#membresía-vs-rol-vs-flags-de-django)
   - [11. API REST](#11-api-rest)
-    - [Endpoints de documentación](#endpoints-de-documentación)
+    - [Documentación por entorno (Swagger, Redoc, OpenAPI)](#documentación-por-entorno-swagger-redoc-openapi)
     - [Probar endpoints protegidos en Swagger](#probar-endpoints-protegidos-en-swagger)
   - [12. Colecciones Postman](#12-colecciones-postman)
   - [13. Diagramas de clases](#13-diagramas-de-clases)
   - [14. Desploy](#14-desploy)
+    - [Entornos desplegados (URLs y credenciales)](#entornos-desplegados-urls-y-credenciales)
     - [Backend (Render)](#backend-render)
     - [Frontend (Vercel)](#frontend-vercel)
       - [Configuraciones de Angular y qué backend usa cada una](#configuraciones-de-angular-y-qué-backend-usa-cada-una)
@@ -190,8 +191,7 @@ Internamente:
 
 ### Estructura de los tests del backend
 
-Los tests del backend viven en `backend/coop/orbiflow/tests/`, separados en dos
-subpaquetes según su alcance:
+Los tests del backend viven en `backend/coop/orbiflow/tests/`, separados en dos subpaquetes según su alcance:
 
 ```
 orbiflow/tests/
@@ -322,12 +322,16 @@ Todos los montos se manejan como `Decimal` y se cuantizan a 2 decimales con `ROU
 
 --- Cierre de liquidación ---
 
-9.  Ejecución definitiva      POST /api/liquidations/{id}/calculate/  { "test_mode": false }
-                              → persiste RetirementDetail + LiquidationItem; registra AuditLog.
+9.  Auditoría de cierre       POST /api/liquidations/{id}/calculate/  { "test_mode": true }
+                              → dry-run sobre horas ya persistidas; no guarda montos ni ítems.
+10. Ejecución definitiva      POST /api/liquidations/{id}/calculate/  { "test_mode": false }
+                              → persiste montos en RetirementDetail + LiquidationItem; AuditLog.
                               PATCH /api/liquidations/{id}/            { "status": "closed" }
-10. Resumen / recibos         GET  /api/liquidations/{id}/summary/
+11. Resumen / recibos         GET  /api/liquidations/{id}/summary/
                               GET  /api/retirements/?liquidation={id}
 ```
+
+Estados del periodo: `open` → `reviewed` (tras aprobar pre-liquidación) → `closed` (tras el cierre). Desde `reviewed` se puede volver a `open` para corregir horas y re-aprobar.
 
 ---
 
@@ -389,7 +393,7 @@ En `/archivo-cooperativo` el frontend aplica el mismo criterio en el selector (m
 
 ### Membresía vs. rol vs. flags de Django
 
-OrbiFlow separa tres conceptos que **no se mezclan**:
+OrbiFlow separa estos conceptos que **no se mezclan**:
 
 | Campo                         | Significado                                                                                            | ¿Define permisos en la API? |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------- |
@@ -409,15 +413,21 @@ Reglas de membresía:
 
 ## 11. API REST
 
-Documentación auto-generada con drf-spectacular.
+Documentación auto-generada con **drf-spectacular** a partir de los ViewSets, serializadores y esquemas de la API.
 
-### Endpoints de documentación
+### Documentación por entorno (Swagger, Redoc, OpenAPI)
 
-- **Swagger UI (interactiva):** [`/api/docs/`](http://localhost:8000/api/docs/)
-- **Redoc (estática):** [`/api/redoc/`](http://localhost:8000/api/redoc/)
-- **Esquema OpenAPI:** [`/api/schema/`](http://localhost:8000/api/schema/)
+| Entorno | Swagger UI (`/api/docs/`) | Redoc (`/api/redoc/`) | Esquema OpenAPI (`/api/schema/`) |
+| --- | --- | --- | --- |
+| **Local** (`make build-local`) | <http://localhost:8000/api/docs/> | <http://localhost:8000/api/redoc/> | <http://localhost:8000/api/schema/> |
+| **Sandbox** (Render, rama `develop`) | <https://orbiflow-backend-sandbox.onrender.com/api/docs/> | <https://orbiflow-backend-sandbox.onrender.com/api/redoc/> | <https://orbiflow-backend-sandbox.onrender.com/api/schema/> |
+| **Producción** (Render, rama `main`) | <https://orbiflow-backend-prod.onrender.com/api/docs/> | <https://orbiflow-backend-prod.onrender.com/api/redoc/> | <https://orbiflow-backend-prod.onrender.com/api/schema/> |
 
-En sandbox: <https://orbiflow-backend-sandbox.onrender.com/api/docs/>.
+- **Swagger UI** — documentación interactiva; permite ejecutar requests desde el navegador.
+- **Redoc** — vista estática de solo lectura, útil para consulta rápida.
+- **Esquema OpenAPI** — JSON/YAML del contrato de la API; sirve para importar en Postman, generar clientes, etc.
+
+Los entornos desplegados en Render también listan Swagger en [§14 Entornos desplegados](#entornos-desplegados-urls-y-credenciales).
 
 ### Probar endpoints protegidos en Swagger
 
@@ -453,7 +463,52 @@ Genera `orbiflow_core.png` con el modelo de la app `orbiflow`.
 
 ---
 
-## 14. Desploy
+## 14. Deploy
+
+### Entornos desplegados (URLs y credenciales)
+
+Cada rama de git dispara su propio stack. Las contraseñas **no se documentan en el repo**; van en el entregable del trabajo.
+
+#### Sandbox (`develop`)
+
+| Recurso | URL |
+| --- | --- |
+| Frontend (Vercel, preview protegido) | <https://orbiflow-git-develop-orbicoop.vercel.app/> |
+| Backend admin | <https://orbiflow-backend-sandbox.onrender.com/admin/> |
+| Swagger UI | <https://orbiflow-backend-sandbox.onrender.com/api/docs/> |
+| Healthcheck | <https://orbiflow-backend-sandbox.onrender.com/api/health/> |
+
+El preview de Vercel del branch `develop` exige login con un **usuario de Vercel** antes de mostrar la UI. El build usa la configuración Angular `sandbox` y habla con `orbiflow-backend-sandbox` y la base Neon sandbox.
+
+| Rol | Usuario | Password |
+| --- | --- | --- |
+| Superadmin | `superadmin` | `*****` |
+| Admin | `admin` | `*****` |
+| Tesorero | `treasurer` | `*****` |
+| Asociado | `associate` | `*****` |
+
+#### Producción (`main`)
+
+| Recurso | URL |
+| --- | --- |
+| Frontend (Vercel, producción) | <https://orbiflow.vercel.app/login> |
+| Backend admin | <https://orbiflow-backend-prod.onrender.com/admin/> |
+| Swagger UI | <https://orbiflow-backend-prod.onrender.com/api/docs/> |
+| Healthcheck | <https://orbiflow-backend-prod.onrender.com/api/health/> |
+
+El deployment de producción en Vercel (branch `main`) usa la configuración Angular `production` y habla con `orbiflow-backend-prod` y la base Neon productiva.
+
+| Rol | Usuario | Password |
+| --- | --- | --- |
+| Superadmin | `superadmin` | `*****` |
+| Admin | `admin_prod` | `*****` |
+| Tesorero | `treasurer_prod` | `*****` |
+| Asociado | `associate_prod` | `*****` |
+| Asociado | `susana_asociada` | `*****` |
+| Asociado | `moria_asociada` | `*****` |
+| Asociado | `oliverio_asociado` | `*****` |
+
+
 
 ### Backend (Render)
 
@@ -462,9 +517,9 @@ Hay dos servicios:
 | Servicio | Branch | Base de datos | URL |
 | --- | --- | --- | --- |
 | `orbiflow-backend-sandbox` | `develop` | Neon Sandbox | <https://orbiflow-backend-sandbox.onrender.com> |
-| `orbiflow-backend-prod` | `main` | Neon Producción | <https://orbiflow-backend-prod.onrender.com> *(pendiente de primer merge a `main`)* |
+| `orbiflow-backend-prod` | `main` | Neon Producción | <https://orbiflow-backend-prod.onrender.com> |
 
-Cada push a `develop` redeploya sandbox; cada merge a `main` redeployará prod.
+Cada push a `develop` redeploya sandbox; cada merge a `main` redeploya producción.
 
 Variables de entorno mínimas en Render:
 
@@ -486,8 +541,8 @@ El entrypoint corre `python manage.py collectstatic --noinput` antes de gunicorn
 | Root Directory | `frontend/orbiflow` |
 | Build Command | `npm run build` (definido en `vercel.json`) |
 | Output Directory | `dist/orbiflow/browser` (definido en `vercel.json`) |
-| Production Branch | `main` |
-| Preview Branches | resto (incluye `develop`) |
+| Production Branch | `main` → <https://orbiflow.vercel.app> |
+| Preview de `develop` | <https://orbiflow-git-develop-orbicoop.vercel.app> (acceso restringido con usuario Vercel) |
 
 El archivo [`frontend/vercel.json`](../frontend/vercel.json) define rewrites SPA (`/*` → `/index.html`) para que Angular Router funcione en hard refresh.
 
@@ -509,18 +564,18 @@ El frontend **no** pasa a Render en ninguno de esos casos: siempre habla con el 
 
 **2. Build estático desplegado** (`ng build`, p. ej. en Vercel)
 
-| Configuración Angular | Archivo de env | URL del backend |
-| --- | --- | --- |
-| `development` (solo si se pide explícitamente en build) | `environment.ts` | `http://localhost:8000/api` |
-| `sandbox` (**default** de `ng build` en `angular.json`) | `environment.sandbox.ts` | `https://orbiflow-backend-sandbox.onrender.com/api` |
-| `production` | `environment.production.ts` | `https://orbiflow-backend-prod.onrender.com/api` |
+| Configuración Angular | Archivo de env | URL del backend | Dónde se usa |
+| --- | --- | --- | --- |
+| `development` (solo si se pide explícitamente en build) | `environment.ts` | `http://localhost:8000/api` | Local |
+| `sandbox` (**default** de `ng build` en `angular.json`) | `environment.sandbox.ts` | `https://orbiflow-backend-sandbox.onrender.com/api` | Preview Vercel de `develop` |
+| `production` | `environment.production.ts` | `https://orbiflow-backend-prod.onrender.com/api` | Deployment de producción (`main`) en Vercel |
 
-Vercel preview de `develop` usa `npm run build` → configuración **sandbox** por defecto. Para producción real con `orbiflow-backend-prod`:
+En Vercel, el preview de `develop` usa `npm run build` → configuración **sandbox** (default de `angular.json`). El deployment de **producción** en branch `main` debe usar configuración **production**:
 
 1. Cambiar `defaultConfiguration` en `angular.json` a `"production"`, o
 2. En Vercel, build command de la Production Branch: `npm run build -- --configuration=production`.
 
-> Si corrés `ng serve --configuration=sandbox` a mano (sin Docker), el frontend sí apuntaría a Render sandbox; el `Dockerfile` del frontend **no** hace eso.
+> Si corrés `ng serve --configuration=sandbox` a mano (sin Docker), el frontend sí apuntaría a Render sandbox; el `Dockerfile` del frontend **no** hace eso para poder levantar y testear en local.
 
 ---
 
@@ -543,7 +598,7 @@ Vercel preview de `develop` usa `npm run build` → configuración **sandbox** p
 
    - Cambios en el código.
    - `make tests` → si rompe algo, **no avanzar**.
-
+>
 4. **Commit + merge develop + push**
 
    ```bash
@@ -555,7 +610,7 @@ Vercel preview de `develop` usa `npm run build` → configuración **sandbox** p
    ```
 
 5. **Pull Request** hacia `develop`. Esperar que el check de GitHub Actions se ponga en verde antes de mergear.
-
+>
 6. **Limpieza local**
 
    ```bash
@@ -564,6 +619,6 @@ Vercel preview de `develop` usa `npm run build` → configuración **sandbox** p
    git branch -d feat/nombre-tarea
    ```
 
-Pattern de mensaje de commit (estilo del repo):
+Patrones de mensaje de commit:
 
 - `feat: ...`, `fix: ...`, `refactor: ...`, `docs: ...`
