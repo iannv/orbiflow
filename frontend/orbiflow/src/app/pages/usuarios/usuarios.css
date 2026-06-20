@@ -1,10 +1,15 @@
+.form-wrapped-error {
+  display: flex;
+  flex-direction: column;
+  height: 80px;
+}
+
 .error {
   color: var(--rojo);
 }
 
 .error-text {
-  display: block;
-  margin-top: 4px;
+  margin-top: -12px;
   color: var(--rojo);
   font-size: 0.8rem;
 }
@@ -73,6 +78,12 @@
 
 .form-div-check--locked {
   opacity: 0.85;
+}
+
+.form-div-claves {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .checkbox-locked {

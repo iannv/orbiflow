@@ -147,7 +147,7 @@
 
           <div id="form-div">
             <div class="form-div">
-              <div>
+              <div class="form-wrapped-error">
                 <label for="first_name"> Nombre </label>
                 <input
                   type="text"
@@ -163,7 +163,7 @@
                 }
               </div>
 
-              <div>
+              <div class="form-wrapped-error">
                 <label for="last_name"> Apellido </label>
                 <input
                   type="text"
@@ -183,7 +183,7 @@
             </div>
 
             <div class="form-div">
-              <div>
+              <div class="form-wrapped-error">
                 <label for="email"> Email </label>
                 <input
                   type="email"
@@ -200,7 +200,7 @@
                   </small>
                 }
               </div>
-              <div>
+              <div class="form-wrapped-error">
                 <label for="username"> Usuario </label>
                 <input
                   type="text"
@@ -219,9 +219,9 @@
               </div>
             </div>
 
-            <div class="form-div">
+            <div class="form-div-claves">
               @if (modalMode === 'create') {
-                <div>
+                <div class="form-wrapped-error">
                   <label for="password"> Contraseña </label>
                   <input
                     type="password"
@@ -238,7 +238,7 @@
                     </small>
                   }
                 </div>
-                <div>
+                <div class="form-wrapped-error">
                   <label for="repeatPassword"> Repetir contraseña </label>
                   <input
                     type="password"
@@ -275,21 +275,22 @@
 
             <label for="rol"> Rol </label>
             <app-select
-              name="rol"
-              formControlName="roleControl"
-              (change)="validateIsCoopMember()"
-              required
-            >
-              @for (role of roles; track $index) {
-                <option [value]="role.value">{{ role.label }}</option>
+                name="rol"
+                formControlName="roleControl"
+                (change)="validateIsCoopMember()"
+                required
+              >
+                @for (role of roles; track $index) {
+                  <option [value]="role.value">{{ role.label }}</option>
+                }
+              </app-select>
+              @if (hasError('roleControl')) {
+                <small class="error-text">
+                  {{ getErrorMessage('roleControl') }}
+                </small>
               }
-            </app-select>
-            @if (hasError('roleControl')) {
-              <small class="error-text">
-                {{ getErrorMessage('roleControl') }}
-              </small>
-            }
 
+              
             <div class="form-div-check" [class.form-div-check--locked]="isCoopMemberLocked">
               <input
                 type="checkbox"
