@@ -157,12 +157,6 @@ export class Modulos implements OnInit {
   }
 
   guardarModulo(): void {
-    // Validaciones
-    // if (this.variantesFormArray.length === 0) {
-    //   this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
-    //   return;
-    // }
-
     // Verificador de exclusividad (Regla de Negocio)
     const isExclusive = this.moduloForm.get('is_exclusive')?.value;
     let defaultsCount = 0;
@@ -189,10 +183,10 @@ export class Modulos implements OnInit {
       }
     });
 
-    if (errorPorcentaje) {
-      this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
-      return;
-    }
+    // if (errorPorcentaje) {
+    //   this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
+    //   return;
+    // }
 
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
@@ -258,7 +252,6 @@ export class Modulos implements OnInit {
   }
 
   //  Lógica de eliminación
-
   confirmarEliminacion(id: number | undefined): void {
     if (!id) return;
     this.moduloAEliminarId = id;
@@ -286,7 +279,6 @@ export class Modulos implements OnInit {
   }
 
   // Feedback visual
-
   toggleEstadoModulo(event: Event, modulo: Modulo): void {
     const checkbox = event.target as HTMLInputElement;
     const nuevoEstado = checkbox.checked;
@@ -342,7 +334,6 @@ export class Modulos implements OnInit {
   // //////////////////////////////////////////////////////////////////////////
   // //////////////////////////////////////////////////////////////////////////
   // Validaciones de error en inputs
-
   hasError(controlName: string): boolean {
     const control = this.moduloForm.get(controlName);
     if (!control) return false;
@@ -363,11 +354,6 @@ export class Modulos implements OnInit {
           return 'Debe agregar al menos una variante al módulo para realizar cálculos';
         }
         break;
-
-      // if (control?.errors?.['email'] || control?.errors?.['pattern']) {
-      //   return 'El email no es válido';
-      // }
-      // break;
     }
 
     return '';

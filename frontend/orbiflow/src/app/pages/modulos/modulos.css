@@ -1,3 +1,15 @@
+/* .input-wrapper {
+  position: relative;
+}
+
+.error-text {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  color: var(--rojo);
+  font-size: 12px;
+} */
+
 .error {
   color: var(--rojo);
 }
