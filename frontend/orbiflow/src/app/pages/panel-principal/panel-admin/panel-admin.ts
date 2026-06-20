@@ -10,6 +10,7 @@ import { LiquidationPeriod } from '../../../interfaces/Liquidation';
 import { Chip } from '../../../components/chip/chip';
 import { formatCurrency } from '../../../shared/utils/formatCurrency';
 import { Loader } from "../../../components/loader/loader";
+import { AssociateService } from '../../../services/associate-service';
 
 @Component({
   selector: 'app-panel-admin',
@@ -49,6 +50,7 @@ export class PanelAdmin {
     private moduloService: ModulosService,
     private usersService: UserService,
     private liquidationService: LiquidationService,
+    private associateService: AssociateService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -110,9 +112,9 @@ export class PanelAdmin {
 
   // Obtener asociados activos
   getActiveAssociates() {
-    this.usersService.getUsers().subscribe({
-      next: (users) => {
-        this.asociadosActivos = users.filter((u) => u.role === 'associate' && u.is_active).length;
+    this.associateService.getAssociates().subscribe({
+      next: (associates) => {
+        this.asociadosActivos = associates.filter((a) => a.is_active).length;
         this.cdr.detectChanges();
       },
       error: () => {},
@@ -122,9 +124,9 @@ export class PanelAdmin {
 
   // Obtener todos los asociados (activos e inactivos)
   getTotalAssociates() {
-    this.usersService.getUsers().subscribe({
-      next: (users) => {
-        this.totalAsociados = users.filter((u) => u.role === 'associate').length;
+    this.associateService.getAssociates().subscribe({
+      next: (associates) => {
+        this.totalAsociados = associates.length;
         this.cdr.detectChanges();
       },
       error: () => {},
@@ -167,7 +169,8 @@ export class PanelAdmin {
   getTotalUsers() {
     this.usersService.getUsers().subscribe({
       next: (users) => {
-        this.usuariosRegistrados = users.length;
+        // Filtro para no contar a los superusers
+        this.usuariosRegistrados = users.filter((u) => !u.is_superuser).length;
         this.cdr.detectChanges();
       },
       error: () => {},

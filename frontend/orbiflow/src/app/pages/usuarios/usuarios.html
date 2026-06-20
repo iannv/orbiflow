@@ -229,7 +229,7 @@
 
           <!-- Validaciones -->
           @if (mggeError) {
-            <p class="error">{{mggeError}}</p>
+            <p class="error">{{ mggeError }}</p>
           }
 
           @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
@@ -248,7 +248,9 @@
             @if (userForm.get('email')?.errors?.['required']) {
               <p class="error">El email es obligatorio</p>
             }
-            @if (userForm.get('email')?.errors?.['email'] || userForm.get('email')?.errors?.['pattern']) {
+            @if (
+              userForm.get('email')?.errors?.['email'] || userForm.get('email')?.errors?.['pattern']
+            ) {
               <p class="error">El email no es válido</p>
             }
           }
@@ -311,22 +313,31 @@
                   <div class="section-users-div">
                     <div class="div-user-chip">
                       <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
-                      <div>
+
+                      <div style="display: flex; align-items: center; gap: 0.5rem">
                         <app-chip
                           [name]="user.chipName || ''"
                           [backgroundColor]="user.chipBackgroundColor || ''"
                           [colorName]="user.chipColorName || ''"
                         ></app-chip>
+
+                        <app-chip
+                          [name]="user.is_active ? 'Activo' : 'Inactivo'"
+                          [backgroundColor]="
+                            user.is_active ? 'var(--verde-bg)' : 'var(--gris-claro)'
+                          "
+                          [colorName]="user.is_active ? 'var(--verde-selva)' : 'var(--gris-oscuro)'"
+                        ></app-chip>
+
                         <img src="assets/punto.png" alt="usuario" id="imgPunto" />
-                        <span class="fw200" style="font-size: 0.85rem"
-                          >Usuario: <strong>{{ user.username }}</strong></span
-                        >
+
+                        <span class="fw200" style="font-size: 0.85rem">
+                          Usuario: <strong>{{ user.username }}</strong>
+                        </span>
                       </div>
                     </div>
 
                     <div class="div-actions-group">
-
-
                       <div class="div-actions">
                         <app-action
                           btnImg="assets/editar.png"
@@ -337,7 +348,9 @@
                           (btnClick)="openDeleteModal(user)"
                         ></app-action>
                       </div>
-                                            @if (user.is_coop_member && user.id != null && !hasAssociateUserIds.has(user.id)) {
+                      @if (
+                        user.is_coop_member && user.id != null && !hasAssociateUserIds.has(user.id)
+                      ) {
                         <div class="missing-legajo-wrapper">
                           <svg
                             viewBox="0 0 24 24"
@@ -348,7 +361,9 @@
                             stroke-linejoin="round"
                             class="missing-legajo-icon"
                           >
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <path
+                              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                            />
                             <line x1="12" y1="9" x2="12" y2="13" />
                             <line x1="12" y1="17" x2="12.01" y2="17" />
                           </svg>
