@@ -894,10 +894,12 @@ export class PageAsociados implements OnInit {
     }
 
     const record = raw as Record<string, unknown>;
+    const toString = (val: unknown) => typeof val === 'string' ? val.trim() : '';
+
     return {
-      nombre: String(record['nombre'] ?? record['name'] ?? record['contact'] ?? '').trim(),
-      telefono: String(record['telefono'] ?? record['phone'] ?? '').trim(),
-      vinculo: String(record['vinculo'] ?? record['relation'] ?? '').trim(),
+      nombre: toString(record['nombre'] ?? record['name'] ?? record['contact']),
+      telefono: toString(record['telefono'] ?? record['phone']),
+      vinculo: toString(record['vinculo'] ?? record['relation']),
     };
   }
 
