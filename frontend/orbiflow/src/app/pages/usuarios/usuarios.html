@@ -308,6 +308,75 @@
               </p>
             }
           </div>
+
+          <!-- Validaciones -->
+          @if (mggeError) {
+            <p class="error">{{ mggeError }}</p>
+          }
+
+          @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
+            @if (userForm.get('first_name')?.errors?.['required']) {
+              <p class="error">El nombre es obligatorio</p>
+            }
+          }
+
+          @if (userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched) {
+            @if (userForm.get('last_name')?.errors?.['required']) {
+              <p class="error">El apellido es obligatorio</p>
+            }
+          }
+
+          @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+            @if (userForm.get('email')?.errors?.['required']) {
+              <p class="error">El email es obligatorio</p>
+            }
+            @if (
+              userForm.get('email')?.errors?.['email'] || userForm.get('email')?.errors?.['pattern']
+            ) {
+              <p class="error">El email no es válido</p>
+            }
+          }
+
+          @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
+            @if (userForm.get('username')?.errors?.['required']) {
+              <p class="error">El usuario es obligatorio</p>
+            }
+          }
+
+          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+            @if (userForm.get('password')?.errors?.['required']) {
+              <p class="error">La contraseña es obligatoria</p>
+            }
+            @if (userForm.get('password')?.errors?.['minlength']) {
+              <p class="error">
+                La contraseña debe contener al menos 8 caracteres,una letra y un número
+              </p>
+            }
+            @if (userForm.get('password')?.errors?.['pattern']) {
+              <p class="error">
+                La contraseña debe contener al menos 8 caracteres,una letra y un número
+              </p>
+            }
+          }
+
+          @if (userForm.get('repeatPassword')?.touched) {
+            @if (userForm.get('repeatPassword')?.errors?.['required']) {
+              <p class="error">Debe repetir la contraseña</p>
+            }
+            @if (userForm.get('repeatPassword')?.errors?.['minlength']) {
+              <p class="error">Debe tener al menos 8 caracteres</p>
+            }
+            @if (userForm.hasError('passwordMismatch')) {
+              <p class="error">Las contraseñas no coinciden</p>
+            }
+          }
+
+          @if (userForm.get('roleControl')?.invalid && userForm.get('roleControl')?.touched) {
+            @if (userForm.get('roleControl')?.errors?.['required']) {
+              <p class="error">El rol es obligatorio</p>
+            }
+          }
+          
         </form>
       }
     </app-modal>
@@ -327,16 +396,27 @@
                   <div class="section-users-div">
                     <div class="div-user-chip">
                       <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
-                      <div>
+
+                      <div style="display: flex; align-items: center; gap: 0.5rem">
                         <app-chip
                           [name]="user.chipName || ''"
                           [backgroundColor]="user.chipBackgroundColor || ''"
                           [colorName]="user.chipColorName || ''"
                         ></app-chip>
+
+                        <app-chip
+                          [name]="user.is_active ? 'Activo' : 'Inactivo'"
+                          [backgroundColor]="
+                            user.is_active ? 'var(--verde-bg)' : 'var(--gris-claro)'
+                          "
+                          [colorName]="user.is_active ? 'var(--verde-selva)' : 'var(--gris-oscuro)'"
+                        ></app-chip>
+
                         <img src="assets/punto.png" alt="usuario" id="imgPunto" />
-                        <span class="fw200" style="font-size: 0.85rem"
-                          >Usuario: <strong>{{ user.username }}</strong></span
-                        >
+
+                        <span class="fw200" style="font-size: 0.85rem">
+                          Usuario: <strong>{{ user.username }}</strong>
+                        </span>
                       </div>
                     </div>
 
