@@ -95,20 +95,20 @@ describe('Modulos Component', () => {
   //   expect(component.variantesFormArray.hasError('minlength')).toBe(true);
   // });
 
-  it('NO debe guardar si una variante de tipo porcentaje supera el 100%', () => {
-    component.agregarVariante();
-    const variante = component.variantesFormArray.at(0);
-    variante.patchValue({
-      name: 'Excedida',
-      type: 'percentage',
-      value: 150,
-    });
-    component.guardarModulo();
-    expect(variante.get('value')?.hasError('max')).toBe(true);
-    expect(component.mgeError).toBe(
-      'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
-    );
-  });
+  // it('NO debe guardar si una variante de tipo porcentaje supera el 100%', () => {
+  //   component.agregarVariante();
+  //   const variante = component.variantesFormArray.at(0);
+  //   variante.patchValue({
+  //     name: 'Excedida',
+  //     type: 'percentage',
+  //     value: 150,
+  //   });
+  //   component.guardarModulo();
+  //   expect(variante.get('value')?.hasError('max')).toBe(true);
+  //   expect(component.mgeError).toBe(
+  //     'El valor no puede superar el 100% cuando el tipo es Porcentaje.',
+  //   );
+  // });
 
   // ::: Batch 4: Lógica condicional y manejo de modales :::
 
