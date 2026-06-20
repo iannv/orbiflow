@@ -110,6 +110,7 @@ describe('Modulos Component', () => {
   //   );
   // });
 
+  
   // ::: Batch 4: Lógica condicional y manejo de modales :::
 
   it('debe abrir el modal para un nuevo módulo y limpiar el formulario', () => {
