@@ -73,7 +73,7 @@ export class Modulos implements OnInit {
       is_exclusive: [true],
       applies_to_cap: [false],
       is_active: [true],
-      variants: this.fb.array([]),
+      variants: this.fb.array([], Validators.minLength(1)),
     });
   }
 
@@ -158,10 +158,10 @@ export class Modulos implements OnInit {
 
   guardarModulo(): void {
     // Validaciones
-    if (this.variantesFormArray.length === 0) {
-      this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
-      return;
-    }
+    // if (this.variantesFormArray.length === 0) {
+    //   this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
+    //   return;
+    // }
 
     // Verificador de exclusividad (Regla de Negocio)
     const isExclusive = this.moduloForm.get('is_exclusive')?.value;
@@ -196,7 +196,9 @@ export class Modulos implements OnInit {
 
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
-      this.mgeError = 'Por favor, complete todos los campos obligatorios.';
+      this.variantesFormArray.markAsTouched();
+      this.variantesFormArray.updateValueAndValidity();
+      // this.mgeError = 'Por favor, complete todos los campos obligatorios.';
       return;
     }
 
@@ -240,7 +242,7 @@ export class Modulos implements OnInit {
         error: (err: HttpErrorResponse) => {
           console.error('Error al crear', err);
           const msj = this.extraerMensajeError(err);
-          this.lanzarToast('Error al crear', msj);
+          // this.lanzarToast('Error al crear', msj);
           this.cdr.detectChanges();
         },
       });
@@ -335,5 +337,39 @@ export class Modulos implements OnInit {
       this.mostrarToast = false;
       this.cdr.detectChanges();
     }, 3500);
+  }
+
+  // //////////////////////////////////////////////////////////////////////////
+  // //////////////////////////////////////////////////////////////////////////
+  // Validaciones de error en inputs
+
+  hasError(controlName: string): boolean {
+    const control = this.moduloForm.get(controlName);
+    if (!control) return false;
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.moduloForm.get(controlName);
+    switch (controlName) {
+      case 'name':
+        if (control?.errors?.['required']) {
+          return 'El nombre es obligatorio';
+        }
+        break;
+
+      case 'variants':
+        if (control?.errors?.['required'] || control?.errors?.['minlength']) {
+          return 'Debe agregar al menos una variante al módulo para realizar cálculos';
+        }
+        break;
+
+      // if (control?.errors?.['email'] || control?.errors?.['pattern']) {
+      //   return 'El email no es válido';
+      // }
+      // break;
+    }
+
+    return '';
   }
 }
