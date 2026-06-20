@@ -1,3 +1,9 @@
+export interface EmergencyContact {
+  nombre: string;
+  telefono: string;
+  vinculo: string;
+}
+
 export interface AssociateVariant {
   id: number;
   associate: number;
@@ -20,7 +26,7 @@ export interface Associate {
   personal_email: string;
   phone_number: string;
   address: string;
-  emergency_contact: Record<string, unknown> | null; // JSONField en el backend
+  emergency_contact: EmergencyContact | null;
   first_name: string;
   last_name: string;
   full_name: string;
@@ -39,5 +45,5 @@ export interface CreateAssociatePayload {
   personal_email: string;
   phone_number: string;
   address: string;
-  emergency_contact?: Record<string, unknown> | null;
+  emergency_contact?: EmergencyContact | null;
 }

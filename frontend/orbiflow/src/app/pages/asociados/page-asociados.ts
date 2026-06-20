@@ -11,7 +11,7 @@ import { Secondary } from '../../components/button/secondary/secondary';
 import { Action } from '../../components/button/action/action';
 import { AssociateService, ModuleCatalog } from '../../services/associate-service';
 import { UserService } from '../../services/user-service';
-import { Associate, CreateAssociatePayload } from '../../interfaces/Associate';
+import { Associate, CreateAssociatePayload, EmergencyContact } from '../../interfaces/Associate';
 import { User } from '../../interfaces/User';
 import { Loader } from '../../components/loader/loader';
 import { Toast } from '../../components/toast/toast';
@@ -25,7 +25,9 @@ type AssociateFormField =
   | 'personal_email'
   | 'phone_number'
   | 'address'
-  | 'emergency_contact';
+  | 'emergency_contact_nombre'
+  | 'emergency_contact_telefono'
+  | 'emergency_contact_vinculo';
 
 type AssociateFormErrors = Partial<Record<AssociateFormField, string>>;
 
@@ -86,7 +88,7 @@ export class PageAsociados implements OnInit {
   allModules: ModuleCatalog[] = []; 
 
   formData: CreateAssociatePayload = this.emptyForm();
-  emergencyContactInput = ''; // campo aparte: el backend espera un objeto JSON
+  emergencyContact: EmergencyContact = this.emptyEmergencyContact();
   selectedUserEmail = '';     // solo lectura, se autocompleta al elegir usuario
   readonly todayIso = this.toLocalIsoDate(new Date());
 
@@ -233,7 +235,7 @@ export class PageAsociados implements OnInit {
     this.formData = this.emptyForm();
     this.availableUsers = [];
     this.clearFormFeedback();
-    this.emergencyContactInput = '';
+    this.emergencyContact = this.emptyEmergencyContact();
     this.selectedUserEmail = '';
 
     this.userService.getUsers().subscribe({
@@ -270,8 +272,7 @@ export class PageAsociados implements OnInit {
     this.modalMode = 'edit';
     this.selectedAssociate = associate;
     this.clearFormFeedback();
-    this.emergencyContactInput =
-      associate.emergency_contact?.['contact']?.toString() ?? '';
+    this.emergencyContact = this.parseEmergencyContact(associate.emergency_contact);
     this.formData = {
       user: associate.user,
       dni: associate.dni,
@@ -591,6 +592,25 @@ export class PageAsociados implements OnInit {
       this.addFormError(errors, 'address', 'El domicilio no puede superar 255 caracteres.');
     }
 
+    const ecNombre = this.emergencyContact.nombre.trim();
+    const ecTelefono = this.emergencyContact.telefono.trim();
+    const ecVinculo = this.emergencyContact.vinculo.trim();
+    const hasEmergencyContact = Boolean(ecNombre || ecTelefono || ecVinculo);
+
+    if (hasEmergencyContact) {
+      if (!ecNombre) {
+        this.addFormError(errors, 'emergency_contact_nombre', 'Completá el nombre del contacto de emergencia.');
+      }
+      if (!ecTelefono) {
+        this.addFormError(errors, 'emergency_contact_telefono', 'Completá el teléfono del contacto de emergencia.');
+      } else if (!/^[0-9+() .-]{6,20}$/.test(ecTelefono)) {
+        this.addFormError(errors, 'emergency_contact_telefono', 'Ingresá un teléfono válido.');
+      }
+      if (!ecVinculo) {
+        this.addFormError(errors, 'emergency_contact_vinculo', 'Completá el vínculo del contacto de emergencia.');
+      }
+    }
+
     this.formErrors = errors;
     this.formErrorSummary = this.getFormErrorSummary(errors);
     this.modalError = this.formErrorSummary.length > 0 ? this.validationSummaryMessage : null;
@@ -599,7 +619,10 @@ export class PageAsociados implements OnInit {
   }
 
   private buildAssociatePayload(): CreateAssociatePayload {
-    const emergencyContact = this.emergencyContactInput.trim();
+    const nombre = this.emergencyContact.nombre.trim();
+    const telefono = this.emergencyContact.telefono.trim();
+    const vinculo = this.emergencyContact.vinculo.trim();
+    const hasEmergencyContact = Boolean(nombre && telefono && vinculo);
 
     return {
       user: Number(this.formData.user),
@@ -610,7 +633,7 @@ export class PageAsociados implements OnInit {
       personal_email: this.formData.personal_email.trim(),
       phone_number: this.formData.phone_number.trim(),
       address: this.formData.address.trim(),
-      emergency_contact: emergencyContact ? { contact: emergencyContact } : {},
+      emergency_contact: hasEmergencyContact ? { nombre, telefono, vinculo } : null,
     };
   }
 
@@ -676,6 +699,10 @@ export class PageAsociados implements OnInit {
       case 'phone_number':
       case 'address':
       case 'emergency_contact':
+        return 'emergency_contact_nombre';
+      case 'emergency_contact_nombre':
+      case 'emergency_contact_telefono':
+      case 'emergency_contact_vinculo':
         return key;
       default:
         return null;
@@ -725,8 +752,17 @@ export class PageAsociados implements OnInit {
         return 'Revisá el domicilio.';
 
       case 'emergency_contact':
-        if (this.isRequiredError(detail)) return 'Completá el contacto de emergencia.';
-        return 'Revisá el contacto de emergencia.';
+      case 'emergency_contact_nombre':
+        if (this.isRequiredError(detail)) return 'Completá el nombre del contacto de emergencia.';
+        return 'Revisá el nombre del contacto de emergencia.';
+
+      case 'emergency_contact_telefono':
+        if (this.isRequiredError(detail)) return 'Completá el teléfono del contacto de emergencia.';
+        return 'Ingresá un teléfono válido para el contacto de emergencia.';
+
+      case 'emergency_contact_vinculo':
+        if (this.isRequiredError(detail)) return 'Completá el vínculo del contacto de emergencia.';
+        return 'Revisá el vínculo del contacto de emergencia.';
 
       case 'detail':
       case 'message':
@@ -846,6 +882,23 @@ export class PageAsociados implements OnInit {
 
     const moduleNames = activeVariants.map((v) => v.module_name);
     return [...new Set(moduleNames)];
+  }
+
+  private emptyEmergencyContact(): EmergencyContact {
+    return { nombre: '', telefono: '', vinculo: '' };
+  }
+
+  private parseEmergencyContact(raw: EmergencyContact | Record<string, unknown> | null | undefined): EmergencyContact {
+    if (!raw || typeof raw !== 'object') {
+      return this.emptyEmergencyContact();
+    }
+
+    const record = raw as Record<string, unknown>;
+    return {
+      nombre: String(record['nombre'] ?? record['name'] ?? record['contact'] ?? '').trim(),
+      telefono: String(record['telefono'] ?? record['phone'] ?? '').trim(),
+      vinculo: String(record['vinculo'] ?? record['relation'] ?? '').trim(),
+    };
   }
 
   // Retorna un formulario vacío con valores por defecto
