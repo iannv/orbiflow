@@ -386,54 +386,60 @@
         }
       </div>
 
-      <div class="app-modal-field">
-        <label>Contacto de emergencia — Nombre</label>
-        <input
-          type="text"
-          [(ngModel)]="emergencyContact.nombre"
-          name="emergency_contact_nombre"
-          [class.field-invalid]="formErrors.emergency_contact_nombre"
-          [attr.aria-invalid]="formErrors.emergency_contact_nombre ? true : null"
-          (ngModelChange)="clearFieldError('emergency_contact_nombre')"
-          placeholder="Ej: Juan Pérez"
-        />
-        @if (formErrors.emergency_contact_nombre) {
-          <p class="field-error">{{ formErrors.emergency_contact_nombre }}</p>
-        }
-      </div>
+    </div>
 
-      <div class="app-modal-field">
-        <label>Contacto de emergencia — Teléfono</label>
-        <input
-          type="text"
-          [(ngModel)]="emergencyContact.telefono"
-          name="emergency_contact_telefono"
-          maxlength="20"
-          inputmode="tel"
-          [class.field-invalid]="formErrors.emergency_contact_telefono"
-          [attr.aria-invalid]="formErrors.emergency_contact_telefono ? true : null"
-          (ngModelChange)="clearFieldError('emergency_contact_telefono')"
-          placeholder="Ej: 1199887766"
-        />
-        @if (formErrors.emergency_contact_telefono) {
-          <p class="field-error">{{ formErrors.emergency_contact_telefono }}</p>
-        }
-      </div>
+    <div class="modal-fields-group">
+      <h3 class="modal-section-title">Contacto de emergencia</h3>
+      <div class="app-modal-grid-2">
+        <div class="app-modal-field">
+          <label>Nombre</label>
+          <input
+            type="text"
+            [(ngModel)]="emergencyContact.nombre"
+            name="emergency_contact_nombre"
+            [class.field-invalid]="formErrors.emergency_contact_nombre"
+            [attr.aria-invalid]="formErrors.emergency_contact_nombre ? true : null"
+            (ngModelChange)="clearFieldError('emergency_contact_nombre')"
+            placeholder="Ej: Juan Pérez"
+          />
+          @if (formErrors.emergency_contact_nombre) {
+            <p class="field-error">{{ formErrors.emergency_contact_nombre }}</p>
+          }
+        </div>
 
-      <div class="app-modal-field app-modal-field-full">
-        <label>Contacto de emergencia — Vínculo</label>
-        <input
-          type="text"
-          [(ngModel)]="emergencyContact.vinculo"
-          name="emergency_contact_vinculo"
-          [class.field-invalid]="formErrors.emergency_contact_vinculo"
-          [attr.aria-invalid]="formErrors.emergency_contact_vinculo ? true : null"
-          (ngModelChange)="clearFieldError('emergency_contact_vinculo')"
-          placeholder="Ej: Hermano, pareja, padre"
-        />
-        @if (formErrors.emergency_contact_vinculo) {
-          <p class="field-error">{{ formErrors.emergency_contact_vinculo }}</p>
-        }
+        <div class="app-modal-field">
+          <label>Teléfono</label>
+          <input
+            type="text"
+            [(ngModel)]="emergencyContact.telefono"
+            name="emergency_contact_telefono"
+            maxlength="20"
+            inputmode="tel"
+            [class.field-invalid]="formErrors.emergency_contact_telefono"
+            [attr.aria-invalid]="formErrors.emergency_contact_telefono ? true : null"
+            (ngModelChange)="clearFieldError('emergency_contact_telefono')"
+            placeholder="Ej: 1199887766"
+          />
+          @if (formErrors.emergency_contact_telefono) {
+            <p class="field-error">{{ formErrors.emergency_contact_telefono }}</p>
+          }
+        </div>
+
+        <div class="app-modal-field app-modal-field-full">
+          <label>Vínculo</label>
+          <input
+            type="text"
+            [(ngModel)]="emergencyContact.vinculo"
+            name="emergency_contact_vinculo"
+            [class.field-invalid]="formErrors.emergency_contact_vinculo"
+            [attr.aria-invalid]="formErrors.emergency_contact_vinculo ? true : null"
+            (ngModelChange)="clearFieldError('emergency_contact_vinculo')"
+            placeholder="Ej: Hermano, pareja, padre"
+          />
+          @if (formErrors.emergency_contact_vinculo) {
+            <p class="field-error">{{ formErrors.emergency_contact_vinculo }}</p>
+          }
+        </div>
       </div>
     </div>
   </div>
