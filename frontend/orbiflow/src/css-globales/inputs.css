@@ -6,7 +6,8 @@ label {
 input {
   border: 1px solid var(--gris-claro);
   border-radius: 4px;
-  padding: 0.2rem;
+  padding: 0.4rem;
+  /* padding: 0.55rem 0.7rem; */
   margin: 0.5rem 0 1rem 0;
   color: var(--verde-azulado);
   text-indent: 10px;
