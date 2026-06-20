@@ -2,6 +2,24 @@
   color: var(--rojo);
 }
 
+.error-text {
+  display: block;
+  margin-top: 4px;
+  color: var(--rojo);
+  font-size: 0.8rem;
+}
+
+.input-error {
+  border: 1px solid var(--rojo);
+  background-color: rgba(255, 245, 245, 0.92) !important;
+}
+
+.input-error:focus {
+  outline: none;
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15) !important;
+}
+
 #section-title {
   display: flex;
   flex-direction: column;

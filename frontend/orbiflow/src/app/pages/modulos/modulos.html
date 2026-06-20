@@ -153,7 +153,17 @@
         <div class="app-modal-grid-2">
           <div class="app-modal-field">
             <label>Nombre del Módulo</label>
-            <input type="text" formControlName="name" placeholder="Ej. Presentismo" />
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="Ej. Presentismo"
+              [class.input-error]="hasError('name')"
+            />
+            @if (hasError('name')) {
+              <small class="error-text">
+                {{ getErrorMessage('name') }}
+              </small>
+            }
           </div>
           <div class="app-modal-field">
             <label>Tipo de Cálculo</label>
@@ -209,10 +219,16 @@
             class="btn btn-outline-green"
             style="padding: 0.2rem 0.5rem; font-size: 0.8rem"
             (click)="agregarVariante()"
+            [class.input-error]="variantesFormArray.length === 0 && moduloForm.touched"
           >
             + Añadir Variante
           </button>
         </div>
+        @if (variantesFormArray.length === 0 && variantesFormArray.touched) {
+          <small class="error-text">
+            Debe agregar al menos una variante al módulo para realizar cálculos
+          </small>
+        }
 
         <p class="error">{{ mgeError }}</p>
 
