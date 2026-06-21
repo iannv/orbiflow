@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ModulosService } from '../../services/modulos-service';
 import { Modulo } from '../../interfaces/Modulo';
@@ -73,10 +73,16 @@ export class Modulos implements OnInit {
       is_exclusive: [true],
       applies_to_cap: [false],
       is_active: [true],
-      variants: this.fb.array([], Validators.minLength(1)),
+      // variants: this.fb.array([], Validators.minLength(1)),
+      variants: this.fb.array([], this.minOneVariantValidator),
     });
   }
-
+  
+  private minOneVariantValidator = (control: AbstractControl) => {
+    const fa = control as FormArray;
+    return fa.length > 0 ? null : { required: true };
+  };
+  
   get variantesFormArray(): FormArray {
     return this.moduloForm.get('variants') as FormArray;
   }
@@ -109,7 +115,6 @@ export class Modulos implements OnInit {
   }
 
   // Lógica de modales y formularios
-
   openModal(): void {
     this.moduloEnEdicion = null;
     this.moduloForm.reset({

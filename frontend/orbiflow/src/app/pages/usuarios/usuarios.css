@@ -112,6 +112,10 @@
   align-items: center;
 }
 
+#divUserChip {
+  align-items: flex-start !important;
+}
+
 #section-users .div-user-chip div {
   display: flex;
   flex-direction: column;
@@ -126,10 +130,7 @@
   margin-top: -1rem;
 }
 
-/* #section-users app-base-card app-base-card {
- margin-top: -1rem; 
-}
-*/
+
 #section-users app-base-card app-base-card .div-user-chip {
   display: flex;
   flex-direction: column;
@@ -155,7 +156,6 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--gris-oscuro);
-  margin-left: 4rem;
 }
 
 .div-actions-group {
@@ -323,7 +323,7 @@
     /* display: flex; */
     flex-direction: row;
     /* gap: 0.5rem; */
-    align-items: last baseline;
+    align-items: center !important;
   }
   #imgPunto {
     display: inline;
