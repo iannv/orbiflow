@@ -1,5 +1,28 @@
+.form-wrapped-error {
+  display: flex;
+  flex-direction: column;
+  height: 80px;
+}
+
 .error {
   color: var(--rojo);
+}
+
+.error-text {
+  margin-top: -12px;
+  color: var(--rojo);
+  font-size: 0.8rem;
+}
+
+.input-error {
+  border: 1px solid var(--rojo);
+  background-color: rgba(255, 245, 245, 0.92) !important;
+}
+
+.input-error:focus {
+  outline: none;
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
 }
 
 .warning {
@@ -10,6 +33,12 @@
   color: #6b5300;
   font-size: 0.85rem;
   border-radius: 4px;
+}
+
+::placeholder {
+  color: var(--gris-oscuro);
+  font-size: 14px;
+  font-weight: 300;
 }
 
 .optional {
@@ -39,16 +68,22 @@
 .form-div-check {
   display: flex;
   align-items: center;
-  gap: .4rem;
+  gap: 0.4rem;
 }
 
-.form-div-check input{
+.form-div-check input {
   width: 4%;
   margin: 0;
 }
 
 .form-div-check--locked {
   opacity: 0.85;
+}
+
+.form-div-claves {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .checkbox-locked {
@@ -77,6 +112,10 @@
   align-items: center;
 }
 
+#divUserChip {
+  align-items: flex-start !important;
+}
+
 #section-users .div-user-chip div {
   display: flex;
   flex-direction: column;
@@ -91,10 +130,7 @@
   margin-top: -1rem;
 }
 
- /* #section-users app-base-card app-base-card {
- margin-top: -1rem; 
-}
-*/
+
 #section-users app-base-card app-base-card .div-user-chip {
   display: flex;
   flex-direction: column;
@@ -120,7 +156,6 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--gris-oscuro);
-  margin-left: 4rem;
 }
 
 .div-actions-group {
@@ -279,7 +314,6 @@
   cursor: pointer;
 }
 
-
 /* QUERIES */
 
 /* @media (min-width: 480px) { } */
@@ -289,7 +323,7 @@
     /* display: flex; */
     flex-direction: row;
     /* gap: 0.5rem; */
-    align-items: last baseline;
+    align-items: center !important;
   }
   #imgPunto {
     display: inline;

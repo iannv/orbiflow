@@ -287,7 +287,7 @@ export class Usuarios implements OnInit {
       this.mggeError = 'El nombre de usuario ya se encuentra registrado';
       return;
     }
-    
+
     this.userService.updateUser(this.selectedUser.id, updateData).subscribe(() => {
       this.lanzarToast('Usuario actualizado', 'Los cambios se guardaron correctamente');
       this.mggeError = '';
@@ -475,5 +475,94 @@ export class Usuarios implements OnInit {
   clearSearch(): void {
     this.searchQuery = '';
     this.applyFilters();
+  }
+
+  // //////////////////////////////////////////////////////////////////////////
+  // //////////////////////////////////////////////////////////////////////////
+  // Validaciones de error en inputs
+  hasError(controlName: string): boolean {
+    const control = this.userForm.get(controlName);
+
+    if (!control) return false;
+
+    if (
+      controlName === 'repeatPassword' &&
+      this.userForm.hasError('passwordMismatch') &&
+      control.touched
+    ) {
+      return true;
+    }
+    console.log(
+      this.userForm.get('roleControl')?.value,
+      this.userForm.get('roleControl')?.errors,
+      this.userForm.get('roleControl')?.touched,
+    );
+    return !!(control.invalid && control.touched);
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.userForm.get(controlName);
+
+    switch (controlName) {
+      case 'first_name':
+        if (control?.errors?.['required']) {
+          return 'El nombre es obligatorio';
+        }
+        break;
+
+      case 'last_name':
+        if (control?.errors?.['required']) {
+          return 'El apellido es obligatorio';
+        }
+        break;
+
+      case 'username':
+        if (control?.errors?.['required']) {
+          return 'El usuario es obligatorio';
+        }
+        break;
+
+      case 'email':
+        if (control?.errors?.['required']) {
+          return 'El email es obligatorio';
+        }
+
+        if (control?.errors?.['email'] || control?.errors?.['pattern']) {
+          return 'El email no es válido';
+        }
+        break;
+
+      case 'password':
+        if (control?.errors?.['required']) {
+          return 'La contraseña es obligatoria';
+        }
+
+        if (control?.errors?.['minlength'] || control?.errors?.['pattern']) {
+          return 'La contraseña debe contener al menos 8 caracteres, una letra y un número';
+        }
+        break;
+
+      case 'repeatPassword':
+        if (control?.errors?.['required']) {
+          return 'Debe repetir la contraseña';
+        }
+
+        if (control?.errors?.['minlength']) {
+          return 'Debe tener al menos 8 caracteres';
+        }
+
+        if (this.userForm.hasError('passwordMismatch') && control?.touched) {
+          return 'Las contraseñas no coinciden';
+        }
+        break;
+
+      case 'roleControl':
+        if (control?.errors?.['required']) {
+          return 'El rol es obligatorio';
+        }
+        break;
+    }
+
+    return '';
   }
 }

@@ -153,7 +153,17 @@
         <div class="app-modal-grid-2">
           <div class="app-modal-field">
             <label>Nombre del Módulo</label>
-            <input type="text" formControlName="name" placeholder="Ej. Presentismo" />
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="Ej. Presentismo"
+              [class.input-error]="hasError('name')"
+            />
+            @if (hasError('name')) {
+              <small class="error-text">
+                {{ getErrorMessage('name') }}
+              </small>
+            }
           </div>
           <div class="app-modal-field">
             <label>Tipo de Cálculo</label>
@@ -198,8 +208,9 @@
           </div>
         </div>
 
-        <hr style="border-color: var(--gris-claro); margin: 1.5rem 0" />
+        <hr style="border-color: var(--gris-claro); margin: 0.5rem" />
 
+        <!-- VARIANTES -->
         <div class="d-flex justify-content-between align-items-center mb-2">
           <label class="fw600" style="font-size: 1rem; color: var(--verde-petroleo)"
             >Variantes</label
@@ -209,10 +220,16 @@
             class="btn btn-outline-green"
             style="padding: 0.2rem 0.5rem; font-size: 0.8rem"
             (click)="agregarVariante()"
+            [class.input-error]="variantesFormArray.length === 0 && moduloForm.touched"
           >
             + Añadir Variante
           </button>
         </div>
+        @if (variantesFormArray.length === 0 && moduloForm.touched) {
+          <small class="error-text">
+            Debe agregar al menos una variante al módulo para realizar cálculos
+          </small>
+        }
 
         <p class="error">{{ mgeError }}</p>
 
@@ -236,7 +253,19 @@
               <div class="app-modal-grid-2">
                 <div class="app-modal-field">
                   <label>Nombre</label>
-                  <input type="text" formControlName="name" placeholder="Ej. Completo" />
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Ej. Completo"
+                    [class.input-error]="
+                      variante.get('name')?.invalid && variante.get('name')?.touched
+                    "
+                  />
+                  @if (
+                    variante.get('name')?.errors?.['required'] && variante.get('name')?.touched
+                  ) {
+                    <small class="error-text"> El nombre es obligatorio </small>
+                  }
                 </div>
                 <div class="app-modal-field">
                   <label>Tipo de valor</label>
@@ -252,19 +281,22 @@
                     formControlName="value"
                     placeholder="0.00"
                     [max]="variante.get('type')?.value === 'percentage' ? 100 : null"
-                    [ngStyle]="{
-                      'border-color': variante.get('value')?.hasError('max') ? 'var(--rojo)' : '',
-                    }"
+                    [class.input-error]="
+                      variante.get('value')?.invalid && variante.get('value')?.touched
+                    "
                   />
 
-                  @if (variante.get('value')?.hasError('max')) {
-                    <small
-                      style="color: var(--rojo); font-size: 0.8rem; margin-top: 4px; display: block"
-                    >
-                      No puede superar el 100%
-                    </small>
+                  @if (variante.get('value')?.errors?.['max']) {
+                    <small class="error-text"> El porcentaje no puede superar el 100% </small>
+                  }
+
+                  @if (
+                    variante.get('value')?.errors?.['required'] && variante.get('value')?.touched
+                  ) {
+                    <small class="error-text"> El valor es obligatorio </small>
                   }
                 </div>
+
                 <div class="app-modal-field d-flex align-items-start justify-content-center pt-4">
                   <div class="form-check form-switch d-flex align-items-center gap-2">
                     <input

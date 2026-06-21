@@ -496,3 +496,12 @@
     margin-bottom: 0;
   }
 }
+
+/* ── Título de sección del modal (ej: Contacto de emergencia) ── */
+.modal-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--verde-petroleo);
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+}

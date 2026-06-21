@@ -61,16 +61,10 @@
               (click)="filterByRole(r.value)"
               [badgeActive]="selectedRole === r.value"
             ></app-chip>
-            <!-- [badgeActive]="
-                selectedRole === RolEnum.ADMIN ||
-                selectedRole === RolEnum.ASSOCIATE ||
-                selectedRole === RolEnum.TREASURER
-                  ? selectedRole === r.value
-                  : false
-              " -->
           }
+
           <div class="coop-member-filter">
-            <span class="filter-label">Miembro coop.</span>
+            <span class="filter-label">Miembro cooperativa</span>
             <app-chip
               class="btn-filter"
               name="Todos"
@@ -87,16 +81,9 @@
               (click)="filterByCoopMember('yes')"
               [badgeActive]="selectedCoopMember === 'yes'"
             ></app-chip>
-            <!-- <app-chip
-              class="btn-filter"
-              name="No"
-              backgroundColor="var(--gris-blanco)"
-              colorName="var(--verde-azulado)"
-              (click)="filterByCoopMember('no')"
-              [badgeActive]="selectedCoopMember === 'no'"
-            ></app-chip> -->
           </div>
         </div>
+
         <!-- Paginator -->
         @if (totalPages > 1) {
           <nav>
@@ -147,37 +134,114 @@
 
           <div id="form-div">
             <div class="form-div">
-              <div>
+              <div class="form-wrapped-error">
                 <label for="first_name"> Nombre </label>
-                <input type="text" formControlName="first_name" required />
+                <input
+                  type="text"
+                  formControlName="first_name"
+                  placeholder="Ingrese el nombre"
+                  required
+                  [class.input-error]="hasError('first_name')"
+                />
+                @if (hasError('first_name')) {
+                  <small class="error-text">
+                    {{ getErrorMessage('first_name') }}
+                  </small>
+                }
               </div>
 
-              <div>
+              <div class="form-wrapped-error">
                 <label for="last_name"> Apellido </label>
-                <input type="text" formControlName="last_name" required />
+                <input
+                  type="text"
+                  formControlName="last_name"
+                  placeholder="Ingrese el apellido"
+                  required
+                  [class.input-error]="
+                    userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched
+                  "
+                />
+                @if (hasError('last_name')) {
+                  <small class="error-text">
+                    {{ getErrorMessage('last_name') }}
+                  </small>
+                }
               </div>
             </div>
 
             <div class="form-div">
-              <div>
+              <div class="form-wrapped-error">
                 <label for="email"> Email </label>
-                <input type="email" formControlName="email" required />
+                <input
+                  type="email"
+                  formControlName="email"
+                  placeholder="Ej: nombre@gmail.com"
+                  required
+                  [class.input-error]="
+                    userForm.get('email')?.invalid && userForm.get('email')?.touched
+                  "
+                />
+                @if (hasError('email')) {
+                  <small class="error-text">
+                    {{ getErrorMessage('email') }}
+                  </small>
+                }
               </div>
-              <div>
+              <div class="form-wrapped-error">
                 <label for="username"> Usuario </label>
-                <input type="text" formControlName="username" required />
+                <input
+                  type="text"
+                  formControlName="username"
+                  placeholder="Ej: nombre_apellido"
+                  required
+                  [class.input-error]="
+                    userForm.get('username')?.invalid && userForm.get('username')?.touched
+                  "
+                />
+                @if (hasError('username')) {
+                  <small class="error-text">
+                    {{ getErrorMessage('username') }}
+                  </small>
+                }
               </div>
             </div>
 
-            <div class="form-div">
+            <div class="form-div-claves">
               @if (modalMode === 'create') {
-                <div>
+                <div class="form-wrapped-error">
                   <label for="password"> Contraseña </label>
-                  <input type="password" formControlName="password" required />
+                  <input
+                    type="password"
+                    formControlName="password"
+                    placeholder="Ingrese la contraseña"
+                    required
+                    [class.input-error]="
+                      userForm.get('password')?.invalid && userForm.get('password')?.touched
+                    "
+                  />
+                  @if (hasError('password')) {
+                    <small class="error-text">
+                      {{ getErrorMessage('password') }}
+                    </small>
+                  }
                 </div>
-                <div>
+                <div class="form-wrapped-error">
                   <label for="repeatPassword"> Repetir contraseña </label>
-                  <input type="password" formControlName="repeatPassword" required />
+                  <input
+                    type="password"
+                    formControlName="repeatPassword"
+                    placeholder="Repita la contraseña"
+                    required
+                    [class.input-error]="
+                      userForm.get('repeatPassword')?.invalid &&
+                      userForm.get('repeatPassword')?.touched
+                    "
+                  />
+                  @if (hasError('repeatPassword')) {
+                    <small class="error-text">
+                      {{ getErrorMessage('repeatPassword') }}
+                    </small>
+                  }
                 </div>
               }
               @if (modalMode === 'edit') {
@@ -207,6 +271,11 @@
                 <option [value]="role.value">{{ role.label }}</option>
               }
             </app-select>
+            @if (hasError('roleControl')) {
+              <small class="error-text">
+                {{ getErrorMessage('roleControl') }}
+              </small>
+            }
 
             <div class="form-div-check" [class.form-div-check--locked]="isCoopMemberLocked">
               <input
@@ -226,72 +295,6 @@
               </p>
             }
           </div>
-
-          <!-- Validaciones -->
-          @if (mggeError) {
-            <p class="error">{{mggeError}}</p>
-          }
-
-          @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
-            @if (userForm.get('first_name')?.errors?.['required']) {
-              <p class="error">El nombre es obligatorio</p>
-            }
-          }
-
-          @if (userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched) {
-            @if (userForm.get('last_name')?.errors?.['required']) {
-              <p class="error">El apellido es obligatorio</p>
-            }
-          }
-
-          @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
-            @if (userForm.get('email')?.errors?.['required']) {
-              <p class="error">El email es obligatorio</p>
-            }
-            @if (userForm.get('email')?.errors?.['email'] || userForm.get('email')?.errors?.['pattern']) {
-              <p class="error">El email no es válido</p>
-            }
-          }
-
-          @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
-            @if (userForm.get('username')?.errors?.['required']) {
-              <p class="error">El usuario es obligatorio</p>
-            }
-          }
-
-          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-            @if (userForm.get('password')?.errors?.['required']) {
-              <p class="error">La contraseña es obligatoria</p>
-            }
-            @if (userForm.get('password')?.errors?.['minlength']) {
-              <p class="error">
-                La contraseña debe contener al menos 8 caracteres,una letra y un número
-              </p>
-            }
-            @if (userForm.get('password')?.errors?.['pattern']) {
-              <p class="error">
-                La contraseña debe contener al menos 8 caracteres,una letra y un número
-              </p>
-            }
-          }
-
-          @if (userForm.get('repeatPassword')?.touched) {
-            @if (userForm.get('repeatPassword')?.errors?.['required']) {
-              <p class="error">Debe repetir la contraseña</p>
-            }
-            @if (userForm.get('repeatPassword')?.errors?.['minlength']) {
-              <p class="error">Debe tener al menos 8 caracteres</p>
-            }
-            @if (userForm.hasError('passwordMismatch')) {
-              <p class="error">Las contraseñas no coinciden</p>
-            }
-          }
-
-          @if (userForm.get('roleControl')?.invalid && userForm.get('roleControl')?.touched) {
-            @if (userForm.get('roleControl')?.errors?.['required']) {
-              <p class="error">El rol es obligatorio</p>
-            }
-          }
         </form>
       }
     </app-modal>
@@ -311,22 +314,31 @@
                   <div class="section-users-div">
                     <div class="div-user-chip">
                       <p class="fw500">{{ user.first_name }} {{ user.last_name }}</p>
-                      <div>
+
+                      <div id="divUserChip" style="display: flex; align-items: center; gap: 0.5rem">
                         <app-chip
                           [name]="user.chipName || ''"
                           [backgroundColor]="user.chipBackgroundColor || ''"
                           [colorName]="user.chipColorName || ''"
                         ></app-chip>
+
+                        <app-chip
+                          [name]="user.is_active ? 'Activo' : 'Inactivo'"
+                          [backgroundColor]="
+                            user.is_active ? 'var(--verde-bg)' : 'var(--gris-claro)'
+                          "
+                          [colorName]="user.is_active ? 'var(--verde-selva)' : 'var(--gris-oscuro)'"
+                        ></app-chip>
+
                         <img src="assets/punto.png" alt="usuario" id="imgPunto" />
-                        <span class="fw200" style="font-size: 0.85rem"
-                          >Usuario: <strong>{{ user.username }}</strong></span
-                        >
+
+                        <span class="fw200" style="font-size: 0.85rem">
+                          Usuario: <strong>{{ user.username }}</strong>
+                        </span>
                       </div>
                     </div>
 
                     <div class="div-actions-group">
-
-
                       <div class="div-actions">
                         <app-action
                           btnImg="assets/editar.png"
@@ -337,7 +349,9 @@
                           (btnClick)="openDeleteModal(user)"
                         ></app-action>
                       </div>
-                                            @if (user.is_coop_member && user.id != null && !hasAssociateUserIds.has(user.id)) {
+                      @if (
+                        user.is_coop_member && user.id != null && !hasAssociateUserIds.has(user.id)
+                      ) {
                         <div class="missing-legajo-wrapper">
                           <svg
                             viewBox="0 0 24 24"
@@ -348,7 +362,9 @@
                             stroke-linejoin="round"
                             class="missing-legajo-icon"
                           >
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <path
+                              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                            />
                             <line x1="12" y1="9" x2="12" y2="13" />
                             <line x1="12" y1="17" x2="12.01" y2="17" />
                           </svg>

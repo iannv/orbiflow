@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ModulosService } from '../../services/modulos-service';
 import { Modulo } from '../../interfaces/Modulo';
@@ -73,10 +73,16 @@ export class Modulos implements OnInit {
       is_exclusive: [true],
       applies_to_cap: [false],
       is_active: [true],
-      variants: this.fb.array([]),
+      // variants: this.fb.array([], Validators.minLength(1)),
+      variants: this.fb.array([], this.minOneVariantValidator),
     });
   }
-
+  
+  private minOneVariantValidator = (control: AbstractControl) => {
+    const fa = control as FormArray;
+    return fa.length > 0 ? null : { required: true };
+  };
+  
   get variantesFormArray(): FormArray {
     return this.moduloForm.get('variants') as FormArray;
   }
@@ -109,7 +115,6 @@ export class Modulos implements OnInit {
   }
 
   // Lógica de modales y formularios
-
   openModal(): void {
     this.moduloEnEdicion = null;
     this.moduloForm.reset({
@@ -157,12 +162,6 @@ export class Modulos implements OnInit {
   }
 
   guardarModulo(): void {
-    // Validaciones
-    if (this.variantesFormArray.length === 0) {
-      this.mgeError = 'Debe agregar al menos una variante al módulo para realizar cálculos.';
-      return;
-    }
-
     // Verificador de exclusividad (Regla de Negocio)
     const isExclusive = this.moduloForm.get('is_exclusive')?.value;
     let defaultsCount = 0;
@@ -189,14 +188,16 @@ export class Modulos implements OnInit {
       }
     });
 
-    if (errorPorcentaje) {
-      this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
-      return;
-    }
+    // if (errorPorcentaje) {
+    //   this.mgeError = 'El valor no puede superar el 100% cuando el tipo es Porcentaje.';
+    //   return;
+    // }
 
     if (this.moduloForm.invalid) {
       this.moduloForm.markAllAsTouched();
-      this.mgeError = 'Por favor, complete todos los campos obligatorios.';
+      this.variantesFormArray.markAsTouched();
+      this.variantesFormArray.updateValueAndValidity();
+      // this.mgeError = 'Por favor, complete todos los campos obligatorios.';
       return;
     }
 
@@ -240,7 +241,7 @@ export class Modulos implements OnInit {
         error: (err: HttpErrorResponse) => {
           console.error('Error al crear', err);
           const msj = this.extraerMensajeError(err);
-          this.lanzarToast('Error al crear', msj);
+          // this.lanzarToast('Error al crear', msj);
           this.cdr.detectChanges();
         },
       });
@@ -256,7 +257,6 @@ export class Modulos implements OnInit {
   }
 
   //  Lógica de eliminación
-
   confirmarEliminacion(id: number | undefined): void {
     if (!id) return;
     this.moduloAEliminarId = id;
@@ -284,7 +284,6 @@ export class Modulos implements OnInit {
   }
 
   // Feedback visual
-
   toggleEstadoModulo(event: Event, modulo: Modulo): void {
     const checkbox = event.target as HTMLInputElement;
     const nuevoEstado = checkbox.checked;
@@ -335,5 +334,33 @@ export class Modulos implements OnInit {
       this.mostrarToast = false;
       this.cdr.detectChanges();
     }, 3500);
+  }
+
+  // //////////////////////////////////////////////////////////////////////////
+  // //////////////////////////////////////////////////////////////////////////
+  // Validaciones de error en inputs
+  hasError(controlName: string): boolean {
+    const control = this.moduloForm.get(controlName);
+    if (!control) return false;
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.moduloForm.get(controlName);
+    switch (controlName) {
+      case 'name':
+        if (control?.errors?.['required']) {
+          return 'El nombre es obligatorio';
+        }
+        break;
+
+      case 'variants':
+        if (control?.errors?.['required'] || control?.errors?.['minlength']) {
+          return 'Debe agregar al menos una variante al módulo para realizar cálculos';
+        }
+        break;
+    }
+
+    return '';
   }
 }
