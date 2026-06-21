@@ -492,6 +492,11 @@ export class Usuarios implements OnInit {
     ) {
       return true;
     }
+    console.log(
+      this.userForm.get('roleControl')?.value,
+      this.userForm.get('roleControl')?.errors,
+      this.userForm.get('roleControl')?.touched,
+    );
     return !!(control.invalid && control.touched);
   }
 
